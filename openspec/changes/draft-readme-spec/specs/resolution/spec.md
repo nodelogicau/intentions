@@ -2,7 +2,7 @@
 
 ### Requirement: Demand and supply
 
-Resolution SHALL take one unretired, unplaced intention with both `duration` and `window` as demand. Supply SHALL be the intersection of eligible availability whose `subject` equals the intention's `subject` and, for every URI in the intention's `parties`, eligible availability whose `subject` equals that URI. Availability is eligible only if it carries no `retired` record, its validity horizon has not passed, its `conditional` (if any) includes the intention's `activity`, and its scope is visible to the resolver.
+Resolution SHALL take one unretired, unplaced intention with both `duration` and `window` as demand. Supply SHALL be the intersection of eligible availability whose `subject` equals the intention's `subject` and, for every URI in the intention's `parties`, eligible availability whose `subject` equals that URI. Availability is eligible only if it carries no `retired` record, its validity horizon has not passed, its `conditional` (if any) includes the intention's `activity`, its `location` (if any) shares a URI with the intention's `location` or the intention has none, and its scope is visible to the resolver.
 
 #### Scenario: Multi-party intersection
 - **WHEN** an intention lists a counterparty and a room in `parties`
@@ -12,13 +12,17 @@ Resolution SHALL take one unretired, unplaced intention with both `duration` and
 - **WHEN** no eligible availability overlaps the intention's window for every required party
 - **THEN** resolution returns an empty candidate set and names which party had no supply
 
+#### Scenario: Location excludes supply
+- **WHEN** an intention requires `location: [home]` and the subject's only availability for the window carries `location: [office]`
+- **THEN** resolution reports no supply for the subject
+
 #### Scenario: Retired availability ignored
 - **WHEN** the only availability matching the intention's subject carries a `retired` record
 - **THEN** resolution reports no supply for the subject
 
 ### Requirement: Selection is a recorded act
 
-Resolution SHALL NOT write a placement by itself. Selecting a candidate SHALL create a RESOLUTION record with fields: `id`; `source`; `intention` (id); `placement`; `selector` (either `person` or the id of the self-governing policy that authorised auto-selection); `candidates_considered` (count); `displaced` (ids of intentions or commitments the placement displaces); and `timestamp`. `selector` records whose will chose; `source` records which hand performed the selection. On selection the intention gains the `placement` and, if it has `parties`, a COMMITMENT is created with status `tentative` for every party, including the intention's `subject`.
+Resolution SHALL NOT write a placement by itself. Selecting a candidate SHALL create a RESOLUTION record with fields: `id`; `source`; `intention` (id); `placement`; `selector` (either `person` or the id of the self-governing policy that authorised auto-selection); `candidates_considered` (count); `displaced` (ids of intentions or commitments the placement displaces); and `timestamp`. `selector` records whose will chose; `source` records which hand performed the selection. On selection the intention gains the `placement`, including `location` where the intention or supply constrained it, and, if it has `parties`, a COMMITMENT is created with status `tentative` for every party, including the intention's `subject`.
 
 The scheduling projection of a RESOLUTION SHALL be: `intention`, `placement`, `selector`, `displaced`.
 

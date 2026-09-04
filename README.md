@@ -162,6 +162,8 @@ window:
     gap: {min: P0D, max: P3D}
 stability: tentative
 activity: deep-work
+location:
+  - https://example.com/places/home
 serves:
   - {id: int_01a06cf2-8e11-7b3a-9c7d-4f0a2b6e8d13, role: in-order-to}
   - {id: int_01a05a00-1111-7000-8000-000000000001, role: for-the-sake-of}
@@ -185,6 +187,7 @@ Fields, in canonical order:
 | `window` | no | A WINDOW. Required before the intention can be resolved. |
 | `stability` | yes | `tentative` or `firm`. |
 | `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
+| `location` | no | URIs at one of which this must happen. Absent means anywhere. |
 | `parties` | no | URIs of other particulars whose availability must be satisfied. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
 | `cadence` | no | An RRULE. Makes this a standing intention. |
@@ -232,9 +235,17 @@ These are the only means by which a harness may select a candidate or set
 `firm` without a person's direct act. A policy is itself an intention the
 person holds, so the will that acts is still theirs.
 
+**Location.** A place is a URI the person chooses, matched by exact equality:
+a room, a house, a city, a meeting link. The format owns no hierarchy of
+places and requires no coordinates; what a URI denotes is a fact about the
+URI. A `geo:` URI is admitted, and it is to place what a clock bound is to
+time. A room that must be booked and is also where the thing happens appears
+in both `parties` and `location`: one consumes supply, the other constrains
+placement.
+
 **Scheduling projection:** `subject`, `duration`, `window`, `stability`,
-`activity`, `parties`, `serves`, `cadence`, `occurrence`, `placement`,
-`retired.kind`.
+`activity`, `location`, `parties`, `serves`, `cadence`, `occurrence`,
+`placement`, `retired.kind`.
 
 ### `AVAILABILITY`
 
@@ -251,6 +262,8 @@ duration: PT3H
 window:
   calendar: 2026-09/2026-12
 conditional: [deep-work, writing]
+location:
+  - https://example.com/places/home
 cadence: FREQ=WEEKLY;BYDAY=TU
 valid_until: 2026-12
 scope: personal
@@ -269,6 +282,7 @@ Fields, in canonical order:
 | `duration` | yes | Capacity offered per occasion, optionally ranged. |
 | `window` | yes | A WINDOW. |
 | `conditional` | no | Activity terms this supply is good for. Absent means anything. |
+| `location` | no | URIs at which this capacity holds. Absent means anywhere. |
 | `cadence` | no | An RRULE. Makes this recurring. |
 | `valid_until` | no | EDTF expression or datetime. See validity horizon. |
 | `scope` | yes | `personal`, `organisation`, or `public`. Only ever widened. |
@@ -278,6 +292,14 @@ Fields, in canonical order:
 **Conditional is a filter, not a reason.** It constrains which intentions this
 supply may serve, by exact match on `activity`. It carries no chain of reasons
 and never references the intention graph.
+
+**Location is the second filter.** An availability with `location` supplies an
+intention only if the intention has no `location` or the two lists share a
+URI. Place rides on the availability that offers the capacity: *Tuesdays at
+home for deep work* is one object. Supply for a subject is the union of their
+availabilities, so whereabouts modelled as a separate object would not
+constrain a location-free capacity; presence as its own object is not
+supported in this version.
 
 **No instances.** Recurring availability is one object re-evaluated at
 resolution time. A standing disposition is not an act and needs no
@@ -294,12 +316,12 @@ horizon is checked at resolution and consistency time, never by a background
 sweep.
 
 **Renewal versus supersession.** Renewing is an edit to `valid_until` on the
-same object. Changing the window, duration, or conditional is a different
+same object. Changing the window, duration, conditional, or location is a different
 disposition: a new object, with the old one retired as `superseded` pointing at
 it. A tool refuses an edit that changes those terms in place.
 
 **Scheduling projection:** `subject`, `duration`, `window`, `conditional`,
-`cadence`, `valid_until`, `retired.kind`.
+`location`, `cadence`, `valid_until`, `retired.kind`.
 
 ### `COMMITMENT`
 
@@ -318,6 +340,7 @@ parties:
 placement:
   start: 2026-09-15T10:00:00+10:00
   duration: PT1H
+  location: https://example.com/rooms/3
 intention: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
 origin:
   resolution: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
@@ -367,7 +390,10 @@ resolved again.
 
 **External reference only.** Recurrence, timezone definitions, alarms, attendee
 delegation, and iTIP negotiation stay in the external system. Nothing of them
-is copied here.
+is copied here. The one exception is place: a JSCalendar `locations` or
+`virtualLocations` entry with a URI, or an iCalendar `LOCATION` that is a URI,
+becomes `placement.location` on import and is written back on export.
+Free-text locations are dropped.
 
 **Scheduling projection:** `parties`, `placement`, `intention`, `origin`,
 `external`, `retired.kind`.
@@ -548,17 +574,19 @@ Cadence expresses only a generating pattern. `RDATE`, `EXDATE`, and
 
 #### `PLACEMENT`
 
-A concrete start with timezone and a duration:
+A concrete start with timezone, a duration, and optionally one location:
 
 ```yaml
 placement:
   start: 2026-09-15T10:00:00+10:00
   duration: PT1H
+  location: https://example.com/rooms/3
 ```
 
 It exists only on a resolved intention and on a commitment, and is written only
 by a resolution or an import. It is the single point where this format touches
-clock time, and it arrives last.
+clock time and fixed place, and it arrives last. When the intention or its
+supply constrained location, resolution picks one URI from the intersection.
 
 ---
 ## Object Model
@@ -575,7 +603,7 @@ INTENTION      what a person means to do — no other party
 
 AVAILABILITY   what a particular has capacity for — supply
                  ← subject: any URI
-                 ← duration, window, conditional[], cadence
+                 ← duration, window, conditional[], location[], cadence
                  ← valid_until: after which it is unusable, not false
 
 COMMITMENT     an intention that interlocks with others — the hand-off
@@ -623,7 +651,8 @@ are sinks by definition, which removes the most likely accidental cycle.
   RESOLUTION operation
        │  demand: duration, window, activity, subject + parties
        │  supply: ∩ eligible AVAILABILITY per required particular
-       │          (unretired, unexpired, conditional ∋ activity, scope visible)
+       │          (unretired, unexpired, conditional ∋ activity,
+       │           location ∩ location ≠ ∅ or either absent, scope visible)
        ▼
   ranked candidates
        │  1. displaces nothing firm or accepted
@@ -675,6 +704,7 @@ check rather than stored:
 |---|---|
 | `window-clash` | a placement overlaps another placement, or falls where there is no eligible supply |
 | `condition-mismatch` | the supplying availability's `conditional` does not include the intention's `activity` |
+| `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
 | `intention-inconsistency` | two active intentions cannot both be placed within their windows |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
@@ -875,6 +905,10 @@ Deferred from this version, deliberately:
   intention is DKF's job, by a claim citing the object at a version. Whether a
   personal workspace that never writes DKF claims needs something minimal of
   its own is open.
+- **Presence.** Where a subject will be, modelled independently of what they
+  have capacity for, would need resolution to intersect every location-bearing
+  availability rather than take their union. Not supported; place rides on
+  capacity.
 - **The policy condition grammar.** `auto_select` and `auto_firm` admit
   `max_duration` and `stability`; further terms await a use.
 - **v0.1.** Declaring it will be a deliberate act once a second reader has

@@ -12,9 +12,29 @@ An availability's `retired.kind` SHALL be one of `retracted` (the disposition is
 - **WHEN** an availability is retired with `kind: superseded` and `superseded_by: avl_B`
 - **THEN** validation requires avl_B to exist, and resolution uses avl_B rather than the retired object
 
+### Requirement: Location filter
+
+`location` on an availability and on an intention SHALL each be a list of absolute URIs, matched by exact string equality. An availability with `location` SHALL be eligible supply for an intention only if the intention has no `location` or the two lists share at least one URI; an availability without `location` SHALL be eligible for any location. The specification SHALL NOT define a hierarchy among locations, require coordinates, or distinguish physical from virtual: what a URI denotes is a fact about the URI, not about the format. `location` SHALL be treated as a change of terms for the purpose of renewal versus supersession.
+
+#### Scenario: Location intersects
+- **WHEN** an availability has `location: [https://example.com/places/home]` and an intention has `location: [https://example.com/places/home, https://example.com/places/office]`
+- **THEN** the availability is eligible supply for that intention
+
+#### Scenario: Location disjoint
+- **WHEN** an availability has `location: [https://example.com/places/office]` and an intention has `location: [https://example.com/places/home]`
+- **THEN** the availability is not eligible supply, and a commitment placed there anyway carries a `location-mismatch` flag
+
+#### Scenario: Virtual location
+- **WHEN** an availability has `location: [https://meet.example.com/ada]` and an intention has the same URI
+- **THEN** they match by string equality with no special treatment of the scheme
+
+#### Scenario: Booked room is also the place
+- **WHEN** an intention lists `https://example.com/rooms/3` in both `parties` and `location`
+- **THEN** resolution consumes the room's availability as a party and sets `placement.location` to the room
+
 ### Requirement: Renewal is an edit, supersession is a change of terms
 
-Renewing an availability SHALL be an edit to `valid_until` on the same object. Changing its `window`, `duration`, or `conditional` SHALL be done by creating a new availability and retiring the old one as `superseded`. A tool SHALL refuse an edit that changes those terms on an existing availability.
+Renewing an availability SHALL be an edit to `valid_until` on the same object. Changing its `window`, `duration`, `conditional`, or `location` SHALL be done by creating a new availability and retiring the old one as `superseded`. A tool SHALL refuse an edit that changes those terms on an existing availability.
 
 #### Scenario: Renewal keeps the id
 - **WHEN** a person renews an expired availability
@@ -28,9 +48,9 @@ Renewing an availability SHALL be an edit to `valid_until` on the same object. C
 
 ### Requirement: Availability fields
 
-An AVAILABILITY SHALL carry, in canonical order: `id`; `subject` (a URI identifying the particular whose availability this is); optional `title` and `description` (prose); `duration` (the capacity offered, optionally ranged); `window`; optional `conditional` (a list of activity-vocabulary terms; absent means available for anything); optional `cadence`; optional `valid_until` (an admitted EDTF expression or a datetime); `scope` (one of `personal`, `organisation`, `public`); `source`; `timestamp`; and at most one `retired` record.
+An AVAILABILITY SHALL carry, in canonical order: `id`; `subject` (a URI identifying the particular whose availability this is); optional `title` and `description` (prose); `duration` (the capacity offered, optionally ranged); `window`; optional `conditional` (a list of activity-vocabulary terms; absent means available for anything); optional `location` (a list of absolute URIs at which this capacity holds; absent means anywhere); optional `cadence`; optional `valid_until` (an admitted EDTF expression or a datetime); `scope` (one of `personal`, `organisation`, `public`); `source`; `timestamp`; and at most one `retired` record.
 
-The scheduling projection of an AVAILABILITY SHALL be: `subject`, `duration`, `window`, `conditional`, `cadence`, `valid_until`, `retired.kind`.
+The scheduling projection of an AVAILABILITY SHALL be: `subject`, `duration`, `window`, `conditional`, `location`, `cadence`, `valid_until`, `retired.kind`.
 
 #### Scenario: Room availability
 - **WHEN** an availability is written with `subject: https://example.org/rooms/3`, `window.calendar: 2026-W37`, `duration: PT8H`, and a `source.author`
