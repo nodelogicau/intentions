@@ -52,17 +52,25 @@ The exceptions are: a retired object (see Retirement) SHALL NOT be edited furthe
 
 ### Requirement: Retirement is a terminal status, never deletion
 
-An object SHALL be retired by setting a terminal `status`, never by deleting its file. Retirement kinds are defined per object type. A retired object SHALL NOT be edited further, except that acknowledgement records already on it are preserved.
+An object SHALL be retired by appending a single `retired` record to it, never by deleting its file and never by a status field. The record SHALL carry `kind` (per object type), optional `reason` (prose), `superseded_by` (required when and only when `kind` is `superseded`), `timestamp`, and `source`. An object with no `retired` record is active; no `status` field SHALL exist on any object. A retired object SHALL NOT be edited further, except that acknowledgement records MAY still be appended to it. `retired.kind` SHALL be part of the object's scheduling projection; `reason`, `timestamp`, and `source` SHALL NOT.
 
 #### Scenario: Deletion attempted
 - **WHEN** a tool is asked to remove an intention
-- **THEN** it sets a retirement status and refuses to delete the file
+- **THEN** it appends a `retired` record and refuses to delete the file
+
+#### Scenario: Second retirement refused
+- **WHEN** an object already carrying a `retired` record is retired again
+- **THEN** the write is refused
+
+#### Scenario: Retirement changes version
+- **WHEN** a `retired` record is appended to an active intention
+- **THEN** its version changes and it no longer participates in any flag as a live counterpart
 
 ### Requirement: Versioning by projection hash
 
-Every object SHALL have a version, defined as the hash of a canonical serialisation of that object's *scheduling projection*: the subset of its fields that bear on consistency checking, as enumerated in each object type's specification. Prose fields (title, description, notes) and acknowledgement records SHALL be excluded from the projection.
+Every object SHALL have a version, defined as the hash of a canonical serialisation of that object's *scheduling projection*: the subset of its fields that bear on consistency checking, as enumerated in each object type's specification and frozen per format version. Prose fields (title, description, notes), `source`, `timestamp`, acknowledgement records, and the `reason`, `timestamp`, and `source` of a `retired` record SHALL be excluded from the projection. `retired.kind` SHALL be included.
 
-The version SHALL be derived, never declared. The canonical serialisation SHALL use sorted keys, normalised EDTF and ISO 8601 duration strings, UTF-8 encoding, and a fixed hash algorithm named in `intentions.yaml`. A tool MAY cache the computed version in the file under `version`; the computed value is authoritative.
+The version SHALL be derived, never declared. The projection SHALL be expressed as a JSON object, with values normalised first (EDTF expressions in shortest admitted form, ISO 8601 durations with no zero components, datetimes as RFC 3339 UTC with seconds, reference lists sorted by id, absent optional fields omitted), serialised with the JSON Canonicalization Scheme (RFC 8785), and hashed with the algorithm named by `hash` in `intentions.yaml`. The version SHALL be written as `<algorithm>:<lowercase hex>`. This version of the format admits only `sha256`. A tool MAY cache the computed version in the file under `version`; the computed value is authoritative.
 
 #### Scenario: Prose edit does not change version
 - **WHEN** only an intention's description is edited
@@ -75,6 +83,14 @@ The version SHALL be derived, never declared. The canonical serialisation SHALL 
 #### Scenario: Stale cached version
 - **WHEN** a file carries a cached `version` that differs from the computed value
 - **THEN** validation reports a warning and tools use the computed value
+
+#### Scenario: Source edit does not change version
+- **WHEN** only an object's `source.model` is edited
+- **THEN** its version is unchanged
+
+#### Scenario: Normalisation before hashing
+- **WHEN** two files carry `duration: PT1H` and `duration: PT60M`
+- **THEN** their projections hash identically
 
 ### Requirement: Validation
 
@@ -104,8 +120,108 @@ This specification SHALL NOT embed iCalendar or JSCalendar grammar beyond three 
 
 ### Requirement: Workspace configuration
 
-`intentions.yaml` SHALL declare the format version, the hash algorithm used for versioning, the resolver context defaults (timezone, week start), and the default availability validity horizon.
+`intentions.yaml` SHALL declare `format`, `hash`, the resolver context defaults (`resolver.timezone`, `resolver.week_start`), `availability.default_horizon`, `generation.horizon`, and `defaults.source.author`. It MAY declare `defaults.subject`; when absent, every intention SHALL name its `subject` explicitly.
 
 #### Scenario: Minimal configuration
+- **WHEN** a workspace is initialised for one person
+- **THEN** `intentions.yaml` is written with `format`, `hash`, `resolver.timezone`, `resolver.week_start`, `availability.default_horizon`, `generation.horizon`, `defaults.subject`, and `defaults.source.author` populated
+
+#### Scenario: Default subject applied
+- **WHEN** an intention is written without `subject` in a workspace whose `defaults.subject` is set
+- **THEN** the file is written with `subject` equal to the workspace default
+
+#### Scenario: Organisation workspace
+- **WHEN** `defaults.subject` is absent and an intention is written without `subject`
+- **THEN** the write is refused
+
+### Requirement: Format name and type names
+
+The format SHALL be named the Intentions Format, with slug `intentions` and format version string `intentions/0.1` in the workspace marker. Object types SHALL be named INTENTION, AVAILABILITY, and COMMITMENT; record types RESOLUTION, ACKNOWLEDGEMENT, and RETIREMENT; embedded values WINDOW, DURATION, and PLACEMENT. No type name SHALL carry a `D` prefix or any other marker of a DKF relationship.
+
+#### Scenario: Format version declared
 - **WHEN** a workspace is initialised
-- **THEN** `intentions.yaml` is written with `format`, `hash`, `resolver.timezone`, `resolver.week_start`, and `availability.default_horizon` populated
+- **THEN** `intentions.yaml` carries `format: intentions/0.1`
+
+### Requirement: Source attribution
+
+Every object and record SHALL carry a `source` block with fields `author` (a URI or name identifying the person on whose behalf the object was written), `harness` (the agent harness that wrote it, if any), and `model` (the model identifier, if any). `author` SHALL be required on INTENTION and AVAILABILITY. `harness` alone SHALL be sufficient on RESOLUTION, ACKNOWLEDGEMENT, and retirement records only when `author` is also present on the object they concern. A writer SHALL apply the workspace default `source.author` from `intentions.yaml` when the caller omits it. `source` SHALL be excluded from every scheduling projection.
+
+#### Scenario: Harness drafts an intention
+- **WHEN** a harness writes an intention on a person's behalf with the workspace default author
+- **THEN** the file carries `source.author` set to that person and `source.harness` set to the harness, and both are visible in the diff
+
+#### Scenario: Intention without author
+- **WHEN** an intention is written with `source.harness` but no `source.author` and no workspace default
+- **THEN** the write is refused and validation reports an error
+
+#### Scenario: Attribution correction does not lapse acknowledgements
+- **WHEN** an object's `source.author` is corrected after a counterpart acknowledged a flag against it
+- **THEN** its version is unchanged and the acknowledgement remains in force
+
+### Requirement: Timestamps
+
+Every object and record SHALL carry a `timestamp`: the assertion time as an RFC 3339 UTC datetime with seconds. On a record it is the time of the act. The timestamp MAY precede the minting instant embedded in the id, and consumers MUST NOT require the two to agree. `timestamp` SHALL be excluded from every scheduling projection.
+
+#### Scenario: Backdated availability
+- **WHEN** an availability learned from a conversation last week is recorded today with last week's `timestamp`
+- **THEN** the file is valid and its default validity horizon is measured from last week
+
+#### Scenario: Timestamp correction does not change version
+- **WHEN** only an object's `timestamp` is corrected
+- **THEN** its version is unchanged
+
+### Requirement: Canonical field order
+
+Each object type's specification lists its fields in canonical order. Writers SHOULD emit fields in that order; readers MUST accept any order and MUST NOT reject a file for its field arrangement. Fields an implementation adds beyond this specification SHALL be written after all specified fields.
+
+#### Scenario: Reordered file accepted
+- **WHEN** a file lists `window` before `title`
+- **THEN** it is read correctly and validation does not report it
+
+#### Scenario: Two writers agree
+- **WHEN** two implementations write the same intention
+- **THEN** the files are byte-identical
+
+### Requirement: Derived index
+
+`index.yaml` SHALL be a derived cache of the object files, regenerated by an `index` operation and verified by `index --check`. Each entry SHALL carry the object's `id`, type, `subject`, file path, projection version, `retired.kind` if any, and the ids of its outbound references, and nothing not derivable from the file. Readers MUST treat any disagreement between the index and a file as an index defect and use the file; validation SHALL report such drift as a warning. The index SHALL be committed alongside the objects and a merge conflict in it SHALL be resolved by regeneration.
+
+#### Scenario: Index drift
+- **WHEN** an object file's window is edited without re-running `index`
+- **THEN** validation reports a warning naming the entry and tools use the file's value
+
+#### Scenario: Merge conflict
+- **WHEN** two branches both regenerate `index.yaml`
+- **THEN** the merged index is produced by running `index` again, not by hand-merging
+
+### Requirement: Workspace conventions file
+
+A workspace MAY carry `intentions.md`, a prose conventions file for agents and people, recording among other things the activity-type terms in use. It SHALL have no schema and SHALL NOT be read by validation.
+
+#### Scenario: Conventions present
+- **WHEN** `intentions.md` lists the term `deep-work`
+- **THEN** validation behaviour is unchanged and an agent reads the file for guidance
+
+### Requirement: Multiple subjects per workspace
+
+A workspace MAY hold objects for several subjects, and validation SHALL NOT require that every object share one subject. Reading another workspace's objects (federation) is deferred from this version: scope visibility is defined within one workspace, and a resolver has no supply for a party whose availability is held elsewhere.
+
+#### Scenario: Room in a personal workspace
+- **WHEN** a personal workspace holds an availability whose `subject` is a room URI
+- **THEN** it is valid and resolution uses it for intentions listing that room in `parties`
+
+#### Scenario: Party held elsewhere
+- **WHEN** an intention lists a party for which no availability exists in this workspace
+- **THEN** resolution reports no supply for that party
+
+### Requirement: Workspace discovery
+
+Tools SHALL locate the workspace by, in order of precedence: a `--workspace` argument; the `INTENTIONS_WORKSPACE` environment variable; the nearest ancestor directory containing `intentions.yaml` or a `.intentions` pointer file whose content is the workspace path. An environment variable naming a directory with no `intentions.yaml` SHALL be an error, not a fallback to the search.
+
+#### Scenario: Pointer file
+- **WHEN** a tool runs in a directory whose ancestor holds `.intentions` containing `/home/ada/planning`
+- **THEN** the workspace at `/home/ada/planning` is used
+
+#### Scenario: Bad environment variable
+- **WHEN** `INTENTIONS_WORKSPACE` names a directory with no `intentions.yaml`
+- **THEN** the tool exits with the no-workspace code rather than searching ancestors
