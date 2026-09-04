@@ -118,7 +118,7 @@ Whether an existing intention should be reconsidered SHALL be surfaced when a ne
 
 #### Scenario: Conflict surfaces reconsideration
 - **WHEN** a new firm intention cannot be placed without displacing an existing tentative one
-- **THEN** the existing intention is surfaced for reconsideration in the resolution output and its status is not changed automatically
+- **THEN** the existing intention is surfaced for reconsideration in the resolution output and is neither retired nor re-placed automatically
 
 ### Requirement: Activity vocabulary
 

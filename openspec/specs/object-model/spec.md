@@ -50,7 +50,7 @@ The exceptions are: a retired object (see Retirement) SHALL NOT be edited furthe
 - **WHEN** an intention with window `2026-09` is resolved to a concrete placement
 - **THEN** the same intention file is updated with the placement and its id is unchanged
 
-### Requirement: Retirement is a terminal status, never deletion
+### Requirement: Retirement is an appended record, never deletion
 
 An object SHALL be retired by appending a single `retired` record to it, never by deleting its file and never by a status field. The record SHALL carry `kind` (per object type), optional `reason` (prose), `superseded_by` (required when and only when `kind` is `superseded`), `timestamp`, and `source`. An object with no `retired` record is active; no `status` field SHALL exist on any object. A retired object SHALL NOT be edited further, except that acknowledgement records MAY still be appended to it. `retired.kind` SHALL be part of the object's scheduling projection; `reason`, `timestamp`, and `source` SHALL NOT.
 
