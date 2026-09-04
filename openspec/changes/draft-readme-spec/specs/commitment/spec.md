@@ -2,7 +2,7 @@
 
 ### Requirement: Commitment fields
 
-A COMMITMENT SHALL carry: `id`; `source`; `parties` (a list of `{uri, status}` where `status` is one of `tentative`, `accepted`, `declined`); `placement`; optional `intention` (the id of the intention it fulfils); `origin` (one of `resolution` with the resolution id, or `import`); optional `external` (`{system: icalendar|jscalendar, uid}`); optional `title` and `description`; `acknowledgements`; and at most one `retired` record.
+A COMMITMENT SHALL carry, in canonical order: `id`; `parties` (a list of `{uri, status}` where `status` is one of `tentative`, `accepted`, `declined`); `placement`; optional `intention` (the id of the intention it fulfils); `origin` (one of `resolution` with the resolution id, or `import`); optional `external` (`{system: icalendar|jscalendar, uid}`); optional `title` and `description`; `source`; `timestamp`; `acknowledgements`; and at most one `retired` record.
 
 The scheduling projection of a COMMITMENT SHALL be: `parties`, `placement`, `intention`, `origin`, `external`, `retired.kind`.
 
