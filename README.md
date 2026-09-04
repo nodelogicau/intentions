@@ -919,6 +919,50 @@ valuable contribution at this stage.
 
 ---
 
+## References
+
+**Dialectical Knowledge Format (DKF).** The format this one composes with for
+the retrospective layer, and whose conventions (file-per-object YAML,
+prefixed UUIDv7 ids, canonical field order, `source`, derived index,
+review through git) this specification adopts. Reading its README first will
+make this one's shape familiar.
+[Specification](https://github.com/nodelogicau/particulars) ·
+[particulars.fyi](https://particulars.fyi), a visual introduction ·
+[particulars-cli](https://github.com/nodelogicau/particulars-cli), the
+reference implementation.
+
+**Standards borrowed as grammars.**
+[RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) UUID version 7 ·
+[RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) timestamps ·
+[ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) durations ·
+[EDTF](https://www.loc.gov/standards/datetime/), the Extended Date/Time
+Format (ISO 8601-2), for calendar anchors ·
+[RFC 5545 §3.3.10](https://www.rfc-editor.org/rfc/rfc5545#section-3.3.10)
+RRULE for cadence ·
+[RFC 9253](https://www.rfc-editor.org/rfc/rfc9253) temporal relations for
+relational anchors ·
+[RFC 8785](https://www.rfc-editor.org/rfc/rfc8785) JSON Canonicalization
+Scheme for the projection hash ·
+[RFC 5870](https://www.rfc-editor.org/rfc/rfc5870) `geo:` URIs, admitted as
+locations.
+
+**Calendar formats composed with by reference.**
+[RFC 5545](https://www.rfc-editor.org/rfc/rfc5545) iCalendar ·
+[RFC 8984](https://www.rfc-editor.org/rfc/rfc8984) JSCalendar ·
+[RFC 5546](https://www.rfc-editor.org/rfc/rfc5546) iTIP.
+
+**Philosophical sources.** Martin Heidegger, *Being and Time* (1927), on
+clock time versus lived temporality (Division II §§78–81), the referential
+totality of in-order-to and for-the-sake-of (Division I §§14–18), and
+repetition (Division II §74). Michael Bratman, *Intention, Plans, and
+Practical Reason* (1987), on intentions as partial plans, reconsideration,
+and self-governing policies. John Searle, *Speech Acts* (1969) and
+*Expression and Meaning* (1979), on the assertive/commissive distinction and
+felicity conditions that separate availability from intention and forbid
+software from setting a party's status.
+
+---
+
 ## License
 
 TBD.
