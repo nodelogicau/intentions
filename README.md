@@ -297,9 +297,12 @@ and never references the intention graph.
 intention only if the intention has no `location` or the two lists share a
 URI. Place rides on the availability that offers the capacity: *Tuesdays at
 home for deep work* is one object. Supply for a subject is the union of their
-availabilities, so whereabouts modelled as a separate object would not
-constrain a location-free capacity; presence as its own object is not
-supported in this version.
+availabilities, and two overlapping capacities at different places are
+alternatives, not a contradiction. Whereabouts has the opposite rule: where a
+person will be narrows every candidate it covers. That is a different object,
+not a different rule for this one, and it is not in this version (see
+[Status](#status)). Until it is, a location-free capacity supplies an at-home
+intention on a day the person is away, and nothing flags it.
 
 **No instances.** Recurring availability is one object re-evaluated at
 resolution time. A standing disposition is not an act and needs no
@@ -709,6 +712,14 @@ check rather than stored:
 | `intention-inconsistency` | two active intentions cannot both be placed within their windows |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
 
+Kinds are not graded. `location-mismatch` sits beside `condition-mismatch`
+because it has the same shape: the capacity exists but was not offered for
+this. Whether two URIs denote compatible places (a meeting link taken from
+home) is a fact about the URIs the format does not know, so a mismatch is
+never an impossibility judgement. An imported meeting at a place the person
+will not be is a different fact, expressible only once presence is modelled,
+and would be its own kind.
+
 A flag carries `kind`, `subject` (the object it is reported on),
 `counterpart` (the other object, where there is one), `counterpart_version`
 (the counterpart's projection hash at check time), and a human-readable
@@ -905,10 +916,16 @@ Deferred from this version, deliberately:
   intention is DKF's job, by a claim citing the object at a version. Whether a
   personal workspace that never writes DKF claims needs something minimal of
   its own is open.
-- **Presence.** Where a subject will be, modelled independently of what they
-  have capacity for, would need resolution to intersect every location-bearing
-  availability rather than take their union. Not supported; place rides on
-  capacity.
+- **Presence.** Where a subject will be, independent of what they have
+  capacity for. Not an availability: capacity unions, whereabouts intersects,
+  and making every location-bearing availability constrain would turn two
+  overlapping capacities at different places into nothing. If added it is a
+  `PRESENCE` object with subject, window, cadence, a required `location` list,
+  and a validity horizon, but no duration or conditional. It supplies nothing;
+  it narrows the location set of every candidate its window covers, absent
+  meaning anywhere. A placement outside every covering presence would be a
+  new flag kind, `presence-clash`, reported on both objects. Not supported;
+  place rides on capacity.
 - **The policy condition grammar.** `auto_select` and `auto_firm` admit
   `max_duration` and `stability`; further terms await a use.
 - **v0.1.** Declaring it will be a deliberate act once a second reader has
