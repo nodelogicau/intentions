@@ -261,6 +261,7 @@ title: Tuesday mornings for deep work
 duration: PT3H
 window:
   calendar: 2026-09/2026-12
+  clock: 09:00/12:00
 conditional: [deep-work, writing]
 location:
   - https://example.com/places/home
@@ -279,7 +280,7 @@ Fields, in canonical order:
 | `id` | yes | |
 | `subject` | yes | URI of the particular whose availability this is. |
 | `title`, `description` | no | Prose. |
-| `duration` | yes | Capacity offered per occasion, optionally ranged. |
+| `duration` | yes | Capacity offered per occasion, optionally ranged. May be shorter than the window's clock interval. |
 | `window` | yes | A WINDOW. |
 | `conditional` | no | Activity terms this supply is good for. Absent means anything. |
 | `location` | no | URIs at which this capacity holds. Absent means anywhere. |
@@ -347,6 +348,7 @@ placement:
 intention: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
 origin:
   resolution: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
+transparent: false
 external:
   system: jscalendar
   uid: 2a6f0b3e-4d1c-4e8a-9b7f-0c5d3e2a1f44
@@ -367,6 +369,7 @@ Fields, in canonical order:
 | `placement` | yes | A PLACEMENT. Commitments always have one. |
 | `intention` | no | The intention this fulfils. Absent on imports. |
 | `origin` | yes | `{resolution: res_…}` or `import`. |
+| `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`. Only an import may set it. |
 | `external` | no | `{system: icalendar or jscalendar, uid}`. The only link to an external calendar. |
 | `title`, `description` | no | Prose. |
 | `source`, `timestamp` | yes | |
@@ -396,9 +399,20 @@ delegation, and iTIP negotiation stay in the external system. Nothing of them
 is copied here. The one exception is place: a JSCalendar `locations` or
 `virtualLocations` entry with a URI, or an iCalendar `LOCATION` that is a URI,
 becomes `placement.location` on import and is written back on export.
-Free-text locations are dropped.
+Free-text locations are dropped. Two more properties cross: iCalendar
+`TRANSP:TRANSPARENT` or JSCalendar `freeBusyStatus: free` becomes
+`transparent: true` and is written back on export, an absent `TRANSP` being
+opaque; and a `DTSTART` of value type `DATE`, or JSCalendar `showWithoutTime`,
+becomes an all-day placement and is written back in that form.
 
-**Scheduling projection:** `parties`, `placement`, `intention`, `origin`,
+**Transparency.** A commitment from a resolution consumed supply to exist and
+is opaque by construction; `transparent: true` on it is a validation error.
+Transparency arrives only from outside, as a conference week or a colleague's
+leave that shares the calendar without claiming the person's time. Where the
+subject will be, as their own statement, is presence (see [Status](#status)),
+not a transparent intention.
+
+**Scheduling projection:** `parties`, `placement`, `intention`, `origin`, `transparent`,
 `external`, `retired.kind`.
 
 ### Records
@@ -521,7 +535,8 @@ end datetimes. Its bounds are computed when a resolver needs them, from the
 resolver context (`resolver.timezone`, `resolver.week_start`) in
 `intentions.yaml` or overridden on the call.
 
-A window has one or both of two anchors:
+A window has one or more of three anchors, and a placement must satisfy
+every anchor present:
 
 ```yaml
 window:
@@ -530,6 +545,7 @@ window:
     target: int_01a06cf2-8e11-7b3a-9c7d-4f0a2b6e8d13
     relation: FINISHTOSTART
     gap: {min: P0D, max: P3D}
+  clock: 09:00/12:00                       # a clock anchor: time of day
 ```
 
 **Calendar anchor.** An ISO 8601-2 / EDTF expression from the admitted subset:
@@ -563,6 +579,16 @@ A relational anchor whose target has no placement yet is a constraint between
 two unresolved windows, not an error; resolution reports the dependent
 intention as blocked on its target.
 
+**Clock anchor.** An ISO 8601 time-of-day interval, `HH:MM/HH:MM`, read in
+the resolver's timezone and applied to every local day the other anchors
+admit. The start is inclusive and the end exclusive. The interval may cross
+midnight, in which case it belongs to the local day of its start. Absent
+means whole days. Like the other anchors it is stored as written and its
+bounds are computed when needed, so *mornings* survives a move between
+zones; where a clock time does not exist on a given day, the resolver follows
+[RFC 5545 §3.3.5](https://www.rfc-editor.org/rfc/rfc5545#section-3.3.5) for
+nonexistent local times. Time of day lives here and nowhere else.
+
 Temporal relations live here and nowhere else. `DEPENDS-ON`, `FIRST`, `NEXT`,
 `PARENT`, and `CHILD` are not admitted anywhere: the first three are precedence
 without scheduling semantics, which `FINISHTOSTART` already expresses; the last
@@ -572,12 +598,14 @@ two imply a tree, and the intention graph is not one.
 
 Where an object carries `cadence`, it is an iCalendar RRULE
 ([RFC 5545 §3.3.10](https://www.rfc-editor.org/rfc/rfc5545#section-3.3.10)).
-Cadence expresses only a generating pattern. `RDATE`, `EXDATE`, and
-`RECURRENCE-ID` are never used: a skipped occurrence is a retired instance.
+using only its date-level parts: `BYHOUR`, `BYMINUTE`, and `BYSECOND` are not
+admitted, because time of day belongs to the window's clock anchor. Cadence
+expresses only a generating pattern. `RDATE`, `EXDATE`, and `RECURRENCE-ID`
+are never used: a skipped occurrence is a retired instance.
 
 #### `PLACEMENT`
 
-A concrete start with timezone, a duration, and optionally one location:
+A concrete start, a duration, and optionally one location:
 
 ```yaml
 placement:
@@ -585,6 +613,12 @@ placement:
   duration: PT1H
   location: https://example.com/rooms/3
 ```
+
+`start` is an RFC 3339 datetime with offset, or a calendar day. A calendar
+day makes the placement all-day: `duration` is then whole days and the
+placement spans those local days in the resolver's timezone, so a day with a
+timezone transition is still one day. Resolution writes datetimes; only an
+import writes a calendar day.
 
 It exists only on a resolved intention and on a commitment, and is written only
 by a resolution or an import. It is the single point where this format touches
@@ -656,9 +690,11 @@ are sinks by definition, which removes the most likely accidental cycle.
        │  supply: ∩ eligible AVAILABILITY per required particular
        │          (unretired, unexpired, conditional ∋ activity,
        │           location ∩ location ≠ ∅ or either absent, scope visible)
+       │          candidates lie within every clock interval present
        ▼
   ranked candidates
        │  1. displaces nothing firm or accepted
+       │     (overlap with a transparent commitment is not displacement)
        │  2. displaces only tentative
        │  3. requires retiring something firm
        │  then: declared preference; then earliest
@@ -711,6 +747,12 @@ check rather than stored:
 | `expired-ground` | an availability the placement rests on has expired or been retired |
 | `intention-inconsistency` | two active intentions cannot both be placed within their windows |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
+
+A transparent commitment occupies no time and rests on no supply, so it is
+never the subject or counterpart of `window-clash`, and never the subject of
+`condition-mismatch`, `location-mismatch`, or `expired-ground`: there is no
+supplying availability to compare it against. An opaque import still clashes
+with everything it overlaps, which is the point.
 
 Kinds are not graded. `location-mismatch` sits beside `condition-mismatch`
 because it has the same shape: the capacity exists but was not offered for
@@ -765,7 +807,9 @@ acknowledged changed. A tool may cache the version in the file under
 `version`; the computed value is authoritative and validation warns when a
 cached value disagrees.
 
-Projection field sets are frozen per format version. `intentions/0.1` hashes
+Projection field sets are frozen per format version. `window.clock` and
+`transparent` joined them while v0.1 was still undeclared, which is the last
+moment such a change costs nothing. `intentions/0.1` hashes
 exactly the fields this document enumerates; a change to any projection is a
 new format version, so a stored `counterpart_version` stays comparable for as
 long as its format version is known.
@@ -851,7 +895,9 @@ reports the drift as a warning.
 dangling references, unknown `serves` roles, cycles, unparseable EDTF or ISO
 8601 values, unknown retirement kinds, `superseded` without `superseded_by`,
 duplicate active instances for one occurrence, an intention or availability
-with no author, and `firm` set by a harness without a policy. Where a write
+with no author, `firm` set by a harness without a policy, a sub-day RRULE
+part in `cadence`, a fractional duration on an all-day placement, and
+`transparent` on a commitment born of a resolution. Where a write
 can tell that its result would fail, it refuses. Write-time refusal is a
 convenience; validation is the invariant, because files arrive by merge
 without passing through any writer.

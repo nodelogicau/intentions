@@ -10,7 +10,7 @@ Resolution never chooses on the person's behalf. Its output is a ranked candidat
 
 ### Requirement: Demand and supply
 
-Resolution SHALL take one unretired, unplaced intention with both `duration` and `window` as demand. Supply SHALL be the intersection of eligible availability whose `subject` equals the intention's `subject` and, for every URI in the intention's `parties`, eligible availability whose `subject` equals that URI. Availability is eligible only if it carries no `retired` record, its validity horizon has not passed, its `conditional` (if any) includes the intention's `activity`, its `location` (if any) shares a URI with the intention's `location` or the intention has none, and its scope is visible to the resolver.
+Resolution SHALL take one unretired, unplaced intention with both `duration` and `window` as demand. Supply SHALL be the intersection of eligible availability whose `subject` equals the intention's `subject` and, for every URI in the intention's `parties`, eligible availability whose `subject` equals that URI. Availability is eligible only if it carries no `retired` record, its validity horizon has not passed, its `conditional` (if any) includes the intention's `activity`, its `location` (if any) shares a URI with the intention's `location` or the intention has none, and its scope is visible to the resolver. Where the intention's window or a supplying availability's window carries a `clock` anchor, a candidate placement SHALL lie wholly within every such clock interval on the local day concerned; supply outside the intention's clock interval, or demand outside the availability's, is not a match.
 
 #### Scenario: Multi-party intersection
 - **WHEN** an intention lists a counterparty and a room in `parties`
@@ -26,6 +26,14 @@ Resolution SHALL take one unretired, unplaced intention with both `duration` and
 
 #### Scenario: Retired availability ignored
 - **WHEN** the only availability matching the intention's subject carries a `retired` record
+- **THEN** resolution reports no supply for the subject
+
+#### Scenario: Clock bounds intersect
+- **WHEN** an intention has `window: {calendar: 2026-W38, clock: 08:00/12:00}` and `duration: PT2H`, and the subject's availability for that week has `clock: 10:00/16:00`
+- **THEN** every candidate starts at or after 10:00 and ends at or before 12:00 on a day of that week
+
+#### Scenario: Clock bounds disjoint
+- **WHEN** an intention has `clock: 18:00/21:00` and the subject's only availability for the window has `clock: 09:00/17:00`
 - **THEN** resolution reports no supply for the subject
 
 ### Requirement: Preconditions
@@ -99,3 +107,15 @@ When a selection displaces a tentative intention or commitment, the displaced ob
 #### Scenario: Displacement
 - **WHEN** a selected placement overlaps a tentative placed intention
 - **THEN** that intention keeps its placement and stability and a window-clash flag is reported on both
+
+### Requirement: Transparent commitments are never displaced
+
+A candidate placement that overlaps a commitment with `transparent: true` SHALL NOT be treated as displacing it: the overlap SHALL NOT raise the candidate's reconsideration cost, the commitment SHALL NOT be listed in the resolution record's `displaced`, and no flag SHALL result from the overlap.
+
+#### Scenario: Overlap with a transparent commitment is free
+- **WHEN** candidate X overlaps an accepted commitment with `transparent: true` and candidate Y overlaps nothing
+- **THEN** X and Y have the same reconsideration cost and are ordered by preference or earliest start
+
+#### Scenario: Not recorded as displaced
+- **WHEN** a selected placement overlaps a transparent commitment
+- **THEN** the resolution record's `displaced` list does not include it

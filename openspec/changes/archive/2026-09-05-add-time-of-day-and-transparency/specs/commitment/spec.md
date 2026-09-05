@@ -1,12 +1,4 @@
-# Commitment
-
-## Purpose
-
-Defines COMMITMENT, the interpersonal counterpart of an intention. Both are commissive: an intention involves no other party, a commitment is directed at someone and carries a negotiation history. A commitment is the only object with a placement by construction and the only object that references an external calendar, because it is the point at which this specification hands off to iCalendar or JSCalendar for interchange.
-
-A commitment's status is a deontic fact about a party's will. Per Searle's felicity conditions it requires sincerity, so software SHALL never set it; it only records and flags.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Commitment fields
 
@@ -25,38 +17,6 @@ The scheduling projection of a COMMITMENT SHALL be: `parties`, `placement`, `int
 #### Scenario: Transparency changes the version
 - **WHEN** an imported commitment's `transparent` changes from absent to true on re-import
 - **THEN** its projection hash changes and any acknowledgement naming it as counterpart lapses
-
-### Requirement: Two origins
-
-A commitment SHALL arise either endogenously from a RESOLUTION, in which case consistency with availability and intention holds by construction at creation, or exogenously by import from an external calendar, in which case consistency SHALL be checked at creation and any clash flagged. An imported commitment SHALL NOT create an intention or availability.
-
-#### Scenario: Import clashes with availability
-- **WHEN** an iCalendar event is imported whose placement falls outside the person's declared availability
-- **THEN** the commitment is created with all parties as the import states them and carries a `window-clash` flag
-
-### Requirement: Party status is set only by that party's explicit act
-
-A party's `status` SHALL change only through an explicit act attributed to that party: a local action by the workspace owner for their own entry, or an imported iTIP reply for another party. No resolution, consistency check, flag, or policy SHALL change a party status.
-
-#### Scenario: Flag does not decline
-- **WHEN** a consistency check finds a commitment clashing with a firm intention
-- **THEN** the commitment's party statuses are unchanged and a flag is reported
-
-#### Scenario: Owner accepts
-- **WHEN** the workspace owner accepts a tentative commitment
-- **THEN** their party entry becomes `accepted` and the version changes
-
-### Requirement: Cancellation
-
-A commitment SHALL be cancelled by appending a `retired` record with `kind: cancelled`, which is terminal. `cancelled` SHALL be the only retirement kind for a commitment. Cancelling a commitment SHALL NOT retire its intention; the intention's placement SHALL be cleared so it may be re-resolved.
-
-#### Scenario: Cancel and re-resolve
-- **WHEN** a commitment created from int_A is cancelled
-- **THEN** int_A loses its placement, keeps its window, and is eligible for resolution again
-
-#### Scenario: Cancellation carries a reason
-- **WHEN** a commitment is cancelled with a `reason`
-- **THEN** the `retired` record carries the reason, a timestamp, and the source of the cancelling act
 
 ### Requirement: External reference only
 
@@ -86,13 +46,7 @@ A commitment SHALL be cancelled by appending a `retired` record with `kind: canc
 - **WHEN** a commitment with `transparent: true` and an all-day placement is exported to iCalendar
 - **THEN** the event carries `TRANSP:TRANSPARENT` and a `DTSTART` of value type `DATE`
 
-### Requirement: Consistency check on create and update
-
-A consistency check (see Consistency) SHALL run whenever a commitment is created or its projection changes, and whenever an availability or intention it rests on changes.
-
-#### Scenario: Availability retracted after commitment
-- **WHEN** the availability a resolved commitment rested on is retracted
-- **THEN** the next consistency check reports an `expired-ground` flag on the commitment
+## ADDED Requirements
 
 ### Requirement: Transparency arrives only by import
 
