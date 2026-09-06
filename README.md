@@ -235,11 +235,12 @@ belong to WINDOW, never to `serves`.
 **Recurring intentions and instances.** An intention with a `cadence` is a
 recurring intention; its window carries a calendar anchor for the cadence to
 expand within, and it generates instances: new intention objects carrying
-`instance-of`, an `occurrence`, a window derived from that occurrence, and
-the recurring intention's subject, duration, activity, and parties unless
-overridden. Instances are materialised
-by an explicit `generate` operation over a horizon, which resolution also runs
-over its own horizon, and are written to disk immediately so that flags and
+`instance-of`, an `occurrence`, a window whose calendar anchor is that
+occurrence and whose clock anchor is the recurring intention's, and the
+recurring intention's subject, duration, activity, location, and parties
+unless overridden. Instances are materialised by an explicit `generate`
+operation over `resolver.horizon`, the one planning horizon resolution also
+uses, and are written to disk immediately so that flags and
 acknowledgements have something to attach to. Generation is idempotent on
 `(recurring, occurrence)`. Retiring one instance skips one occasion; retiring
 the recurring intention ends the arrangement and leaves already-generated
@@ -328,6 +329,19 @@ person will be narrows every candidate it covers. That is a different object,
 not a different rule for this one, and it is not in this version (see
 [Status](#status)). Until it is, a location-free capacity supplies an at-home
 intention on a day the person is away, and nothing flags it.
+
+**Capacity is consumed.** Each occasion offers its `duration` (the `max`
+when ranged), less the opaque, unretired placements already resting on it. Two
+two-hour intentions cannot both land on one three-hour morning. An intention's
+placement and the commitment created from it count once; a transparent
+commitment consumes nothing.
+
+**Scope has a subject.** `personal` availability is supply only for an
+intention whose subject, or one of whose parties, is the availability's
+subject. `organisation` and `public` availability are visible to any resolver
+whose `resolver.scope` is at or narrower than theirs. So in an organisation
+workspace Rob's personal Tuesdays are never Ada's supply unless Rob is a party
+to what she is placing.
 
 **No instances.** Recurring availability is one object re-evaluated at
 resolution time. A standing disposition is not an act and needs no
@@ -464,6 +478,8 @@ selector: person
 candidates_considered: 4
 displaced:
   - int_01a06c88-2b5d-7f40-9e17-3a6c8d0b2e59
+supply:
+  - avl_01a06d12-9b7e-7c03-a5d1-6e2f4a8b0c77
 source:
   author: https://example.com/people/ada
 timestamp: 2026-09-08T14:02:00Z
@@ -472,12 +488,22 @@ timestamp: 2026-09-08T14:02:00Z
 `selector` is `person` or the id of the policy whose `auto_select` condition
 authorised automatic selection. `selector` says whose will chose;
 `source` says which hand performed it. A harness selecting under a policy
-carries the policy in `selector` and itself in `source.harness`.
+carries the policy in `selector` and itself in `source.harness`. `supply`
+names the availabilities the placement was chosen against: what the selector
+saw, kept outside the projection. It is not what the placement rests on now,
+which consistency recomputes from the current workspace.
 
 On selection the intention gains the placement. If the intention has
 `parties`, a COMMITMENT is created with every party, the subject included, at
 `tentative`. Anything the placement displaces is listed and flagged; it is not
 retired, moved, or changed.
+
+Selecting for an intention that already has a placement is refused unless the
+caller asks to replace. Replacing clears the old placement, writes the new one,
+and adds a new record; the old record stays. A live commitment resting on the
+old placement is cancelled, with the new resolution's id as the reason, and a
+fresh one is created with every party tentative, because a placement its
+parties accepted cannot move under them.
 
 **Scheduling projection:** `intention`, `placement`, `selector`, `displaced`.
 
@@ -617,9 +643,19 @@ optional `{min, max}` pair of ISO 8601 durations, generalising RFC 9253's
 single `GAP` into a range so that *within three days after X* is expressible.
 The dependent window holds the reference, inverting RFC 9253's convention of
 placing the relation on the predecessor, to match the outbound-reference rule.
-A relational anchor whose target has no placement yet is a constraint between
-two unresolved windows, not an error; resolution reports the dependent
-intention as blocked on its target.
+Each relation bounds one end of the candidate by one end of the target;
+`min` defaults to `P0D` and an absent `max` is unbounded above:
+
+| Relation | Constrains |
+|---|---|
+| `FINISHTOSTART` | candidate start in `[target end + min, target end + max]` |
+| `STARTTOSTART` | candidate start in `[target start + min, target start + max]` |
+| `FINISHTOFINISH` | candidate end in `[target end + min, target end + max]` |
+| `STARTTOFINISH` | candidate end in `[target start + min, target start + max]` |
+
+A relational anchor whose target has no placement, or is retired or
+cancelled, is a constraint between two unresolved windows, not an error;
+resolution reports the dependent intention as blocked on its target.
 
 **Clock anchor.** An ISO 8601 time-of-day interval, `HH:MM/HH:MM`, read in
 the resolver's timezone and applied to every local day the other anchors
@@ -731,12 +767,17 @@ are sinks by definition, which removes the most likely accidental cycle.
        │
        │  generate: instances of recurring intentions over the horizon
        ▼
-  RESOLUTION operation
+  RESOLUTION operation — a function of workspace, intentions.yaml, now
+       │  range:  [max(window start, now), min(window end, now + horizon)]
        │  demand: duration, window, activity, subject + parties
        │  supply: ∩ eligible AVAILABILITY per required particular
        │          (unretired, unexpired, conditional ∋ activity,
-       │           location ∩ location ≠ ∅ or either absent, scope visible)
-       │          candidates lie within every clock interval present
+       │           location ∩ location ≠ ∅ or either absent, visible,
+       │           remaining capacity ≥ duration)
+       │          candidates lie within every clock interval present,
+       │          start on a resolver.step grid aligned to each supply
+       │          interval, and span the nominal duration (shorter, down
+       │          to min, only when the nominal yields nothing)
        ▼
   ranked candidates
        │  1. displaces nothing firm or accepted
@@ -747,14 +788,17 @@ are sinks by definition, which removes the most likely accidental cycle.
        ▼
   selection — a recorded act (person, or a policy the person holds)
        │
-       ├──▶ intention.placement written
-       ├──▶ RESOLUTION record written (selector, displaced)
+       ├──▶ intention.placement written (replacing cancels a live commitment)
+       ├──▶ RESOLUTION record written (selector, displaced, supply)
        └──▶ if parties: COMMITMENT created, everyone tentative
 ```
 
 Resolution refuses an intention that lacks duration or window, is retired,
-carries a `cycle` flag, or has a relational anchor whose target is unplaced.
-Displaced objects are listed and flagged, never changed.
+carries a `cycle` flag, has a relational anchor whose target is unplaced, or
+is already placed and the caller did not ask to replace. A window that has
+passed, or starts beyond the horizon, yields no candidates and a reason;
+nothing before now is ever offered. Displaced objects are listed and flagged,
+never changed.
 
 ### Composition by reference
 
@@ -791,7 +835,7 @@ check rather than stored:
 | `condition-mismatch` | the supplying availability's `conditional` does not include the intention's `activity` |
 | `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
-| `intention-inconsistency` | two active intentions cannot both be placed within their windows |
+| `intention-inconsistency` | two active unplaced intentions of one subject each have candidates alone but no non-overlapping pair; checked pairwise, never globally |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
 
 A transparent commitment occupies no time and rests on no supply, so it is
@@ -799,6 +843,12 @@ never the subject or counterpart of `window-clash`, and never the subject of
 `condition-mismatch`, `location-mismatch`, or `expired-ground`: there is no
 supplying availability to compare it against. An opaque import still clashes
 with everything it overlaps, which is the point.
+
+What a placement rests on is recomputed at every check: every occasion of
+each involved particular that contains it. Nothing stored on the placement or
+the resolution record decides this. No containing occasion is a `window-clash`
+without counterpart; containing occasions that all fail are reported by why
+they fail, as `expired-ground`, `condition-mismatch`, or `location-mismatch`.
 
 Kinds are not graded. `location-mismatch` sits beside `condition-mismatch`
 because it has the same shape: the capacity exists but was not offered for
@@ -910,21 +960,27 @@ format: intentions/0.1
 hash: sha256
 resolver:
   timezone: Australia/Melbourne
+  horizon: P4W                                # planning horizon: resolution and generation
   hemisphere: south                           # optional; north when absent
+  step: PT15M                                 # optional; candidate grid
+  scope: personal                             # optional; visibility ceiling
 availability:
   default_horizon: P13W
-generation:
-  horizon: P4W
 defaults:
   subject: https://example.com/people/ada     # optional
   source:
     author: https://example.com/people/ada
 ```
 
+`resolver.horizon` is the one planning horizon: how far ahead resolution
+offers candidates and how far ahead instances are generated. `resolver.step`
+is the grid candidate starts lie on, aligned to each supply interval's start.
+`resolver.scope` is a ceiling on what shared availability a resolver may see.
 `resolver.hemisphere` resolves the neutral EDTF season codes and nothing
-else. There is no week-start setting: weeks are ISO weeks, and a reader that
-finds `resolver.week_start` in an older file ignores it and reports it at
-info level. `defaults.subject` is optional. When present it is applied to any
+else. There is no week-start setting, and no separate generation horizon:
+weeks are ISO weeks, and a reader that finds `resolver.week_start` or
+`generation.horizon` in an older file ignores it and reports it at info
+level. `defaults.subject` is optional. When present it is applied to any
 intention written without one; when absent every intention names its subject. A
 workspace may hold objects for several subjects: rooms and equipment already
 require it, and an organisation workspace will leave the default unset.
@@ -981,6 +1037,12 @@ in this format writes a computed bound.
 the person's alone. A commitment interlocks with others and hands off to
 iCalendar. The two are different speech acts with different lifecycles, and
 conflating them is how a calendar fills up with other people's time.
+
+**Resolution is a function.** Given the workspace, `intentions.yaml`, and a
+`now`, the candidate set and its order are determined: the range is bounded
+by now and the horizon, starts lie on a grid, capacity is consumed, and the
+checks are pairwise. Two implementations produce the same candidates, which
+is the only sense in which they can be said to agree about an operation.
 
 **Flags, never decisions.** Resolution ranks and the person selects. A clash
 is surfaced and the person acknowledges or does not. A party's status changes

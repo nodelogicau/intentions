@@ -78,11 +78,15 @@ A terminus is an INTENTION with no `serves` entries, no `window`, and no `durati
 
 ### Requirement: Recurring intentions and generated instances
 
-An INTENTION carrying `cadence` is a recurring intention, and its window SHALL carry a calendar anchor for the cadence to expand within. Instances SHALL be new INTENTION objects, each carrying `serves: [{id: <recurring>, role: instance-of}]`, `occurrence` (the EDTF granule the cadence produced), a `window` derived from that occurrence, and the recurring intention's `subject`, `duration`, `activity`, and `parties` unless overridden. Each instance has its own stability, resolution lifecycle, and retirement. Recurrence SHALL NOT be an attribute of WINDOW. A recurring intention is not a terminus and SHALL NOT carry `auto_select` or `auto_firm`.
+An INTENTION carrying `cadence` is a recurring intention, and its window SHALL carry a calendar anchor for the cadence to expand within. Instances SHALL be new INTENTION objects, each carrying `serves: [{id: <recurring>, role: instance-of}]`, `occurrence` (the EDTF granule the cadence produced), a `window` whose `calendar` is that occurrence and whose `clock` is the recurring intention's `clock` when it has one, and the recurring intention's `subject`, `duration`, `activity`, `location`, and `parties` unless overridden. Each instance has its own stability, resolution lifecycle, and retirement. Recurrence SHALL NOT be an attribute of WINDOW. A recurring intention is not a terminus and SHALL NOT carry `auto_select` or `auto_firm`.
 
 #### Scenario: Instance generation
 - **WHEN** a recurring intention has `cadence: FREQ=WEEKLY;BYDAY=TU` and an instance is generated for week 2026-W37
 - **THEN** a new intention is created with `occurrence: 2026-09-15`, `window.calendar: 2026-09-15`, the recurring intention's `subject`, and `serves: [{id: <recurring>, role: instance-of}]`
+
+#### Scenario: Instance keeps place and hours
+- **WHEN** a recurring intention has `window: {calendar: 2026-09/2026-12, clock: 09:00/12:00}` and `location: [home]`
+- **THEN** each instance carries `window: {calendar: <occurrence>, clock: 09:00/12:00}` and `location: [home]`
 
 #### Scenario: Skip one occurrence
 - **WHEN** a generated instance is retired with `kind: abandoned`
@@ -146,10 +150,10 @@ Whether an existing intention should be reconsidered SHALL be surfaced when a ne
 
 ### Requirement: Instance generation
 
-Instances of a standing intention SHALL be materialised by a `generate` operation over a horizon window, which resolution SHALL also run over its own horizon. Generated instances SHALL be written to disk immediately as INTENTION objects. Each instance SHALL carry `occurrence`, the EDTF granule the cadence produced, and generation SHALL be idempotent over that key: generating again over an overlapping horizon SHALL create no second active instance for the same standing intention and occurrence, and validation SHALL report such a duplicate as an error. The horizon defaults to `generation.horizon` in `intentions.yaml`; the recommended default is four weeks (`P4W`). No background generation SHALL occur.
+Instances of a recurring intention SHALL be materialised by a `generate` operation over a horizon window, which resolution SHALL also run over its own horizon. Generated instances SHALL be written to disk immediately as INTENTION objects. Each instance SHALL carry `occurrence`, the EDTF granule the cadence produced, and generation SHALL be idempotent over that key: generating again over an overlapping horizon SHALL create no second active instance for the same recurring intention and occurrence, and validation SHALL report such a duplicate as an error. The horizon is `resolver.horizon` in `intentions.yaml`, the one planning horizon shared with resolution; the recommended default is four weeks (`P4W`). No background generation SHALL occur.
 
 #### Scenario: Idempotent generation
-- **WHEN** `generate` runs twice over horizons that both include 2026-09-15 for a weekly Tuesday standing intention
+- **WHEN** `generate` runs twice over horizons that both include 2026-09-15 for a weekly Tuesday recurring intention
 - **THEN** exactly one active instance with `occurrence: 2026-09-15` exists
 
 #### Scenario: Skipped then regenerated
@@ -158,7 +162,7 @@ Instances of a standing intention SHALL be materialised by a `generate` operatio
 
 #### Scenario: Resolution generates
 - **WHEN** resolution runs for an intention whose window lies in the next two weeks
-- **THEN** instances of every standing intention with occurrences in that horizon exist on disk before candidates are ranked
+- **THEN** instances of every recurring intention with occurrences within `resolver.horizon` exist on disk before candidates are ranked
 
 ### Requirement: Policies are termini
 
