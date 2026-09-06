@@ -332,9 +332,11 @@ intention on a day the person is away, and nothing flags it.
 
 **Capacity is consumed.** Each occasion offers its `duration` (the `max`
 when ranged), less the opaque, unretired placements already resting on it. Two
-two-hour intentions cannot both land on one three-hour morning. An intention's
-placement and the commitment created from it count once; a transparent
-commitment consumes nothing.
+two-hour intentions cannot both land on one three-hour morning. A commitment
+consumes a party's capacity only where that party is `tentative` or
+`accepted`. An intention's placement and the commitment created from it count
+once against the subject, and that placement consumes whatever the subject's
+party entry says. A transparent commitment consumes nothing.
 
 **Scope has a subject.** `personal` availability is supply only for an
 intention whose subject, or one of whose parties, is the availability's
@@ -428,6 +430,17 @@ act attributed to the party: the workspace owner's own action for their entry,
 an imported iTIP reply for another's. No resolution, consistency check, flag,
 or policy changes a status. A commissive status requires sincerity, and
 software cannot supply it.
+
+A status also decides whose time this occupies. The commitment occupies a
+party's time, consuming their capacity and standing to be displaced by their
+resolutions, exactly where that party's own entry is `tentative` or
+`accepted`. A party at `declined` is not occupied by it, and one party's
+decline changes nothing for the others, whose commitment still stands. A
+calendar that kept charging someone for a claim they refused would be the
+imposition this format exists to surface. Where the commitment fulfils an
+intention, that intention's placement occupies its subject's time on its own,
+so a decline by the subject frees nothing while the placement stands: the
+two disagree, and the disagreement is a `party-declined` flag.
 
 **Cancellation** appends a RETIREMENT record of kind `cancelled`. It does not
 retire the intention; the intention's placement is cleared so it may be
@@ -781,7 +794,9 @@ are sinks by definition, which removes the most likely accidental cycle.
        ▼
   ranked candidates
        │  1. displaces nothing firm or accepted
-       │     (overlap with a transparent commitment is not displacement)
+       │     (a commitment's status here is the subject's own entry;
+       │      overlapping one they declined, or a transparent one,
+       │      is not displacement)
        │  2. displaces only tentative
        │  3. requires retiring something firm
        │  then: declared preference; then earliest
@@ -836,6 +851,7 @@ check rather than stored:
 | `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
 | `intention-inconsistency` | two active unplaced intentions of one subject each have candidates alone but no non-overlapping pair; checked pairwise, never globally |
+| `party-declined` | a commitment has a party at `declined` while the intention it fulfils is still placed |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
 
 A transparent commitment occupies no time and rests on no supply, so it is
@@ -843,6 +859,17 @@ never the subject or counterpart of `window-clash`, and never the subject of
 `condition-mismatch`, `location-mismatch`, or `expired-ground`: there is no
 supplying availability to compare it against. An opaque import still clashes
 with everything it overlaps, which is the point.
+
+A decline is flagged only where it contradicts something. An imported
+commitment has no intention behind it, so declining one frees the decliner's
+hour and there is nothing left to disagree with. A commitment from a
+resolution is different: the intention's own placement still occupies the
+subject's time, so their decline frees nothing and they have said they will
+not attend a thing they still intend at that hour. `party-declined` names
+that, on both objects, with the declining party in the detail. A counterparty's
+decline is flagged for the same reason, since the arrangement has lost someone
+it needed. The person then cancels, replaces, or acknowledges and goes ahead
+without them; nothing here decides for them.
 
 What a placement rests on is recomputed at every check: every occasion of
 each involved particular that contains it. Nothing stored on the placement or
