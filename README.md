@@ -47,9 +47,9 @@ The format replaces the slot with a triad: a **DURATION** (how long), a
 **WINDOW** (within what bounds, expressed as the person expressed it and never
 flattened to clock time until it must be), and an **INTENTION** (what this is
 for, as a graph of in-order-to references that terminates in a standing
-commitment about who the person is). Recurrence lives on the intention, not the
-window: a weekly one-to-one is a standing intention that generates fresh
-instances, each its own object with its own life.
+self-understanding about who the person is). Recurrence lives on the
+intention, not the window: a weekly one-to-one is a recurring intention that
+generates fresh instances, each its own object with its own life.
 
 **AVAILABILITY** is the supply side: a standing statement that some particular,
 a person or a room or a piece of equipment, has capacity of a kind within a
@@ -107,11 +107,17 @@ resolvable for the life of the workspace, including after retirement.
 ### Field order
 
 The order in which fields are shown for each type below is that type's
-canonical order. Writers SHOULD emit fields in it; readers MUST accept any
-order and MUST NOT reject a file for its arrangement. Fields an implementation
-adds beyond this specification are written after all specified fields.
-Canonical order is what makes two implementations produce byte-identical files
-for identical state, which is what makes a workspace reviewable as a diff.
+canonical order, and `version` always comes second, after `id`. Writers emit
+fields in that order; readers MUST accept any order and MUST NOT reject a file
+for its arrangement. Fields an implementation adds beyond this specification
+are written after all specified fields. Lists of strings (`location`,
+`conditional`, an intention's `parties`, `displaced`) are block sequences,
+sorted as in the projection; small records (`serves` entries, ranged
+durations, `gap`, policy conditions) are flow mappings; multi-line prose is a
+literal block scalar; everything else is block style. A boolean equal to its
+documented default is omitted. Canonical order and style are what make two
+implementations produce byte-identical files for identical state, which is
+what makes a workspace reviewable as a diff.
 
 ### Source and timestamp
 
@@ -149,6 +155,7 @@ with someone else it produces a COMMITMENT through resolution.
 
 ```yaml
 id: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
+version: sha256:7c3a…d18e
 subject: https://example.com/people/ada
 title: Draft the Q4 budget narrative
 description: |
@@ -180,21 +187,23 @@ Fields, in canonical order:
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | |
+| `version` | yes | The projection hash, written by every writer; the computed value is authoritative. |
 | `subject` | on disk | URI of the particular whose intention this is. The writer applies `defaults.subject` from `intentions.yaml` when the caller omits it; a workspace without a default requires it explicitly. |
 | `title` | yes | Prose. |
 | `description` | no | Prose. |
 | `duration` | no | A DURATION. Required before the intention can be resolved. |
 | `window` | no | A WINDOW. Required before the intention can be resolved. |
 | `stability` | yes | `tentative` or `firm`. |
+| `firmed_under` | no | The policy under which a harness set `firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
 | `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
 | `location` | no | URIs at one of which this must happen. Absent means anywhere. |
 | `parties` | no | URIs of other particulars whose availability must be satisfied. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
-| `cadence` | no | An RRULE. Makes this a standing intention. |
+| `cadence` | no | An RRULE. Makes this a recurring intention; the window must then carry a calendar anchor. |
 | `occurrence` | no | On generated instances only: the EDTF granule the cadence produced. |
 | `placement` | no | A PLACEMENT, written only by resolution. |
 | `preference` | no | `earliest`, `latest`, `adjacent`, or `spread`. |
-| `auto_select`, `auto_firm` | no | On standing intentions only: policy conditions. |
+| `auto_select`, `auto_firm` | no | On termini only: policy conditions. |
 | `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
 | `source`, `timestamp` | yes | |
 | `acknowledgements` | yes | Append-only list, possibly empty. |
@@ -203,37 +212,48 @@ Fields, in canonical order:
 **Stability.** A firm intention is costly to reconsider; a tentative one is
 cheap. Resolution ranks candidate placements by that cost. `firm` may be set
 only by an act whose `source` carries no `harness`, or by a harness acting
-under a standing intention of the subject whose `auto_firm` condition the
-intention satisfies, naming that policy on the act. A harness may draft; it
-may not resolve on the person's behalf.
+under a policy of the subject whose `auto_firm` condition the intention
+satisfies, in which case the write sets `firmed_under` to that policy's id.
+The field is provenance, like `source`, and is outside the projection; it is
+required whenever a firm intention's `source` carries a harness, so that
+validation can tell an authorised firming from a forged one after the fact.
+Whether the condition held is checked at write time only, since the intention
+may legitimately change afterwards. A harness may draft; it may not resolve
+on the person's behalf.
 
 **The serves graph.** `in-order-to` links an intention to another it is a means
-to. `for-the-sake-of` links an intention to its terminus: a standing intention
-with no window, no duration, and no outbound references, such as *being
-someone who follows through*, which may carry an informal `reference` to a
-DKF claim the person holds about themselves. `instance-of` links a generated
-instance to the standing intention that produced it. The graph is directed and
+to. `for-the-sake-of` links an intention to its terminus: an intention with
+no window, no duration, and no outbound references, such as *being someone
+who follows through*, which may carry an informal `reference` to a DKF claim
+the person holds about themselves. Where this text says *standing intention*
+it means a terminus, never a recurring one. `instance-of` links a generated
+instance to the recurring intention that produced it. The graph is directed and
 acyclic but not a tree: an intention may serve several ends and several may
 converge on one. Only these three roles are admitted; temporal relations
 belong to WINDOW, never to `serves`.
 
-**Standing intentions and instances.** An intention with a `cadence` generates
-instances: new intention objects carrying `instance-of`, an `occurrence`, a
-window derived from that occurrence, and the standing intention's subject,
-duration, activity, and parties unless overridden. Instances are materialised
+**Recurring intentions and instances.** An intention with a `cadence` is a
+recurring intention; its window carries a calendar anchor for the cadence to
+expand within, and it generates instances: new intention objects carrying
+`instance-of`, an `occurrence`, a window derived from that occurrence, and
+the recurring intention's subject, duration, activity, and parties unless
+overridden. Instances are materialised
 by an explicit `generate` operation over a horizon, which resolution also runs
 over its own horizon, and are written to disk immediately so that flags and
 acknowledgements have something to attach to. Generation is idempotent on
-`(standing, occurrence)`. Retiring one instance skips one occasion; retiring
-the standing intention ends the arrangement and leaves already-generated
+`(recurring, occurrence)`. Retiring one instance skips one occasion; retiring
+the recurring intention ends the arrangement and leaves already-generated
 instances to be retired individually.
 
-**Policies.** A standing intention may carry `auto_select` and `auto_firm`,
+**Policies.** A policy is a terminus carrying `auto_select` or `auto_firm`,
 each a condition with terms `max_duration` and `stability`. A condition is
 satisfied when every term it states holds for the intention being acted on.
-These are the only means by which a harness may select a candidate or set
-`firm` without a person's direct act. A policy is itself an intention the
-person holds, so the will that acts is still theirs.
+Conditions are admitted on termini only: an intention with a window, a
+duration, or any `serves` entry may not carry them, because a scheduled thing
+must not be able to authorise a firming. These are the only means by which a
+harness may select a candidate or set `firm` without a person's direct act. A
+policy is itself an intention the person holds, so the will that acts is
+still theirs.
 
 **Location.** A place is a URI the person chooses, matched by exact equality:
 a room, a house, a city, a meeting link. The format owns no hierarchy of
@@ -245,7 +265,7 @@ placement.
 
 **Scheduling projection:** `subject`, `duration`, `window`, `stability`,
 `activity`, `location`, `parties`, `serves`, `cadence`, `occurrence`,
-`placement`, `retired.kind`.
+`placement`, `retired.kind`. Neither `version` nor `firmed_under` is in it.
 
 ### `AVAILABILITY`
 
@@ -256,13 +276,16 @@ to exist in any registry.
 
 ```yaml
 id: avl_01a06d12-9b7e-7c03-a5d1-6e2f4a8b0c77
+version: sha256:2e91…a47b
 subject: https://example.com/people/ada
 title: Tuesday mornings for deep work
 duration: PT3H
 window:
   calendar: 2026-09/2026-12
   clock: 09:00/12:00
-conditional: [deep-work, writing]
+conditional:
+  - deep-work
+  - writing
 location:
   - https://example.com/places/home
 cadence: FREQ=WEEKLY;BYDAY=TU
@@ -278,6 +301,7 @@ Fields, in canonical order:
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | |
+| `version` | yes | The projection hash. |
 | `subject` | yes | URI of the particular whose availability this is. |
 | `title`, `description` | no | Prose. |
 | `duration` | yes | Capacity offered per occasion, optionally ranged. May be shorter than the window's clock interval. |
@@ -334,6 +358,7 @@ An intention becomes a commitment when it must interlock with another party.
 
 ```yaml
 id: cmt_01a06d15-3f8a-7d61-8c2b-9a4e6f1d3b05
+version: sha256:b60f…3c1d
 parties:
   - uri: https://example.com/people/ada
     status: accepted
@@ -348,7 +373,6 @@ placement:
 intention: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
 origin:
   resolution: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
-transparent: false
 external:
   system: jscalendar
   uid: 2a6f0b3e-4d1c-4e8a-9b7f-0c5d3e2a1f44
@@ -365,11 +389,12 @@ Fields, in canonical order:
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | |
-| `parties` | yes | `{uri, status}` per party; status `tentative`, `accepted`, or `declined`. |
+| `version` | yes | The projection hash. |
+| `parties` | yes | `{uri, status}` per party, sorted by `uri`; status `tentative`, `accepted`, or `declined`. |
 | `placement` | yes | A PLACEMENT. Commitments always have one. |
 | `intention` | no | The intention this fulfils. Absent on imports. |
 | `origin` | yes | `{resolution: res_…}` or `import`. |
-| `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`. Only an import may set it. |
+| `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`, and a writer omits it when false. Only an import may set it. |
 | `external` | no | `{system: icalendar or jscalendar, uid}`. The only link to an external calendar. |
 | `title`, `description` | no | Prose. |
 | `source`, `timestamp` | yes | |
@@ -430,6 +455,7 @@ someone chooses.
 ```yaml
 # resolutions/res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91.yaml
 id: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
+version: sha256:e4a2…917c
 intention: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
 placement:
   start: 2026-09-15T10:00:00+10:00
@@ -443,8 +469,8 @@ source:
 timestamp: 2026-09-08T14:02:00Z
 ```
 
-`selector` is `person` or the id of the standing intention whose `auto_select`
-condition authorised automatic selection. `selector` says whose will chose;
+`selector` is `person` or the id of the policy whose `auto_select` condition
+authorised automatic selection. `selector` says whose will chose;
 `source` says which hand performed it. A harness selecting under a policy
 carries the policy in `selector` and itself in `source.harness`.
 
@@ -526,14 +552,16 @@ duration: {nominal: PT1H, min: PT30M, max: PT2H}
 ```
 
 When ranged, the nominal value lies within the range and resolution prefers it.
+A zero duration is written `P0D`, on disk and in the projection.
 
 #### `WINDOW`
 
 The bounds within which an intention should happen or an availability holds,
 stored as the person expressed it. A window never stores computed start and
 end datetimes. Its bounds are computed when a resolver needs them, from the
-resolver context (`resolver.timezone`, `resolver.week_start`) in
-`intentions.yaml` or overridden on the call.
+resolver context (`resolver.timezone`, and `resolver.hemisphere` for neutral
+season codes) in `intentions.yaml` or overridden on the call. Week granules
+are ISO weeks, Monday to Sunday, in every context.
 
 A window has one or more of three anchors, and a placement must satisfy
 every anchor present:
@@ -553,20 +581,34 @@ window:
 | Expression | Means |
 |---|---|
 | `2026`, `2026-09`, `2026-W36`, `2026-09-04` | that year, month, week, day |
-| `2026-21` … `2026-24` | spring, summer, autumn, winter (EDTF season codes) |
+| `2026-21` … `2026-24` | spring, summer, autumn, winter, resolved by `resolver.hemisphere` |
+| `2026-25` … `2026-28` | Northern spring, summer, autumn, winter (EDTF) |
+| `2026-29` … `2026-32` | Southern spring, summer, autumn, winter (EDTF) |
 | `2026-33` … `2026-36` | Q1 … Q4 (EDTF quarter codes) |
 | `2026-W36/2026-W38` | a bounded interval between granules |
 | `../2026-09` | by the end of September |
 | `2026-09/..` | from September on |
 
-EDTF uncertain and approximate qualifiers (`?`, `~`, `%`) are not admitted; a
-qualifier with no resolution semantics is decoration.
+Northern spring, summer, autumn and winter are March to May, June to August,
+September to November, and December to February; Southern are September to
+November, December to February, March to May, and June to August. A season
+that begins in December starts in the granule's year and runs into the next.
+`resolver.hemisphere` defaults to `north`, which is what every EDTF reader
+assumes; a Melbourne workspace sets `south` once rather than writing `29`
+every time. EDTF uncertain and approximate qualifiers (`?`, `~`, `%`) are not
+admitted; a qualifier with no resolution semantics is decoration.
 
 Deixis is resolved at write time; bounds are resolved at resolution time. A
 person who says *this week* on 2026-09-04 gets `2026-W36` in the file, so the
 object means the same week a month later. What `2026-W36` starts and ends at in
-clock time depends on the resolver's timezone and week start, and is never
-written.
+clock time depends on the resolver's timezone, and is never written. A writer
+that accepts deictic terms recognises at least `today`, `tomorrow`,
+`this-week`, `next-week`, `this-month`, `next-month`, `this-quarter`,
+`next-quarter`, and `this-year`, each the granule containing the current
+instant in the resolver's timezone or the one after it. Because weeks are ISO
+weeks, `this-week` on a Sunday is the week ending that day; a writer talking
+to someone whose week starts on Sunday may ask which week was meant, since
+the format carries no such preference.
 
 **Relational anchor.** `target` is another intention or commitment; `relation`
 is one of `FINISHTOSTART`, `FINISHTOFINISH`, `STARTTOFINISH`, `STARTTOSTART`
@@ -599,8 +641,12 @@ two imply a tree, and the intention graph is not one.
 Where an object carries `cadence`, it is an iCalendar RRULE
 ([RFC 5545 §3.3.10](https://www.rfc-editor.org/rfc/rfc5545#section-3.3.10)).
 using only its date-level parts: `BYHOUR`, `BYMINUTE`, and `BYSECOND` are not
-admitted, because time of day belongs to the window's clock anchor. Cadence
-expresses only a generating pattern. `RDATE`, `EXDATE`, and `RECURRENCE-ID`
+admitted, because time of day belongs to the window's clock anchor. An object
+carrying `cadence` has a window with a calendar anchor, and the rule expands
+from a seed: the first local day of that anchor's lower bound, or, when the
+bound is open (`../X`), the first day of the horizon the caller supplies.
+`WKST` defaults to `MO` unless the rule says otherwise. Cadence expresses only
+a generating pattern. `RDATE`, `EXDATE`, and `RECURRENCE-ID`
 are never used: a skipped occurrence is a retired instance.
 
 #### `PLACEMENT`
@@ -634,8 +680,8 @@ INTENTION      what a person means to do — no other party
                  ← duration, window: how long, within what bounds
                  ← serves[]: in-order-to → other intentions
                              for-the-sake-of → a terminus
-                             instance-of → the standing intention that generated it
-                 ← cadence: makes it standing; instances are generated from it
+                             instance-of → the recurring intention that generated it
+                 ← cadence: makes it recurring; instances are generated from it
                  → placement: written by RESOLUTION
 
 AVAILABILITY   what a particular has capacity for — supply
@@ -660,11 +706,11 @@ records        RESOLUTION      standalone — relates intention, placement, disp
    int: 90 min on the budget narrative
          │ in-order-to
          ▼
-   int: board pack out by 2026-W38            int: weekly 1:1 with Rob (standing)
+   int: board pack out by 2026-W38            int: weekly 1:1 with Rob (recurring)
          │ in-order-to                              │ generates
          ▼                                          ▼
    int: run the finance function well      int: 1:1, occurrence 2026-09-15
-         │ for-the-sake-of                          │ instance-of (back to standing)
+         │ for-the-sake-of                          │ instance-of (back to recurring)
          ▼                                          │ for-the-sake-of
    int: being someone who follows through  ◀────────┘
          (terminus: no window, no duration, no serves;
@@ -683,7 +729,7 @@ are sinks by definition, which removes the most likely accidental cycle.
 ```
   INTENTION (duration + window, no placement)
        │
-       │  generate: instances of standing intentions over the horizon
+       │  generate: instances of recurring intentions over the horizon
        ▼
   RESOLUTION operation
        │  demand: duration, window, activity, subject + parties
@@ -792,20 +838,34 @@ Every object has a version: the hash of a canonical serialisation of its
 **scheduling projection**, the fields that bear on consistency, as listed for
 each type above. The version is derived, never declared.
 
-The projection is expressed as a JSON object with values normalised first
-(EDTF in shortest admitted form, ISO 8601 durations with no zero components,
-datetimes as RFC 3339 UTC with seconds, reference lists sorted by id, absent
-optional fields omitted), serialised with the JSON Canonicalization Scheme
+The projection is expressed as a JSON object with values normalised first,
+serialised with the JSON Canonicalization Scheme
 ([RFC 8785](https://www.rfc-editor.org/rfc/rfc8785)), and hashed with the
-algorithm named by `hash` in `intentions.yaml`. The version is written
-`sha256:<lowercase hex>`. This version of the format admits only `sha256`.
+algorithm named by `hash` in `intentions.yaml`. Normalisation is:
+
+- EDTF expressions in shortest admitted form.
+- ISO 8601 durations with zero components dropped; weeks folded into days
+  (`P1W` becomes `P7D`); the time part re-expressed from its total seconds as
+  hours, minutes and seconds (`PT90M` becomes `PT1H30M`, `PT60M` becomes
+  `PT1H`); no conversion between the date part and the time part, so `P1D`
+  and `PT24H` stay distinct; no conversion of months or years; zero as `P0D`.
+- Datetimes as RFC 3339 UTC with seconds.
+- Every set-valued list sorted: references by id then role, commitment
+  `parties` by `uri`, and string lists (`location`, `conditional`, an
+  intention's `parties`, `displaced`) lexically.
+- Absent optional fields omitted, and a boolean equal to its documented
+  default omitted, so an explicit `transparent: false` hashes as absent.
+
+The version is written `sha256:<lowercase hex>`. This version of the format
+admits only `sha256`.
 
 Prose, `source`, `timestamp`, acknowledgements, and a retirement's `reason`,
 `source`, and `timestamp` are never in a projection. Editing them leaves the
 version unchanged, so an acknowledgement lapses only when what was
-acknowledged changed. A tool may cache the version in the file under
-`version`; the computed value is authoritative and validation warns when a
-cached value disagrees.
+acknowledged changed. Every object and every RESOLUTION record carries its
+version in the file, immediately after `id`, so that a diff shows whether an
+edit touched the projection; the computed value is authoritative and
+validation warns when the written value disagrees or is missing.
 
 Projection field sets are frozen per format version. `window.clock` and
 `transparent` joined them while v0.1 was still undeclared, which is the last
@@ -850,7 +910,7 @@ format: intentions/0.1
 hash: sha256
 resolver:
   timezone: Australia/Melbourne
-  week_start: monday
+  hemisphere: south                           # optional; north when absent
 availability:
   default_horizon: P13W
 generation:
@@ -861,8 +921,11 @@ defaults:
     author: https://example.com/people/ada
 ```
 
-`defaults.subject` is optional. When present it is applied to any intention
-written without one; when absent every intention names its subject. A
+`resolver.hemisphere` resolves the neutral EDTF season codes and nothing
+else. There is no week-start setting: weeks are ISO weeks, and a reader that
+finds `resolver.week_start` in an older file ignores it and reports it at
+info level. `defaults.subject` is optional. When present it is applied to any
+intention written without one; when absent every intention names its subject. A
 workspace may hold objects for several subjects: rooms and equipment already
 require it, and an organisation workspace will leave the default unset.
 
@@ -895,9 +958,12 @@ reports the drift as a warning.
 dangling references, unknown `serves` roles, cycles, unparseable EDTF or ISO
 8601 values, unknown retirement kinds, `superseded` without `superseded_by`,
 duplicate active instances for one occurrence, an intention or availability
-with no author, `firm` set by a harness without a policy, a sub-day RRULE
-part in `cadence`, a fractional duration on an all-day placement, and
-`transparent` on a commitment born of a resolution. Where a write
+with no author, `firm` on an intention whose `source` carries a harness and
+which has no `firmed_under`, `firmed_under` naming anything but an active
+policy of the subject, `auto_select` or `auto_firm` on an intention that is
+not a terminus, `cadence` on an object whose window has no calendar anchor, a
+sub-day RRULE part in `cadence`, a fractional duration on an all-day
+placement, and `transparent` on a commitment born of a resolution. Where a write
 can tell that its result would fail, it refuses. Write-time refusal is a
 convenience; validation is the invariant, because files arrive by merge
 without passing through any writer.
@@ -908,7 +974,7 @@ without passing through any writer.
 
 **The window is the person's, not the clock's.** A window stores what was
 said, at the precision it was said, and is collapsed to clock time only at
-resolution, by a resolver whose timezone and week start are its own. Nothing
+resolution, by a resolver whose timezone is its own. Nothing
 in this format writes a computed bound.
 
 **Intention is not commitment.** An intention involves no other party and is
@@ -924,7 +990,7 @@ act.
 
 **Every object says who wrote it.** A harness may draft. It may not make an
 intention firm, select a placement, or accept a commitment without either the
-person's direct act or their standing policy. Authorship is the axis on which
+person's direct act or a policy they hold. Authorship is the axis on which
 a schedule is authentic or imposed, and the format keeps it visible.
 
 **Live state is mutable; events are appended.** Unlike DKF, whose claims are
@@ -948,9 +1014,11 @@ This specification is in early draft. The object and record types, identifier
 format, field sets and canonical order, the projection and its hashing, the
 serves graph and its roles, the WINDOW anchor forms and their admitted
 vocabularies, the resolution ranking and the flag kinds are believed settled
-and are backed by a reasoning chain in a companion knowledge workspace. No
-implementation exists yet; the first will shape the text as the DKF reference
-implementation shaped its specification.
+and are backed by a reasoning chain in a companion knowledge workspace. A
+first implementation, [intentions-cli](https://github.com/nodelogicau/intentions-cli)
+v0.1.0, has been written from this text and raised thirteen issues where it
+was ambiguous or silent; all thirteen are settled in the text as it now
+stands, four of them differently from what the implementation chose.
 
 Deferred from this version, deliberately:
 
@@ -974,8 +1042,8 @@ Deferred from this version, deliberately:
   place rides on capacity.
 - **The policy condition grammar.** `auto_select` and `auto_firm` admit
   `max_duration` and `stability`; further terms await a use.
-- **v0.1.** Declaring it will be a deliberate act once a second reader has
-  tried to implement from this text.
+- **v0.1.** Its condition, a second reader implementing from this text, is
+  met. Declaring it is a deliberate act still to come.
 
 Feedback on the object model, field names, and missing cases is the most
 valuable contribution at this stage.

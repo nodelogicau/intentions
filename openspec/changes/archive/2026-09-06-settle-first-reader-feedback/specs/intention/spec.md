@@ -1,12 +1,12 @@
-# Intention
+## RENAMED Requirements
 
-## Purpose
+- FROM: `### Requirement: Standing intentions and generated instances`
+- TO: `### Requirement: Recurring intentions and generated instances`
 
-Defines INTENTION, the third leg of the duration/window/intention triad and the object that carries what a person means to do. The design draws on Heidegger's account of projection (Entwurf) and the referential totality of in-order-to relations terminating in a for-the-sake-of-which, and on Bratman's planning theory: intentions are future-directed, conduct-controlling, resistant to casual reconsideration, mutually consistent, filled in incrementally, and terminate in self-governing policies.
+- FROM: `### Requirement: Standing intention policies`
+- TO: `### Requirement: Policies are termini`
 
-An intention involves no other party. When it must interlock with someone else it crystallises into a COMMITMENT.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Intention fields
 
@@ -95,70 +95,6 @@ An INTENTION carrying `cadence` is a recurring intention, and its window SHALL c
 #### Scenario: Recurring intention with a condition
 - **WHEN** an intention with `cadence` is written with `auto_firm`
 - **THEN** the write is refused and validation reports an error
-
-### Requirement: Retirement kinds
-
-An intention's `retired.kind` SHALL be one of `fulfilled` (discharged, a positive terminal state), `abandoned` (no longer held, no replacement), or `superseded` (replaced by a specific other intention, in which case `superseded_by` SHALL carry that intention's id). Each kind is final; a retired intention SHALL NOT be edited further except to append acknowledgements.
-
-#### Scenario: Superseded
-- **WHEN** an intention is retired with `retired: {kind: superseded, superseded_by: int_C, ...}`
-- **THEN** validation requires int_C to exist and reports an error if it does not
-
-#### Scenario: Superseded without target
-- **WHEN** an intention is retired with `kind: superseded` and no `superseded_by`
-- **THEN** the write is refused
-
-#### Scenario: Fulfilled with reason
-- **WHEN** an intention is retired with `kind: fulfilled` and a `reason`
-- **THEN** the record carries the reason, a timestamp, and the source of the retiring act, and the intention's version changes
-
-### Requirement: Cycle prevention
-
-A write that would add a `serves` reference closing a cycle SHALL be refused. Validation SHALL detect cycles in the serves graph, regardless of how they arose, and report each strongly-connected component as an error. Every intention in a detected cycle SHALL be treated as unresolvable and SHALL carry a `cycle` flag; intentions outside the cycle SHALL continue to function.
-
-#### Scenario: Write-time refusal
-- **WHEN** A serves B and a write attempts to make B serve A
-- **THEN** the write is refused with a message naming the cycle
-
-#### Scenario: Cycle by merge
-- **WHEN** a merge produces a cycle A → B → A
-- **THEN** validation reports an error naming A and B, resolution refuses both, and unrelated intention C still resolves
-
-### Requirement: Reconsideration is triggered by conflict, not by sweep
-
-Whether an existing intention should be reconsidered SHALL be surfaced when a new or changed intention conflicts with it (see Consistency), not by any background expiry mechanism. Intentions have no validity horizon.
-
-#### Scenario: Conflict surfaces reconsideration
-- **WHEN** a new firm intention cannot be placed without displacing an existing tentative one
-- **THEN** the existing intention is surfaced for reconsideration in the resolution output and is neither retired nor re-placed automatically
-
-### Requirement: Activity vocabulary
-
-`activity` on an intention and each term in `conditional` on an availability SHALL be a lowercase kebab-case term. The specification SHALL NOT fix the vocabulary; terms are documented in the workspace conventions file. Matching between `activity` and `conditional` SHALL be by exact string equality. An unknown term SHALL NOT be a validation error; validation SHALL report at info level any term used by exactly one object.
-
-#### Scenario: Unknown term accepted
-- **WHEN** an intention carries `activity: piano-practice` and no other object uses that term
-- **THEN** validation passes and reports the term at info level
-
-#### Scenario: Malformed term
-- **WHEN** an intention carries `activity: Deep Work`
-- **THEN** the write is refused and validation reports an error
-
-### Requirement: Instance generation
-
-Instances of a standing intention SHALL be materialised by a `generate` operation over a horizon window, which resolution SHALL also run over its own horizon. Generated instances SHALL be written to disk immediately as INTENTION objects. Each instance SHALL carry `occurrence`, the EDTF granule the cadence produced, and generation SHALL be idempotent over that key: generating again over an overlapping horizon SHALL create no second active instance for the same standing intention and occurrence, and validation SHALL report such a duplicate as an error. The horizon defaults to `generation.horizon` in `intentions.yaml`; the recommended default is four weeks (`P4W`). No background generation SHALL occur.
-
-#### Scenario: Idempotent generation
-- **WHEN** `generate` runs twice over horizons that both include 2026-09-15 for a weekly Tuesday standing intention
-- **THEN** exactly one active instance with `occurrence: 2026-09-15` exists
-
-#### Scenario: Skipped then regenerated
-- **WHEN** the instance for 2026-09-15 is retired as `abandoned` and `generate` runs again over that week
-- **THEN** no new instance for 2026-09-15 is created
-
-#### Scenario: Resolution generates
-- **WHEN** resolution runs for an intention whose window lies in the next two weeks
-- **THEN** instances of every standing intention with occurrences in that horizon exist on disk before candidates are ranked
 
 ### Requirement: Policies are termini
 
