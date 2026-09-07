@@ -197,7 +197,7 @@ Fields, in canonical order:
 | `firmed_under` | no | The policy under which a harness set `firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
 | `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
 | `location` | no | URIs at one of which this must happen. Absent means anywhere. |
-| `parties` | no | URIs of other particulars whose availability must be satisfied. |
+| `parties` | no | URIs of other particulars whose availability must be satisfied, where the workspace tracks it. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
 | `cadence` | no | An RRULE. Makes this a recurring intention; the window must then carry a calendar anchor. |
 | `occurrence` | no | On generated instances only: the EDTF granule the cadence produced. |
@@ -493,6 +493,8 @@ displaced:
   - int_01a06c88-2b5d-7f40-9e17-3a6c8d0b2e59
 supply:
   - avl_01a06d12-9b7e-7c03-a5d1-6e2f4a8b0c77
+presumed:
+  - mailto:someone@another-company.example
 source:
   author: https://example.com/people/ada
 timestamp: 2026-09-08T14:02:00Z
@@ -504,7 +506,10 @@ authorised automatic selection. `selector` says whose will chose;
 carries the policy in `selector` and itself in `source.harness`. `supply`
 names the availabilities the placement was chosen against: what the selector
 saw, kept outside the projection. It is not what the placement rests on now,
-which consistency recomputes from the current workspace.
+which consistency recomputes from the current workspace. `presumed` names the
+parties that contributed no supply because the workspace does not track them,
+so a reader sees whose time the placement assumes without evidence. Both are
+provenance and neither is in the projection.
 
 On selection the intention gains the placement. If the intention has
 `parties`, a COMMITMENT is created with every party, the subject included, at
@@ -783,10 +788,12 @@ are sinks by definition, which removes the most likely accidental cycle.
   RESOLUTION operation — a function of workspace, intentions.yaml, now
        │  range:  [max(window start, now), min(window end, now + horizon)]
        │  demand: duration, window, activity, subject + parties
-       │  supply: ∩ eligible AVAILABILITY per required particular
+       │  supply: ∩ eligible AVAILABILITY per tracked particular
        │          (unretired, unexpired, conditional ∋ activity,
        │           location ∩ location ≠ ∅ or either absent, visible,
        │           remaining capacity ≥ duration)
+       │          an untracked party constrains no supply and still
+       │          brings every placement that occupies them
        │          candidates lie within every clock interval present,
        │          start on a resolver.step grid aligned to each supply
        │          interval, and span the nominal duration (shorter, down
@@ -804,7 +811,7 @@ are sinks by definition, which removes the most likely accidental cycle.
   selection — a recorded act (person, or a policy the person holds)
        │
        ├──▶ intention.placement written (replacing cancels a live commitment)
-       ├──▶ RESOLUTION record written (selector, displaced, supply)
+       ├──▶ RESOLUTION record written (selector, displaced, supply, presumed)
        └──▶ if parties: COMMITMENT created, everyone tentative
 ```
 
@@ -812,7 +819,38 @@ Resolution refuses an intention that lacks duration or window, is retired,
 carries a `cycle` flag, has a relational anchor whose target is unplaced, or
 is already placed and the caller did not ask to replace. A window that has
 passed, or starts beyond the horizon, yields no candidates and a reason;
-nothing before now is ever offered. Displaced objects are listed and flagged,
+nothing before now is ever offered.
+
+**A party the workspace does not track.** A workspace holds the capacity of
+the people it is for, and mostly cannot hold anyone else's. It tracks a party
+exactly when it holds at least one availability whose subject is that party,
+retired or expired included. A party it does not track contributes no supply
+constraint: resolution places against the subject's own supply and every
+tracked party's, and the commitment carries that party `tentative`, which is
+already what this format calls someone who has not yet agreed and is the state
+an invitation is sent from. A party it does track, whose eligible availability
+does not fit, still yields no candidates and is named, because that is the
+party's own answer rather than a gap in the workspace. The subject is never
+unconstrained by this rule, whatever their records and even where they appear
+in their own `parties`.
+
+Untracked means unconstrained, not satisfied. The format presumes nothing
+about that party's capacity and records the presumption in `presumed` on the
+resolution. And what the workspace does know about them still counts: every
+unretired placement that occupies them constrains candidates exactly as a
+tracked party's would, so a second meeting with the same person at the same
+hour is displacement rather than nothing. A workspace never writes an
+availability for a party in order to make a resolution succeed. An
+availability is an assertion about that particular's capacity, and inventing
+one records a fact nobody asserted about time that is not the writer's to
+declare.
+
+One consequence is worth naming, because it looks like a defect and is not:
+declaring your first availability makes you strictly harder to schedule with
+than declaring none. Supply is a positive assertion, so this is the difference
+between having spoken and not having spoken.
+
+Displaced objects are listed and flagged,
 never changed.
 
 ### Composition by reference
@@ -846,7 +884,7 @@ check rather than stored:
 
 | Kind | Meaning |
 |---|---|
-| `window-clash` | a placement overlaps another placement, or falls where there is no eligible supply |
+| `window-clash` | two placements overlap while sharing a party whom both occupy, or a placement falls where there is no eligible supply |
 | `condition-mismatch` | the supplying availability's `conditional` does not include the intention's `activity` |
 | `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
