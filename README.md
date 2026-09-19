@@ -47,8 +47,8 @@ authored a commitment cannot help a person tell the difference.
 ## The Approach
 
 The format replaces the slot with a triad: a **DURATION** (how long), a
-**WINDOW** (within what bounds, expressed as the person expressed it and never
-flattened to clock time until it must be), and an **INTENTION** (what this is
+**WINDOW** (within what bounds, expressed as the person expressed it and kept
+that way however early a slot is taken), and an **INTENTION** (what this is
 for, as a graph of in-order-to references that terminates in a standing
 self-understanding about who the person is). Recurrence lives on the
 intention, not the window: a weekly one-to-one is a recurring intention that
@@ -771,7 +771,8 @@ records        RESOLUTION      standalone — relates intention, placement, disp
          ▼                                          │ for-the-sake-of
    int: being someone who follows through  ◀────────┘
          (terminus: no window, no duration, no serves;
-          reference → a DKF claim Ada holds about herself)
+          reference → a DKF claim Ada holds about herself,
+          held because DKF records what she did)
 ```
 
 The graph is a DAG reconstructed by walking outbound references; no object
@@ -866,11 +867,19 @@ never changed.
   DKF claim  ── cites ──▶  any object here          │
   (retrospective, contested, evidential)  ──────────┘
   INTENTION.reference ── informal ──▶ DKF claim (never validated)
+  DKF claims about what was done ──▶ are what make that claim held
 ```
 
 Three deliberate reuses cross the iCalendar boundary: ISO 8601 durations,
 RRULE cadence, and the RFC 9253 relation vocabulary. Nothing else does. No
 object here depends on a DKF object to exist or validate.
+
+The relationship is a loop. A terminus may reference a claim the person holds
+about themselves; what was actually done against resolved intentions is
+recorded as DKF claims citing those objects at a version; and that record is
+the evidence that makes the self-claim held rather than aspirational. A person
+infers who they are from what they did, and the two formats hold the two
+halves.
 
 ---
 
@@ -1061,8 +1070,10 @@ the nearest ancestor directory containing `intentions.yaml` or a
 
 An optional prose file for agents and people: the activity terms in use, which
 tags won when two overlapped, what the workspace is for. It has no schema and
-validation does not read it. The activity vocabulary itself is not fixed by
-this specification: terms are lowercase kebab-case, matched by exact equality,
+validation does not read it. It is the natural home for the terminus
+convention: a **Termini** heading saying that a terminus is titled as who the
+person is, not what they do, so that a harness reads it before it drafts one.
+The activity vocabulary itself is not fixed by this specification: terms are lowercase kebab-case, matched by exact equality,
 never rejected for being unknown, and reported at info level when only one
 object uses them.
 
@@ -1098,13 +1109,30 @@ without passing through any writer.
 
 **The window is the person's, not the clock's.** A window stores what was
 said, at the precision it was said, and is collapsed to clock time only at
-resolution, by a resolver whose timezone is its own. Nothing
-in this format writes a computed bound.
+resolution, by a resolver whose timezone is its own. Nothing in this format
+writes a computed bound. What this forbids is losing what was said and why,
+not placing early. A placement keeps the window and the serves chain beside
+it, so a person may take one as soon as they want to stop carrying the
+question, and a tentative placement is the expected state of most plans: a
+plan made is a plan the mind lets go of, whether or not it is done yet.
+Placement is relief; stability is commitment. The firm slot is what comes
+last. The calendar's error is not the early slot but the invented one, a
+block that pretends to be firm and carries no reason.
 
 **Intention is not commitment.** An intention involves no other party and is
 the person's alone. A commitment interlocks with others and hands off to
 iCalendar. The two are different speech acts with different lifecycles, and
 conflating them is how a calendar fills up with other people's time.
+
+**A terminus is a person, not a task.** The chain of in-order-to references
+ends in who the person is, and it is titled that way: *being someone who
+follows through*, never *follow through*. The test is whether the title names
+a person or a task. The wording is not decoration. A goal held as an identity
+is acted on more reliably than the same goal held as a verb, and an intention
+read at the level of what it is for resists reconsideration better than one
+read at the level of how it is done; the chain up to a terminus is the
+instrument of that reading. Validation never rejects a terminus for its
+wording.
 
 **Resolution is a function.** Given the workspace, `intentions.yaml`, and a
 `now`, the candidate set and its order are determined: the range is bounded
@@ -1221,6 +1249,21 @@ and self-governing policies. John Searle, *Speech Acts* (1969) and
 *Expression and Meaning* (1979), on the assertive/commissive distinction and
 felicity conditions that separate availability from intention and forbid
 software from setting a party's status.
+
+**Psychological sources.** Christopher Bryan, Gregory Walton, Todd Rogers and
+Carol Dweck, "Motivating voter turnout by invoking the self", *PNAS* (2011),
+on noun self-framing, behind titling a terminus as a person. Daphna Oyserman,
+"Identity-based motivation" (2009), on identity-congruent action reading
+difficulty as importance. Kentaro Fujita, Yaacov Trope, Nira Liberman and Maya
+Levin-Sagi, "Construal levels and self-control", *JPSP* (2006), on why the
+chain up to a terminus matters. E. J. Masicampo and Roy Baumeister, "Consider
+it done! Plan making can eliminate the cognitive effects of unfulfilled
+goals", *JPSP* (2011), on plan-making freeing the mind, behind placing early.
+Peter Gollwitzer, "Implementation intentions: strong effects of simple plans",
+*American Psychologist* (1999), and Gollwitzer and Paschal Sheeran's
+meta-analysis (2006), on decisions closed in advance, behind policies and
+firmness. Daryl Bem, "Self-perception theory" (1972), on inferring who one is
+from what one did, behind the return path from DKF.
 
 ---
 

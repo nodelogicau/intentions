@@ -161,8 +161,8 @@
       <p class="eyebrow">Intentions &middot; an open planning format</p>
       <h1>Every hour is for something.</h1>
       <p class="lead">An open format for what a person means to do with their time.
-        An intention carries a duration, a window and a reason, and it is flattened
-        to a slot only when it must be. Written and read by AI harnesses, reviewed
+        An intention carries a duration, a window and a reason, and keeps all three
+        however early it is given a slot. Written and read by AI harnesses, reviewed
         by people through git.</p>
       <p>
         <a class="cta primary" href="#start">Get started</a>
@@ -177,7 +177,8 @@
             on Tuesday and moved four times. This format stores a triad: a duration of
             ninety minutes, a window of this week, and an intention to draft the budget
             narrative, which is in order to send the board pack, for the sake of being
-            someone the board can rely on. The triad becomes a slot only when it must.</desc>
+            someone the board can rely on. The triad keeps its meaning however early it
+            takes a slot; only the firm slot comes last.</desc>
           <defs>
             <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0,0 L10,5 L0,10 z" class="head"/>
@@ -186,7 +187,7 @@
           <text x="190" y="30" text-anchor="middle" class="lbl" font-weight="600">a calendar stores</text>
           <text x="600" y="30" text-anchor="middle" class="lbl" font-weight="600">this format stores</text>
           <line x1="390" y1="20" x2="390" y2="60" class="divider"/>
-          <line x1="390" y1="130" x2="390" y2="280" class="divider"/>
+          <line x1="390" y1="164" x2="390" y2="280" class="divider"/>
 
           <!-- the slot -->
           <rect x="70" y="60" width="240" height="70" rx="10" class="box-stale"/>
@@ -218,11 +219,10 @@
 
           <!-- the triad becomes a slot only when it must -->
           <path d="M425,98 C380,98 360,95 316,95" class="edge edge-dash" marker-end="url(#ah1)"/>
-          <text x="370" y="82" text-anchor="middle" class="lbl small">a slot, only</text>
-          <text x="370" y="118" text-anchor="middle" class="lbl small">when it must</text>
+          <text x="370" y="150" text-anchor="middle" class="lbl small">placed when wanted, firm when needed</text>
         </svg>
         </div>
-        <figcaption>How long, within what bounds, and what for. The slot comes last.</figcaption>
+        <figcaption>How long, within what bounds, and what for. The firm slot comes last.</figcaption>
       </figure>
 
       <p class="credit">After Heidegger on datability: a &ldquo;now&rdquo; is never bare. It is
@@ -460,14 +460,16 @@
 
       <figure>
         <div class="diagram-wrap">
-        <svg class="min640" viewBox="0 0 800 210" role="img" aria-labelledby="comp-title comp-desc">
+        <svg class="min640" viewBox="0 0 800 262" role="img" aria-labelledby="comp-title comp-desc">
           <title id="comp-title">Before the moment, the moment, after the moment</title>
           <desc id="comp-desc">Three boxes in a row. Before the moment: this format,
             holding duration, window, reason, availability and resolution. The moment:
             iCalendar or JSCalendar, which a commitment links to as one external
             object. After the moment: the Dialectical Knowledge Format, where a claim
             cites an object here by id and version. Each composes with the next by
-            reference, not by shared schema.</desc>
+            reference, not by shared schema. A return arrow runs from DKF back to
+            intentions: the record of what was done is what makes a terminus's
+            self-understanding held rather than aspirational.</desc>
           <defs>
             <marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0,0 L10,5 L0,10 z" class="head"/>
@@ -502,10 +504,14 @@
             <text x="660" y="118" text-anchor="middle" class="small">and what was learned</text>
             <text x="660" y="140" text-anchor="middle" class="small">particulars.fyi</text>
           </a>
+
+          <path d="M660,154 C660,236 140,236 140,158" class="edge edge-dash" marker-end="url(#ah5)"/>
+          <text x="400" y="230" text-anchor="middle" class="lbl small">the record of what was done is what makes the terminus held</text>
         </svg>
         </div>
         <figcaption>This format is for the time before a slot exists. The slot is iCalendar&rsquo;s. What
-          happened afterwards is a <a href="https://particulars.fyi">DKF</a> claim.</figcaption>
+          happened afterwards is a <a href="https://particulars.fyi">DKF</a> claim, and that record
+          is what makes the terminus held.</figcaption>
       </figure>
     </div>
   </section>
