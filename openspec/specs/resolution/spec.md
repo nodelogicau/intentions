@@ -37,8 +37,8 @@ Resolution SHALL take one unretired intention with both `duration` and `window` 
 - **THEN** resolution reports no supply for the subject
 
 #### Scenario: Another person's personal availability is invisible
-- **WHEN** an organisation workspace holds Rob's `personal` availability and Ada's intention does not list Rob in `parties`
-- **THEN** Rob's availability is not supply for Ada's intention
+- **WHEN** an organisation workspace holds Priya's `personal` availability and Ada's intention does not list Rob in `parties`
+- **THEN** Priya's availability is not supply for Ada's intention
 
 #### Scenario: Capacity already consumed
 - **WHEN** a three-hour occasion already has a two-hour opaque placement resting on it

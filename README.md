@@ -345,7 +345,7 @@ party entry says. A transparent commitment consumes nothing.
 intention whose subject, or one of whose parties, is the availability's
 subject. `organisation` and `public` availability are visible to any resolver
 whose `resolver.scope` is at or narrower than theirs. So in an organisation
-workspace Rob's personal Tuesdays are never Ada's supply unless Rob is a party
+workspace Priya's personal Tuesdays are never Ada's supply unless Rob is a party
 to what she is placing.
 
 **No instances.** Recurring availability is one object re-evaluated at
@@ -381,7 +381,7 @@ version: sha256:b60f…3c1d
 parties:
   - uri: https://example.com/people/ada
     status: accepted
-  - uri: https://example.com/people/rob
+  - uri: https://example.com/people/priya
     status: tentative
   - uri: https://example.com/rooms/3
     status: accepted
