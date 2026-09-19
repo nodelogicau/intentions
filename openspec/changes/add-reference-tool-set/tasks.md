@@ -12,11 +12,11 @@
 ## 3. Specs and site
 
 - [x] 3.1 `openspec validate --changes` passes
-- [ ] 3.2 Site proof lead: counts follow the feedback file; edit only once the CLI's row for #23 is no longer open, per the `landing-site` requirement
+- [x] 3.2 Site proof lead: counts follow the feedback file; edit only once the CLI's row for #23 is no longer open, per the `landing-site` requirement
 
 ## 4. Close out
 
-- [ ] 4.1 Commit and push
+- [x] 4.1 Commit and push
 - [ ] 4.2 Close #23 with a comment naming the commit and where the answer differs from the proposal
 - [ ] 4.3 Archive with sync so `harness-tools` lands in the main specs
 - [ ] 4.4 Knowledge workspace: a claim for the reference set's standing and a qualification synthesis on the spine; commit and push
