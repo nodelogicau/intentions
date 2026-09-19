@@ -32,7 +32,7 @@ Colours SHALL be defined as CSS custom properties on `:root`, redefined under `p
 - **THEN** the page, including every diagram, re-renders legibly with no hard-coded colour remaining from the other scheme
 
 ### Requirement: The hero states the headline and the two calls to action
-The hero SHALL carry the eyebrow "Intentions · the Intentions Format", the headline "Every hour is for something.", a lead paragraph, a primary call to action linking to the start section, and a secondary call to action linking to the specification README on GitHub. A muted line beneath the hero diagram SHALL credit the source of the headline; no heading on the page SHALL name a philosopher.
+The hero SHALL carry the eyebrow "Intentions · an open planning format", the headline "Every hour is for something.", a lead paragraph, a primary call to action linking to the start section, and a secondary call to action linking to the specification README on GitHub. A muted line beneath the hero diagram SHALL credit the source of the headline; no heading on the page SHALL name a philosopher.
 
 #### Scenario: A reader arrives
 - **WHEN** the page loads at the top
