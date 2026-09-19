@@ -40,8 +40,8 @@
 
 ## 6. Deploy and close out
 
-- [ ] 6.1 Commit `docs/` and the README edits; push
+- [x] 6.1 Commit `docs/` and the README edits; push
 - [ ] 6.2 Pages settings: deploy from `main`, folder `/docs`; confirm the `github.io` address serves the page
 - [ ] 6.3 DNS: four apex `A` records and `www` CNAME; wait for the certificate; enforce HTTPS
-- [ ] 6.4 Knowledge workspace: a claim recording the headline, the register decision, and the proof-section choice; commit and push
+- [x] 6.4 Knowledge workspace: a claim recording the headline, the register decision, and the proof-section choice; commit and push
 - [ ] 6.5 Archive the change with sync so `landing-site` lands in the main specs
