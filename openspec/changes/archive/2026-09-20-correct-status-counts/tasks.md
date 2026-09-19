@@ -13,5 +13,5 @@
 
 ## 4. Close out
 
-- [ ] 4.1 Commit and push; confirm the live proof section shows the new counts
-- [ ] 4.2 Archive with sync so the `landing-site` requirement lands
+- [x] 4.1 Commit and push; confirm the live proof section shows the new counts
+- [x] 4.2 Archive with sync so the `landing-site` requirement lands
