@@ -21,7 +21,7 @@
 
 ## 4. Close out
 
-- [ ] 4.1 Commit and push; confirm Pages rebuilds and the live captions changed
+- [x] 4.1 Commit and push; confirm Pages rebuilds and the live captions changed
 - [x] 4.2 Open an issue on intentions-cli: `init` writes the terminus convention into the generated `intentions.md`
-- [ ] 4.3 Archive with sync so the `intention` and `landing-site` deltas land
-- [ ] 4.4 Knowledge workspace: one qualification synthesis on the spine recording that the three edits are made, closing the unresolved item; commit and push
+- [x] 4.3 Archive with sync so the `intention` and `landing-site` deltas land
+- [x] 4.4 Knowledge workspace: one qualification synthesis on the spine recording that the three edits are made, closing the unresolved item; commit and push
