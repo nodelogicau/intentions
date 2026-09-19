@@ -1,14 +1,14 @@
-id: int_01a0b71d-2aaf-7da8-a5df-fc512ec7e03a
-version: sha256:bd3372e581c4d0378bac4b3cbfe58e68717bc9fa6ae3c702a447650ebba2909b
+id: int_01a0b732-5709-70e2-adcd-c4454fbd12b4
+version: sha256:ca8f8abeac63e33cb7d90896d29fa4eb5cc21d1186ca0605bf560cd6f7cdb8c1
 subject: https://example.com/people/ada
-title: One-to-one with Rob
+title: One-to-one with Priya
 duration: PT45M
 window:
   calendar: "2026-09-22"
   clock: 14:00/15:00
 stability: tentative
 parties:
-  - https://example.com/people/rob
+  - https://example.com/people/priya
 serves: []
 placement:
   start: 2026-09-22T14:15:00+10:00

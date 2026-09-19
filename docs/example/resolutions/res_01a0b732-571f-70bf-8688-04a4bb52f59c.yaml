@@ -1,0 +1,15 @@
+id: res_01a0b732-571f-70bf-8688-04a4bb52f59c
+version: sha256:fe6a591a63423ddfb3582d431d311e425c0d6a090a6b034e4a8c70f5030ed680
+intention: int_01a0b732-5709-70e2-adcd-c4454fbd12b4
+placement:
+  start: 2026-09-22T14:15:00+10:00
+  duration: PT45M
+selector: person
+candidates_considered: 2
+source:
+  author: https://example.com/people/ada
+timestamp: 2026-09-19T09:00:00Z
+supply:
+  - avl_01a0b732-56bb-7566-94a8-8bd078f062b2
+presumed:
+  - https://example.com/people/priya

@@ -43,7 +43,7 @@ prose is about. Nothing in it is hand-edited. It was built with:
 
 ```sh
 export INTENTIONS_NOW=2026-09-19T09:00:00Z TS=2026-09-19T09:00:00Z
-export ADA=https://example.com/people/ada ROB=https://example.com/people/rob
+export ADA=https://example.com/people/ada PRIYA=https://example.com/people/priya
 intentions init docs/example --author "$ADA" --subject "$ADA" \
   --timezone Australia/Melbourne --hemisphere south
 W="--workspace docs/example"
@@ -58,11 +58,11 @@ TERM=$(intentions $W intention add --title "Being someone the board can rely on"
   --stability firm --timestamp $TS --json | jq -r .id)
 PACK=$(intentions $W intention add --title "Send the board pack" --duration PT30M \
   --calendar 2026-W40 --serves "$TERM:for-the-sake-of" --timestamp $TS --json | jq -r .id)
-ONE=$(intentions $W intention add --title "One-to-one with Rob" --duration PT45M \
-  --calendar 2026-09-22 --clock 14:00/15:00 --party "$ROB" --timestamp $TS --json | jq -r .id)
+ONE=$(intentions $W intention add --title "One-to-one with Priya" --duration PT45M \
+  --calendar 2026-09-22 --clock 14:00/15:00 --party "$PRIYA" --timestamp $TS --json | jq -r .id)
 intentions $W select $ONE --candidate 2 --timestamp $TS
 CMT=$(intentions $W commitment list --json | jq -r '.commitments[0].id')
-intentions $W commitment decline $CMT --party "$ROB" --timestamp $TS
+intentions $W commitment decline $CMT --party "$PRIYA" --timestamp $TS
 intentions $W intention add --title "Draft the Q4 budget narrative" \
   --description "Ninety minutes, sometime this week, before the board pack goes out." \
   --duration PT90M --calendar 2026-W39 --activity deep-work \

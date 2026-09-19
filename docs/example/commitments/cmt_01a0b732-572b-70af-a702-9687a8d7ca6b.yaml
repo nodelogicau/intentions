@@ -1,0 +1,18 @@
+id: cmt_01a0b732-572b-70af-a702-9687a8d7ca6b
+version: sha256:6c30f0c49e96bde087ed1fa45eb162f1e7af60b5702c55c85807a95ba1b3493a
+parties:
+  - uri: https://example.com/people/ada
+    status: tentative
+  - uri: https://example.com/people/priya
+    status: declined
+placement:
+  start: 2026-09-22T14:15:00+10:00
+  duration: PT45M
+intention: int_01a0b732-5709-70e2-adcd-c4454fbd12b4
+origin:
+  resolution: res_01a0b732-571f-70bf-8688-04a4bb52f59c
+title: One-to-one with Priya
+source:
+  author: https://example.com/people/ada
+timestamp: 2026-09-19T09:00:00Z
+acknowledgements: []
