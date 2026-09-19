@@ -857,6 +857,13 @@ between having spoken and not having spoken.
 Displaced objects are listed and flagged,
 never changed.
 
+Which intentions still await a placement, and why, is a listing rather than
+an operation on any object: a dry resolution of every unplaced intention that
+could take one, reporting whether it is ready, blocked on a relational target,
+without candidates, incomplete, or unresolvable. The reference tool set names
+it `unresolved`. It is the inventory of what the person is still carrying
+without a plan, and a session that shrinks it has done the format's work.
+
 ### Composition by reference
 
 ```
@@ -1177,9 +1184,8 @@ first implementation, [intentions-cli](https://github.com/nodelogicau/intentions
 (now v0.11.0), has been written from this text and has raised twenty-five
 issues where it was ambiguous or silent, recorded in its
 [SPEC-FEEDBACK.md](https://github.com/nodelogicau/intentions-cli/blob/main/SPEC-FEEDBACK.md).
-Twenty-four are settled in the text as it now stands, five of them
-differently from what the implementation chose; one, a reference tool set for
-harnesses, is open.
+All twenty-five are settled in the text as it now stands, five of them
+differently from what the implementation chose.
 
 Deferred from this version, deliberately:
 
@@ -1208,6 +1214,108 @@ Deferred from this version, deliberately:
 
 Feedback on the object model, field names, and missing cases is the most
 valuable contribution at this stage.
+
+---
+
+## Reference Tool Set
+
+A harness reaches an implementation through tools, and a skill written
+against one implementation should work against another. This section names a
+reference set: one tool per operation, grouped by the object it acts on and
+named after the verb. The names are a reference, not a requirement. An
+implementation MAY expose its operations under other names; one that exposes
+a name listed here SHALL keep that tool's semantics and accept its parameters
+as stated, so that skills and prompts transfer. The set is what
+[intentions-cli](https://github.com/nodelogicau/intentions-cli) v0.11.0
+exposes over MCP, verified against the binary rather than its documentation.
+
+Parameters are typed after this specification's own structures. A `window` is
+`{calendar, clock, relative: {target, relation, gap: {min, max}}}` with every
+part optional; a `duration` is an ISO 8601 string or `{nominal, min, max}`;
+`serves` is a list of `{id, role}`; `source` is `{author, harness, model}`;
+identifiers are the prefixed ids defined above. A parameter marked `?` is
+optional. A tool's result is the same JSON as the implementation's
+non-interactive output for the verb, and its shape is the implementation's.
+Every refusal a verb makes, the tool makes.
+
+**Intention.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. |
+| `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
+| `intention_firm` | `id`, `policy?`, `source?` | Set stability to firm; a harness must name a policy. |
+| `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. |
+| `intention_show` | `id`, `now?` | One intention with its version, its resolved serves targets and its flags. |
+| `intention_list` | `subject?`, `activity?`, `instances_of?`, `placed?`, `recurring?`, `retired?`, `stability?`, `unplaced?` | Active intentions, filtered. |
+
+**Availability.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `availability_add` | `title?`, `subject`, `duration`, `window`, `cadence?`, `conditional?`, `description?`, `location?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Declare a subject's capacity within a window. |
+| `availability_renew` | `id`, `source?`, `valid_until` | Extend the validity horizon. |
+| `availability_supersede` | `id`, `title?`, `subject?`, `duration?`, `window?`, `cadence?`, `conditional?`, `description?`, `location?`, `reason?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Retire and replace with changed terms. |
+| `availability_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record. |
+| `availability_list` | `subject?`, `conditional?`, `now?`, `retired?`, `scope?` | Availability, filtered. |
+
+**Commitment.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `commitment_accept` | `id`, `party?`, `source?` | Record a party's own answer; no policy, nothing inferred. |
+| `commitment_decline` | `id`, `party?`, `source?` | Record a party's own answer; no policy, nothing inferred. |
+| `commitment_cancel` | `id`, `reason?`, `source?`, `timestamp?` | Cancel and free the intention it was for. |
+| `commitment_show` | `id`, `now?` | One commitment with its intention and flags. |
+| `commitment_list` | `party?`, `cancelled?`, `intention?`, `status?` | Commitments, filtered. |
+
+**Resolution.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `generate` | `horizon?`, `now?`, `recurring?`, `source?` | Materialise instances of recurring intentions over the horizon. |
+| `resolve` | `id`, `limit?`, `now?`, `scope?`, `source?`, `step?` | Rank candidate placements; writes nothing. |
+| `select` | `id`, `candidate?`, `policy?`, `now?`, `replace?`, `scope?`, `source?` | The recorded act: the RESOLUTION record, the placement, a commitment when parties are involved. |
+| `unresolved` | `subject?`, `now?`, `scope?` | What still awaits a placement, and why; writes nothing. |
+
+**Consistency.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `check` | `ids?`, `now?`, `scope?` | Every flag; writes nothing. |
+| `acknowledge` | `id`, `kind`, `counterpart?`, `now?`, `reason?`, `source?` | Record that the person has seen a flag and is proceeding. |
+
+**Workspace.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `bounds` | `id?`, `calendar?`, `clock?`, `hemisphere?`, `now?`, `timezone?` | Clock-time bounds of a window; writes nothing. |
+| `validate` | — | Check the whole workspace. |
+| `workspace_status` | — | Where the server is bound and what the workspace holds. |
+
+Four of these carry the format's rules into a tool call, and an
+implementation that exposes their names SHALL keep them:
+
+- **`select` is the recorded act, and `resolve` chooses nothing.** `select`
+  takes exactly one of a person's `candidate` index or a harness's `policy`
+  id, refuses a call with both or neither, and honours a policy only where it
+  names a terminus of the subject carrying `auto_select` whose condition the
+  intention satisfies.
+- **`intention_firm` refuses a harness without a policy.** A call whose
+  `source` carries a harness must name, in `policy`, an active terminus of the
+  subject carrying `auto_firm` that the intention satisfies, and the write sets
+  `firmed_under`. A call with no harness firms by the person's own act.
+- **`commitment_accept` and `commitment_decline` take no policy.** They set
+  only the named party's own entry, defaulting to the workspace's subject, and
+  nothing infers a status: the tool records what the person said.
+- **`unresolved` lists what still awaits a placement, and why.** Every
+  unretired, unplaced intention that could take a placement, neither a
+  terminus nor a recurring intention, with a status from a dry resolution:
+  `ready` with the candidate count and best rank, `blocked` on a relational
+  target without a placement, `no_candidates` with the resolver's reason,
+  `incomplete` when duration or window is missing, or `unresolvable`. It is
+  the inventory of intentions still carried without a plan, and it writes
+  nothing.
 
 ---
 
