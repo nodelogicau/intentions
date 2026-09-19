@@ -1174,9 +1174,12 @@ serves graph and its roles, the WINDOW anchor forms and their admitted
 vocabularies, the resolution ranking and the flag kinds are believed settled
 and are backed by a reasoning chain in a companion knowledge workspace. A
 first implementation, [intentions-cli](https://github.com/nodelogicau/intentions-cli)
-v0.1.0, has been written from this text and raised thirteen issues where it
-was ambiguous or silent; all thirteen are settled in the text as it now
-stands, four of them differently from what the implementation chose.
+(now v0.11.0), has been written from this text and has raised twenty-five
+issues where it was ambiguous or silent, recorded in its
+[SPEC-FEEDBACK.md](https://github.com/nodelogicau/intentions-cli/blob/main/SPEC-FEEDBACK.md).
+Twenty-four are settled in the text as it now stands, five of them
+differently from what the implementation chose; one, a reference tool set for
+harnesses, is open.
 
 Deferred from this version, deliberately:
 
