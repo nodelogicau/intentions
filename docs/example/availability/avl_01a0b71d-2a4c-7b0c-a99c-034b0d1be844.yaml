@@ -1,0 +1,17 @@
+id: avl_01a0b71d-2a4c-7b0c-a99c-034b0d1be844
+version: sha256:6dbaa43c768c19318b48a40b3b39d4490b5d53360d1a439a4a1cef11b5df1f38
+subject: https://example.com/people/ada
+title: Deep-work mornings
+description: Tuesday and Thursday mornings are kept clear for focused work.
+duration: PT3H
+window:
+  calendar: 2026-W39
+  clock: 09:00/12:00
+conditional:
+  - deep-work
+cadence: FREQ=WEEKLY;BYDAY=TU,TH
+valid_until: 2026-W40
+scope: personal
+source:
+  author: https://example.com/people/ada
+timestamp: 2026-09-19T09:00:00Z

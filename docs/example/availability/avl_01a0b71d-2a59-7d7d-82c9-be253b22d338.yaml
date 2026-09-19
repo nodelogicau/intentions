@@ -1,0 +1,14 @@
+id: avl_01a0b71d-2a59-7d7d-82c9-be253b22d338
+version: sha256:9093dc75aa28664e67c44e3a557fb9e72357f51e356c0f833abcb64c572e2552
+subject: https://example.com/people/ada
+title: Weekday afternoons
+duration: PT4H
+window:
+  calendar: 2026-W39
+  clock: 13:00/17:00
+cadence: FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
+valid_until: 2026-W40
+scope: personal
+source:
+  author: https://example.com/people/ada
+timestamp: 2026-09-19T09:00:00Z

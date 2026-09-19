@@ -7,6 +7,9 @@ Designed to be written and read by AI harnesses, reviewed by people through
 git, and to compose with iCalendar and with the Dialectical Knowledge Format
 by reference rather than by shared schema.
 
+**[intentions.fyi](https://intentions.fyi)** — a visual introduction for
+practitioners.
+
 ---
 
 ## The Problem
@@ -1223,4 +1226,6 @@ software from setting a party's status.
 
 ## License
 
-TBD.
+The specification is released under [CC0 1.0 Universal](LICENSE). Reference
+implementations are released under the MIT License. You are free to implement
+the format without restriction.

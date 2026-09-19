@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intentions</title>
+<meta name="description" content="Intentions — an open format for what a person means to do with their time. A duration, a window and a reason, rather than a slot.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%234a4fd6' stroke-width='4'/%3E%3Cpath d='M16 16 L16 5 A11 11 0 0 1 27 16 Z' fill='%234a4fd6'/%3E%3C/svg%3E">
+<!--
+  The figure in the proof section is a static rendering of the installed
+  intentions binary's own output on the example workspace in docs/example:
+    intentions resolve <the budget intention> - -limit 500 - -now 2026-09-19T09:00:00Z
+    intentions check - -now 2026-09-19T09:00:00Z
+  (remove the spaces in the flags; written this way so this comment can't be
+  mistaken for the command), rendered by docs/resolution-figure.py between the
+  RESOLUTION-FIGURE markers. Ids are omitted; every element carries a native
+  SVG <title> tooltip with the output it was drawn from. To regenerate:
+    python3 docs/resolution-figure.py
+  The page names no field, vocabulary value or flag kind of the format, so a
+  rename in the specification cannot make it false. Everything it says is
+  said in the README's Problem, Approach and Status sections.
+-->
+<style>
+  :root {
+    --bg: #faf9f7;
+    --fg: #1f2430;
+    --muted: #5b6270;
+    --line: #d8d5cf;
+    --card: #ffffff;
+    --accent: #4a4fd6;
+    --accent-soft: #e6e7fb;
+    --challenge: #b45309;
+    --challenge-soft: #fbeedd;
+    --stale: #b3341f;
+    --code-bg: #171c26;
+    --code-fg: #e6e9ef;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #12151c;
+      --fg: #e8e6e1;
+      --muted: #a0a7b3;
+      --line: #2c313d;
+      --card: #1a1e27;
+      --accent: #9fa3ff;
+      --accent-soft: #22244a;
+      --challenge: #f0a04b;
+      --challenge-soft: #2f2619;
+      --stale: #e0604a;
+      --code-bg: #0c0e13;
+      --code-fg: #dfe3ea;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  main, footer { display: block; }
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 1.25rem; }
+  section { padding: 3.5rem 0; }
+  section + section { border-top: 1px solid var(--line); }
+
+  h1, h2 { line-height: 1.15; letter-spacing: -0.015em; }
+  h1 { font-size: clamp(2.1rem, 6vw, 3.4rem); margin: 0.5rem 0 1rem; }
+  h2 { font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0 0 0.75rem; }
+  p.lead { font-size: 1.125rem; color: var(--muted); max-width: 44rem; }
+  a { color: var(--accent); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+  .eyebrow {
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent); margin: 0;
+  }
+  .hero { text-align: center; padding-top: 4.5rem; }
+  .hero p.lead { margin: 0 auto 1.75rem; }
+  .cta { display: inline-block; margin: 0.25rem 0.4rem; padding: 0.65rem 1.3rem;
+    border-radius: 999px; text-decoration: none; font-weight: 600; }
+  .cta.primary { background: var(--accent); color: var(--bg); }
+  .cta.ghost { color: var(--accent); border: 1.5px solid var(--accent); }
+  p.credit { font-size: 0.875rem; color: var(--muted); text-align: center;
+    max-width: 40rem; margin: 1.25rem auto 0; }
+
+  figure { margin: 2.25rem 0 0; }
+  .diagram-wrap { overflow-x: auto; }
+  .diagram-wrap svg { display: block; margin: 0 auto; max-width: 100%; height: auto; }
+  svg.min640 { min-width: 640px; }
+  svg.min720 { min-width: 720px; }
+  figcaption { font-size: 0.9rem; color: var(--muted); text-align: center; margin-top: 0.75rem; }
+
+  /* diagram vocabulary, shared with particulars.fyi */
+  svg text { fill: var(--fg); font-family: inherit; font-size: 15px; }
+  svg .small { font-size: 12.5px; }
+  svg .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  svg .lbl { fill: var(--muted); font-size: 13px; }
+  svg .accent-t { fill: var(--accent); font-weight: 600; }
+  svg .challenge-t { fill: var(--challenge); font-weight: 600; }
+  svg .stale-t { fill: var(--stale); font-weight: 600; }
+  svg .box { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+  svg .box-accent { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2.5; }
+  svg .box-challenge { fill: var(--challenge-soft); stroke: var(--challenge); stroke-width: 1.5; }
+  svg .box-stale { fill: var(--card); stroke: var(--stale); stroke-width: 1.5; stroke-dasharray: 5 4; }
+  svg .edge { stroke: var(--muted); stroke-width: 1.5; fill: none; }
+  svg .edge-dash { stroke-dasharray: 5 5; }
+  svg .head { fill: var(--muted); }
+  svg .divider { stroke: var(--line); stroke-dasharray: 3 6; stroke-width: 1.5; }
+  svg a text { fill: var(--accent); text-decoration: underline; }
+  /* the proof figure */
+  svg .grid { stroke: var(--line); stroke-width: 1; }
+  svg .sup { fill: var(--accent-soft); }
+  svg .cand1 { fill: var(--accent); }
+  svg .cand2 { fill: var(--challenge-soft); stroke: var(--challenge); stroke-width: 1.5; stroke-dasharray: 3 2; }
+  svg .placed { fill: var(--card); stroke: var(--fg); stroke-width: 1.5; }
+  svg .flag { fill: var(--challenge); }
+  svg .flag-t { fill: var(--bg); font-size: 11px; font-weight: 700; }
+
+  .kicker {
+    font-size: clamp(1.15rem, 3vw, 1.5rem); font-weight: 650; text-align: center;
+    max-width: 38rem; margin: 2.5rem auto 0; line-height: 1.5;
+  }
+  .kicker span { color: var(--accent); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem; margin-top: 2.25rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 1.1rem 1.2rem; }
+  .card h3 { margin: 0 0 0.4rem; font-size: 1rem; }
+  .card p { margin: 0; font-size: 0.925rem; color: var(--muted); }
+
+  pre.term {
+    background: var(--code-bg); color: var(--code-fg); border-radius: 12px;
+    padding: 1.25rem 1.4rem; overflow-x: auto; font-size: 0.9rem; line-height: 1.7;
+    margin: 1.75rem 0;
+  }
+  pre.term .p { color: #a9acff; user-select: none; }
+
+  .links { margin: 1.5rem 0 0; padding: 0; list-style: none;
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; font-weight: 600; }
+  .roadmap {
+    margin-top: 2.5rem; padding: 0.85rem 1.2rem; border: 1px solid var(--line);
+    border-radius: 12px; background: var(--card); font-size: 0.925rem; color: var(--muted);
+  }
+  .roadmap strong { color: var(--fg); }
+
+  footer { border-top: 1px solid var(--line); padding: 2rem 0 3rem;
+    font-size: 0.875rem; color: var(--muted); }
+  footer a { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+
+  <!-- 1 · HERO -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Intentions &middot; the Intentions Format</p>
+      <h1>Every hour is for something.</h1>
+      <p class="lead">An open format for what a person means to do with their time.
+        An intention carries a duration, a window and a reason, and it is flattened
+        to a slot only when it must be. Written and read by AI harnesses, reviewed
+        by people through git.</p>
+      <p>
+        <a class="cta primary" href="#start">Get started</a>
+        <a class="cta ghost" href="https://github.com/nodelogicau/intentions">Read the spec</a>
+      </p>
+
+      <figure>
+        <div class="diagram-wrap">
+        <svg class="min720" viewBox="0 0 780 300" role="img" aria-labelledby="hero-title hero-desc">
+          <title id="hero-title">The slot and the triad</title>
+          <desc id="hero-desc">A calendar stores a slot: a start and an end, invented
+            on Tuesday and moved four times. This format stores a triad: a duration of
+            ninety minutes, a window of this week, and an intention to draft the budget
+            narrative, which is in order to send the board pack, for the sake of being
+            someone the board can rely on. The triad becomes a slot only when it must.</desc>
+          <defs>
+            <marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="head"/>
+            </marker>
+          </defs>
+          <text x="190" y="30" text-anchor="middle" class="lbl" font-weight="600">a calendar stores</text>
+          <text x="600" y="30" text-anchor="middle" class="lbl" font-weight="600">this format stores</text>
+          <line x1="390" y1="20" x2="390" y2="60" class="divider"/>
+          <line x1="390" y1="130" x2="390" y2="280" class="divider"/>
+
+          <!-- the slot -->
+          <rect x="70" y="60" width="240" height="70" rx="10" class="box-stale"/>
+          <text x="90" y="88" font-weight="600">Tue 14:00 &ndash; 15:30</text>
+          <text x="90" y="112" class="lbl">budget narrative &middot; tentative</text>
+          <text x="190" y="172" text-anchor="middle" class="stale-t small">invented on Tuesday, moved four times</text>
+          <text x="190" y="192" text-anchor="middle" class="lbl">tells nobody anything</text>
+
+          <!-- the triad -->
+          <rect x="425" y="60" width="100" height="56" rx="10" class="box"/>
+          <text x="475" y="82" text-anchor="middle" class="mono lbl">DURATION</text>
+          <text x="475" y="103" text-anchor="middle" class="small">90 minutes</text>
+          <rect x="535" y="60" width="100" height="56" rx="10" class="box"/>
+          <text x="585" y="82" text-anchor="middle" class="mono lbl">WINDOW</text>
+          <text x="585" y="103" text-anchor="middle" class="small">this week</text>
+          <rect x="645" y="60" width="120" height="56" rx="10" class="box"/>
+          <text x="705" y="82" text-anchor="middle" class="mono lbl">INTENTION</text>
+          <text x="705" y="103" text-anchor="middle" class="small">draft the budget</text>
+
+          <path d="M705,116 L705,152" class="edge" marker-end="url(#ah1)"/>
+          <text x="715" y="140" class="lbl">in order to</text>
+          <rect x="565" y="156" width="200" height="44" rx="10" class="box"/>
+          <text x="665" y="183" text-anchor="middle" class="small">send the board pack</text>
+
+          <path d="M665,200 L665,236" class="edge" marker-end="url(#ah1)"/>
+          <text x="675" y="224" class="lbl">for the sake of</text>
+          <rect x="505" y="240" width="260" height="44" rx="10" class="box-accent"/>
+          <text x="635" y="267" text-anchor="middle" class="small">being someone the board can rely on</text>
+
+          <!-- the triad becomes a slot only when it must -->
+          <path d="M425,98 C380,98 360,95 316,95" class="edge edge-dash" marker-end="url(#ah1)"/>
+          <text x="370" y="82" text-anchor="middle" class="lbl small">a slot, only</text>
+          <text x="370" y="118" text-anchor="middle" class="lbl small">when it must</text>
+        </svg>
+        </div>
+        <figcaption>How long, within what bounds, and what for. The slot comes last.</figcaption>
+      </figure>
+
+      <p class="credit">After Heidegger on datability: a &ldquo;now&rdquo; is never bare. It is
+        always &ldquo;now, that&hellip;&rdquo;, a time <em>for</em> something.
+        <cite>Being and Time</cite>, &sect;79.</p>
+    </div>
+  </section>
+
+  <!-- 2 · ONE PLAN, TWO FATES -->
+  <section id="two-fates">
+    <div class="wrap">
+      <h2>One plan, two fates</h2>
+      <p class="lead">Ninety minutes on the budget, sometime this week, before the board
+        pack goes out. The duration is known, the window is known, the reason is
+        known, and the slot is not. What does your calendar do with that?</p>
+
+      <figure>
+        <div class="diagram-wrap">
+        <svg class="min640" viewBox="0 0 780 430" role="img" aria-labelledby="fates-title fates-desc">
+          <title id="fates-title">One plan, two fates</title>
+          <desc id="fates-desc">In a slot-based calendar, a tentative block is invented
+            on Tuesday at two, moved to Wednesday, moved to Thursday, and by the time
+            it settles nobody knows what it was for or whether it still fits. In this
+            format the same plan is an intention with a duration, a window and a
+            reason. Resolution ranks candidate placements against the person's
+            declared availability, the person selects one, and the placement carries
+            its reason with it.</desc>
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="head"/>
+            </marker>
+          </defs>
+          <text x="195" y="34" text-anchor="middle" class="lbl" font-weight="600">a slot-based calendar</text>
+          <text x="585" y="34" text-anchor="middle" class="lbl" font-weight="600">intentions</text>
+          <line x1="390" y1="24" x2="390" y2="406" class="divider"/>
+
+          <!-- left: the slot -->
+          <rect x="95" y="56" width="200" height="52" rx="10" class="box"/>
+          <text x="115" y="78" class="small">Tue 14:00 &middot; budget</text>
+          <text x="115" y="97" class="lbl">a slot, invented</text>
+
+          <path d="M195,108 L195,140" class="edge edge-dash" marker-end="url(#ah2)"/>
+          <text x="210" y="130" class="lbl">moved</text>
+
+          <rect x="95" y="144" width="200" height="52" rx="10" class="box"/>
+          <text x="115" y="166" class="small">Wed 10:00 &middot; budget</text>
+          <text x="115" y="185" class="lbl">something came up</text>
+
+          <path d="M195,196 L195,228" class="edge edge-dash" marker-end="url(#ah2)"/>
+          <text x="210" y="218" class="lbl">moved</text>
+
+          <rect x="95" y="232" width="200" height="60" rx="10" class="box-stale"/>
+          <text x="115" y="256" class="small">Thu 15:00 &middot; budget</text>
+          <text x="115" y="278" class="stale-t small">fourth move &middot; still tentative</text>
+
+          <text x="195" y="334" text-anchor="middle" class="lbl">nobody knows what it was for,</text>
+          <text x="195" y="354" text-anchor="middle" class="lbl">or whether Thursday still fits</text>
+
+          <!-- right: intentions -->
+          <rect x="470" y="56" width="230" height="60" rx="10" class="box"/>
+          <text x="490" y="80" class="small">90 min &middot; this week &middot; deep work</text>
+          <text x="490" y="101" class="lbl">in order to send the board pack</text>
+
+          <path d="M585,116 L585,148" class="edge" marker-end="url(#ah2)"/>
+          <text x="600" y="138" class="lbl">resolved against your supply</text>
+
+          <rect x="470" y="152" width="230" height="60" rx="10" class="box"/>
+          <text x="490" y="176" class="small">candidate placements, ranked</text>
+          <text x="490" y="197" class="lbl">by how much each would disturb</text>
+
+          <path d="M585,212 L585,244" class="edge" marker-end="url(#ah2)"/>
+          <text x="600" y="234" class="lbl">you choose</text>
+
+          <rect x="455" y="248" width="260" height="76" rx="10" class="box-accent"/>
+          <text x="475" y="272" class="small">Thu 09:00 &ndash; 10:30 &middot; placed</text>
+          <text x="475" y="291" class="small">the reason travels with it</text>
+          <text x="475" y="312" class="accent-t small">a recorded act &middot; yours</text>
+
+          <text x="585" y="360" text-anchor="middle" class="lbl">if Thursday stops fitting, the format</text>
+          <text x="585" y="380" text-anchor="middle" class="lbl">can say so, because it knows what for</text>
+        </svg>
+        </div>
+        <figcaption>The same plan, in a calendar that stores slots and in a format that stores what the slot is for.</figcaption>
+      </figure>
+
+      <p class="kicker">A slot says <span>when</span>. An intention says <span>how long</span>,
+        <span>within what</span>, and <span>what for</span>.</p>
+
+      <div class="cards">
+        <div class="card">
+          <h3>iCalendar &amp; JSCalendar</h3>
+          <p>A start and an end, into which events are placed. The right picture for
+            the moment two people must meet, and the wrong one for nearly everything
+            before that moment.</p>
+        </div>
+        <div class="card">
+          <h3>Scheduling assistants</h3>
+          <p>Built on the same picture. They find a slot for a meeting. What a person
+            has before the meeting is fixed has no representation to search.</p>
+        </div>
+        <div class="card">
+          <h3>The tentative block</h3>
+          <p>A slot pretending not to be one. It has to be invented to exist at all,
+            and every move strips a little more of the reason it was made.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · WHOSE CALENDAR IS IT? -->
+  <section id="authorship">
+    <div class="wrap">
+      <h2>Whose calendar is it?</h2>
+      <p class="lead">The same calendar can be the scaffold of a person&rsquo;s own resolve
+        or an accretion of other people&rsquo;s claims on their time, and the artifact
+        looks identical either way. Here every object says who wrote it, and what
+        each writer may do is not the same.</p>
+
+      <figure>
+        <div class="diagram-wrap">
+        <svg class="min640" viewBox="0 0 800 360" role="img" aria-labelledby="who-title who-desc">
+          <title id="who-title">Who may do what</title>
+          <desc id="who-desc">Three columns. You may intend, make an intention firm,
+            select a placement, and acknowledge a flag. Your harness may draft, rank
+            and flag, and may firm or select only under a policy you hold. Another
+            party may accept or decline, their own entry only, and their answer
+            arrives by import. Beneath all three: every object says who wrote it, and
+            no flag is a decision.</desc>
+
+          <rect x="20" y="40" width="240" height="232" rx="14" class="box-accent"/>
+          <text x="42" y="72" font-weight="600">you</text>
+          <text x="42" y="108" class="small"><tspan class="accent-t">intend</tspan> &mdash; on your own word</text>
+          <text x="42" y="140" class="small"><tspan class="accent-t">make firm</tspan> &mdash; resist reconsidering</text>
+          <text x="42" y="172" class="small"><tspan class="accent-t">select</tspan> &mdash; a recorded act</text>
+          <text x="42" y="204" class="small"><tspan class="accent-t">acknowledge</tspan> &mdash; a flag, and go on</text>
+          <text x="42" y="236" class="lbl small">or a policy you hold does,</text>
+          <text x="42" y="254" class="lbl small">in your name</text>
+
+          <rect x="280" y="40" width="240" height="232" rx="14" class="box"/>
+          <text x="302" y="72" font-weight="600">your harness</text>
+          <text x="302" y="108" class="small"><tspan class="accent-t">draft</tspan> &mdash; an intention, for you</text>
+          <text x="302" y="140" class="small"><tspan class="accent-t">rank</tspan> &mdash; candidates, choosing none</text>
+          <text x="302" y="172" class="small"><tspan class="accent-t">flag</tspan> &mdash; what fails to hang together</text>
+          <text x="302" y="204" class="small"><tspan class="challenge-t">firm or select</tspan> &mdash; only under</text>
+          <text x="302" y="224" class="small">a policy you hold, and it says which</text>
+
+          <rect x="540" y="40" width="240" height="232" rx="14" class="box"/>
+          <text x="562" y="72" font-weight="600">another party</text>
+          <text x="562" y="108" class="small"><tspan class="accent-t">accept</tspan> or <tspan class="accent-t">decline</tspan></text>
+          <text x="562" y="140" class="small">their own entry, and only theirs</text>
+          <text x="562" y="172" class="small">their answer arrives by import,</text>
+          <text x="562" y="192" class="small">never by anyone speaking for them</text>
+          <text x="562" y="230" class="lbl small">a party not tracked here</text>
+          <text x="562" y="248" class="lbl small">constrains nothing</text>
+
+          <line x1="20" y1="304" x2="780" y2="304" class="divider"/>
+          <text x="210" y="336" text-anchor="middle" class="small"><tspan class="accent-t">every object says who wrote it</tspan></text>
+          <text x="590" y="336" text-anchor="middle" class="small"><tspan class="accent-t">no flag is a decision</tspan></text>
+        </svg>
+        </div>
+        <figcaption>A harness may draft. It may not intend, and it may not answer for anyone.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 4 · IT RANKS. IT FLAGS. IT NEVER CHOOSES. -->
+  <section id="resolution">
+    <div class="wrap">
+      <h2>It ranks. It flags. It never chooses.</h2>
+      <p class="lead">Resolution matches an intention&rsquo;s demand against the availability
+        of everyone and everything it needs, and returns candidate placements ranked
+        by how much existing intention each would disturb. Selection is a recorded
+        act by the person, or by a policy the person holds. A commitment appears only
+        where another party is involved. A clash is a flag: surfaced, never decided.</p>
+
+      <figure>
+        <div class="diagram-wrap">
+        <svg class="min720" viewBox="0 0 800 290" role="img" aria-labelledby="res-title res-desc">
+          <title id="res-title">From intention to placement</title>
+          <desc id="res-desc">An intention, which is demand, and availability, which is
+            supply, enter resolution. Resolution produces candidates, ranked. Selection
+            is the person's act or a policy they hold, and produces a placement. Where
+            another party is involved the placement becomes a commitment, with a status
+            per party that only that party may change. Beneath the pipeline, flags:
+            a clash, a gap in supply, a lapsed statement, a party who declined. Each is
+            reported, acknowledged or not, and never acted on by the software.</desc>
+          <defs>
+            <marker id="ah4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="head"/>
+            </marker>
+          </defs>
+
+          <rect x="20" y="30" width="150" height="52" rx="10" class="box"/>
+          <text x="95" y="52" text-anchor="middle" font-weight="600">intention</text>
+          <text x="95" y="72" text-anchor="middle" class="lbl">demand</text>
+          <rect x="20" y="100" width="150" height="52" rx="10" class="box"/>
+          <text x="95" y="122" text-anchor="middle" font-weight="600">availability</text>
+          <text x="95" y="142" text-anchor="middle" class="lbl">supply</text>
+
+          <path d="M170,56 L215,84" class="edge" marker-end="url(#ah4)"/>
+          <path d="M170,126 L215,98" class="edge" marker-end="url(#ah4)"/>
+
+          <rect x="220" y="65" width="130" height="52" rx="10" class="box"/>
+          <text x="285" y="87" text-anchor="middle" font-weight="600">resolution</text>
+          <text x="285" y="107" text-anchor="middle" class="lbl">a function</text>
+
+          <path d="M350,91 L395,91" class="edge" marker-end="url(#ah4)"/>
+
+          <rect x="400" y="65" width="130" height="52" rx="10" class="box"/>
+          <text x="465" y="87" text-anchor="middle" font-weight="600">candidates</text>
+          <text x="465" y="107" text-anchor="middle" class="lbl">ranked, none chosen</text>
+
+          <path d="M530,91 L575,91" class="edge" marker-end="url(#ah4)"/>
+          <text x="552" y="80" text-anchor="middle" class="accent-t small">you</text>
+
+          <rect x="580" y="65" width="130" height="52" rx="10" class="box-accent"/>
+          <text x="645" y="87" text-anchor="middle" font-weight="600">placement</text>
+          <text x="645" y="107" text-anchor="middle" class="lbl">a recorded act</text>
+
+          <path d="M645,117 L645,152" class="edge" marker-end="url(#ah4)"/>
+          <text x="632" y="140" text-anchor="end" class="lbl small">only if a party is involved</text>
+
+          <rect x="560" y="156" width="220" height="60" rx="10" class="box"/>
+          <text x="670" y="178" text-anchor="middle" font-weight="600">commitment</text>
+          <text x="670" y="199" text-anchor="middle" class="lbl">a status per party, theirs alone</text>
+
+          <line x1="20" y1="236" x2="780" y2="236" class="divider"/>
+          <text x="20" y="264" class="challenge-t small">flags</text>
+          <text x="70" y="264" class="small">a clash &middot; a gap in supply &middot; a lapsed statement &middot; a party who declined</text>
+          <text x="70" y="282" class="lbl small">each is reported, acknowledged or not, and never acted on by the software</text>
+        </svg>
+        </div>
+        <figcaption>Resolution is a function. Selection is an act. Flags are neither.</figcaption>
+      </figure>
+
+      <figure>
+        <div class="diagram-wrap">
+        <svg class="min640" viewBox="0 0 800 210" role="img" aria-labelledby="comp-title comp-desc">
+          <title id="comp-title">Before the moment, the moment, after the moment</title>
+          <desc id="comp-desc">Three boxes in a row. Before the moment: this format,
+            holding duration, window, reason, availability and resolution. The moment:
+            iCalendar or JSCalendar, which a commitment links to as one external
+            object. After the moment: the Dialectical Knowledge Format, where a claim
+            cites an object here by id and version. Each composes with the next by
+            reference, not by shared schema.</desc>
+          <defs>
+            <marker id="ah5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" class="head"/>
+            </marker>
+          </defs>
+          <text x="140" y="30" text-anchor="middle" class="lbl" font-weight="600">before the moment</text>
+          <text x="400" y="30" text-anchor="middle" class="lbl" font-weight="600">the moment</text>
+          <text x="660" y="30" text-anchor="middle" class="lbl" font-weight="600">after the moment</text>
+
+          <rect x="20" y="44" width="240" height="110" rx="14" class="box-accent"/>
+          <text x="140" y="72" text-anchor="middle" font-weight="600">intentions</text>
+          <text x="140" y="98" text-anchor="middle" class="small">duration &middot; window &middot; reason</text>
+          <text x="140" y="118" text-anchor="middle" class="small">availability &middot; resolution</text>
+          <text x="140" y="140" text-anchor="middle" class="lbl small">this format</text>
+
+          <path d="M260,99 L275,99" class="edge" marker-end="url(#ah5)"/>
+          <text x="268" y="176" text-anchor="middle" class="lbl small">a commitment links to one event</text>
+
+          <rect x="280" y="44" width="240" height="110" rx="14" class="box"/>
+          <text x="400" y="72" text-anchor="middle" font-weight="600">iCalendar &middot; JSCalendar</text>
+          <text x="400" y="98" text-anchor="middle" class="small">the fixed slot, when two</text>
+          <text x="400" y="118" text-anchor="middle" class="small">people must meet</text>
+          <text x="400" y="140" text-anchor="middle" class="lbl small">composed with by reference</text>
+
+          <path d="M520,99 L535,99" class="edge" marker-end="url(#ah5)"/>
+          <text x="528" y="176" text-anchor="middle" class="lbl small">a claim cites an object at a version</text>
+
+          <a href="https://particulars.fyi">
+            <rect x="540" y="44" width="240" height="110" rx="14" class="box"/>
+            <text x="660" y="72" text-anchor="middle" font-weight="600">Dialectical Knowledge Format</text>
+            <text x="660" y="98" text-anchor="middle" class="small">what actually happened,</text>
+            <text x="660" y="118" text-anchor="middle" class="small">and what was learned</text>
+            <text x="660" y="140" text-anchor="middle" class="small">particulars.fyi</text>
+          </a>
+        </svg>
+        </div>
+        <figcaption>This format is for the time before a slot exists. The slot is iCalendar&rsquo;s. What
+          happened afterwards is a <a href="https://particulars.fyi">DKF</a> claim.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 5 · PROOF -->
+  <section id="proof">
+    <div class="wrap">
+      <h2>Read by a second reader</h2>
+      <p class="lead">A first implementation was written from the specification alone
+        and raised thirteen issues where the text was ambiguous or silent. All
+        thirteen are settled in the text as it now stands, four of them differently
+        from what the implementation chose. Below is that binary&rsquo;s own output on
+        the example workspace in this site&rsquo;s repository: one week of declared
+        availability, one commitment already placed and declined by the other party,
+        and every candidate placement it ranked for ninety minutes on the budget.</p>
+
+      <figure>
+        <div class="diagram-wrap">
+<!-- RESOLUTION-FIGURE:BEGIN -->
+<svg class="min640" viewBox="0 0 800 424" role="img" aria-labelledby="proof-title proof-desc">
+  <title id="proof-title">Every candidate the binary ranked</title>
+  <desc id="proof-desc">A week grid. Shaded bands are the availability the person declared. A box is a commitment already placed, marked where a party has declined. Bars are the candidate placements the binary ranked for the budget intention: solid where the candidate disturbs nothing, dashed where it would displace a commitment the person still holds.</desc>
+  <text x="50" y="24" text-anchor="end" class="lbl">September 2026</text>
+  <text x="110" y="24" text-anchor="middle" class="lbl" font-weight="600">Mon 21</text>
+  <line x1="58" y1="46" x2="58" y2="306" class="grid"/>
+  <text x="214" y="24" text-anchor="middle" class="lbl" font-weight="600">Tue 22</text>
+  <line x1="162" y1="46" x2="162" y2="306" class="grid"/>
+  <text x="318" y="24" text-anchor="middle" class="lbl" font-weight="600">Wed 23</text>
+  <line x1="266" y1="46" x2="266" y2="306" class="grid"/>
+  <text x="422" y="24" text-anchor="middle" class="lbl" font-weight="600">Thu 24</text>
+  <line x1="370" y1="46" x2="370" y2="306" class="grid"/>
+  <text x="526" y="24" text-anchor="middle" class="lbl" font-weight="600">Fri 25</text>
+  <line x1="474" y1="46" x2="474" y2="306" class="grid"/>
+  <text x="630" y="24" text-anchor="middle" class="lbl" font-weight="600">Sat 26</text>
+  <line x1="578" y1="46" x2="578" y2="306" class="grid"/>
+  <text x="734" y="24" text-anchor="middle" class="lbl" font-weight="600">Sun 27</text>
+  <line x1="682" y1="46" x2="682" y2="306" class="grid"/>
+  <line x1="786" y1="46" x2="786" y2="306" class="grid"/>
+  <line x1="58" y1="46" x2="786" y2="46" class="grid"/>
+  <line x1="58" y1="72" x2="786" y2="72" class="grid"/>
+  <text x="50" y="76" text-anchor="end" class="small lbl">09:00</text>
+  <line x1="58" y1="98" x2="786" y2="98" class="grid"/>
+  <line x1="58" y1="124" x2="786" y2="124" class="grid"/>
+  <line x1="58" y1="150" x2="786" y2="150" class="grid"/>
+  <text x="50" y="154" text-anchor="end" class="small lbl">12:00</text>
+  <line x1="58" y1="176" x2="786" y2="176" class="grid"/>
+  <line x1="58" y1="202" x2="786" y2="202" class="grid"/>
+  <line x1="58" y1="228" x2="786" y2="228" class="grid"/>
+  <text x="50" y="232" text-anchor="end" class="small lbl">15:00</text>
+  <line x1="58" y1="254" x2="786" y2="254" class="grid"/>
+  <line x1="58" y1="280" x2="786" y2="280" class="grid"/>
+  <line x1="58" y1="306" x2="786" y2="306" class="grid"/>
+  <text x="50" y="310" text-anchor="end" class="small lbl">18:00</text>
+  <rect x="163" y="72.0" width="102" height="78.0" class="sup"><title>availability: Deep-work mornings · 09:00/12:00 · FREQ=WEEKLY;BYDAY=TU,TH · good for deep-work · capacity PT3H per occasion</title></rect>
+  <rect x="371" y="72.0" width="102" height="78.0" class="sup"><title>availability: Deep-work mornings · 09:00/12:00 · FREQ=WEEKLY;BYDAY=TU,TH · good for deep-work · capacity PT3H per occasion</title></rect>
+  <rect x="59" y="176.0" width="102" height="104.0" class="sup"><title>availability: Weekday afternoons · 13:00/17:00 · FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR · good for anything · capacity PT4H per occasion</title></rect>
+  <rect x="163" y="176.0" width="102" height="104.0" class="sup"><title>availability: Weekday afternoons · 13:00/17:00 · FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR · good for anything · capacity PT4H per occasion</title></rect>
+  <rect x="267" y="176.0" width="102" height="104.0" class="sup"><title>availability: Weekday afternoons · 13:00/17:00 · FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR · good for anything · capacity PT4H per occasion</title></rect>
+  <rect x="371" y="176.0" width="102" height="104.0" class="sup"><title>availability: Weekday afternoons · 13:00/17:00 · FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR · good for anything · capacity PT4H per occasion</title></rect>
+  <rect x="475" y="176.0" width="102" height="104.0" class="sup"><title>availability: Weekday afternoons · 13:00/17:00 · FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR · good for anything · capacity PT4H per occasion</title></rect>
+  <rect x="64" y="176.0" width="9" height="104.0" rx="2" class="cand1"><title>rank 1 · 11 candidate starts from 13:00 to 15:30 on a 15-minute grid · displaces nothing · supply: Weekday afternoons</title></rect>
+  <rect x="168" y="72.0" width="9" height="78.0" rx="2" class="cand1"><title>rank 1 · 7 candidate starts from 09:00 to 10:30 on a 15-minute grid · displaces nothing · supply: Deep-work mornings</title></rect>
+  <rect x="180" y="176.0" width="9" height="84.5" rx="2" class="cand2"><title>rank 2 · 8 candidate starts from 13:00 to 14:45 on a 15-minute grid · would displace One-to-one with Rob (still held by the person) · supply: Weekday afternoons</title></rect>
+  <rect x="168" y="228.0" width="9" height="52.0" rx="2" class="cand1"><title>rank 1 · 3 candidate starts from 15:00 to 15:30 on a 15-minute grid · displaces nothing · supply: Weekday afternoons</title></rect>
+  <rect x="272" y="176.0" width="9" height="104.0" rx="2" class="cand1"><title>rank 1 · 11 candidate starts from 13:00 to 15:30 on a 15-minute grid · displaces nothing · supply: Weekday afternoons</title></rect>
+  <rect x="376" y="72.0" width="9" height="78.0" rx="2" class="cand1"><title>rank 1 · 7 candidate starts from 09:00 to 10:30 on a 15-minute grid · displaces nothing · supply: Deep-work mornings</title></rect>
+  <rect x="376" y="176.0" width="9" height="104.0" rx="2" class="cand1"><title>rank 1 · 11 candidate starts from 13:00 to 15:30 on a 15-minute grid · displaces nothing · supply: Weekday afternoons</title></rect>
+  <rect x="480" y="176.0" width="9" height="104.0" rx="2" class="cand1"><title>rank 1 · 11 candidate starts from 13:00 to 15:30 on a 15-minute grid · displaces nothing · supply: Weekday afternoons</title></rect>
+  <g><title>commitment: One-to-one with Rob · Tue 14:15–15:00 · Ada tentative; Rob declined · flagged: https://example.com/people/rob (a counterparty) has declined while int_01a0b71d-2aaf-7da8-a5df-fc512ec7e03a is still placed at 2026-09-22T14:15:00+10:00</title>
+    <rect x="194" y="208.5" width="70" height="19.5" rx="4" class="placed"/>
+    <text x="198" y="222.5" class="mono" font-size="10.5">One-to-one</text>
+    <circle cx="264" cy="208.5" r="7" class="flag"/>
+    <text x="264" y="212.5" text-anchor="middle" class="flag-t">!</text>
+  </g>
+  <text x="110" y="324" text-anchor="middle" class="small lbl">11 rank 1</text>
+  <text x="214" y="324" text-anchor="middle" class="small lbl">10 rank 1 · 8 rank 2</text>
+  <text x="318" y="324" text-anchor="middle" class="small lbl">11 rank 1</text>
+  <text x="422" y="324" text-anchor="middle" class="small lbl">18 rank 1</text>
+  <text x="526" y="324" text-anchor="middle" class="small lbl">11 rank 1</text>
+  <text x="630" y="324" text-anchor="middle" class="small lbl">no supply</text>
+  <text x="734" y="324" text-anchor="middle" class="small lbl">no supply</text>
+  <rect x="58" y="348" width="18" height="12" class="sup"/>
+  <text x="82" y="358" class="small">declared availability</text>
+  <rect x="230" y="348" width="9" height="12" rx="2" class="cand1"/>
+  <text x="246" y="358" class="small">candidate, disturbs nothing</text>
+  <rect x="430" y="348" width="9" height="12" rx="2" class="cand2"/>
+  <text x="446" y="358" class="small">candidate, would displace a commitment</text>
+  <rect x="58" y="374" width="18" height="12" rx="3" class="placed"/>
+  <text x="82" y="384" class="small">commitment already placed</text>
+  <circle cx="274" cy="380" r="7" class="flag"/><text x="274" y="384" text-anchor="middle" class="flag-t">!</text>
+  <text x="289" y="384" class="small">a party declined: flagged, not decided</text>
+  <text x="786" y="416" text-anchor="end" class="small lbl">69 candidates considered · drawn by intentions 0.11.0</text>
+</svg>
+<!-- RESOLUTION-FIGURE:END -->
+        </div>
+        <figcaption>The week of 21 September 2026, as the binary ranks it. Rob has declined the
+          one-to-one; the person has not, so the hour still counts as theirs and any
+          candidate over it ranks second. Hover a bar for the output it was drawn from.
+          Clone <a href="https://github.com/nodelogicau/intentions/tree/main/docs/example">the workspace</a> and
+          run it yourself.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 6 · START -->
+  <section id="start">
+    <div class="wrap">
+      <h2>Start in your terminal</h2>
+      <p class="lead">Install the CLI, make a workspace, and teach your agent the
+        discipline: draft an intention, declare the supply, let the binary rank, and
+        choose yourself.</p>
+
+      <pre class="term"><code><span class="p">$</span> brew install nodelogicau/tap/intentions
+<span class="p">$</span> intentions init ./plans --author you --subject you
+<span class="p">$</span> intentions skill install
+<span class="p">$</span> intentions availability add --subject you --title "Mornings this week" \
+    --calendar this-week --clock 09:00/12:00 --duration PT3H
+<span class="p">$</span> intentions intention add --title "Draft the budget narrative" \
+    --duration PT90M --calendar this-week
+<span class="p">$</span> intentions resolve &lt;id&gt;
+<span class="p">$</span> intentions select &lt;id&gt; --candidate 1</code></pre>
+
+      <p>From there, your agent does the bookkeeping: the installed skill teaches it
+        the verbs, every file it writes says it wrote it, and nothing becomes firm
+        without you.</p>
+
+      <ul class="links">
+        <li><a href="https://github.com/nodelogicau/intentions">The specification</a></li>
+        <li><a href="https://github.com/nodelogicau/intentions-cli">The CLI</a></li>
+        <li><a href="https://github.com/nodelogicau/intentions/tree/main/docs/example">The example workspace</a></li>
+      </ul>
+
+      <p class="roadmap"><strong>Today:</strong> an early draft of the specification with a
+        first implementation, the agent skill, and a local MCP server &mdash; the
+        <a href="https://github.com/nodelogicau/intentions-cli/releases/latest">.mcpb
+        bundle</a> for Claude Desktop, or <code>intentions serve --mcp</code> for any
+        client. &nbsp;&middot;&nbsp; <strong>Deferred, deliberately:</strong> federation
+        between workspaces, presence, and a retrospective record, which is DKF&rsquo;s job.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Intentions is an open format from
+      <a href="https://github.com/nodelogicau">Node Logic</a>. The specification is
+      released under CC0; the CLI is MIT-licensed. &copy; 2026 Node Logic.</p>
+  </div>
+</footer>
+</body>
+</html>

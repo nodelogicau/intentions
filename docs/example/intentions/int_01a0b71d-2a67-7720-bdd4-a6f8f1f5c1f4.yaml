@@ -1,0 +1,10 @@
+id: int_01a0b71d-2a67-7720-bdd4-a6f8f1f5c1f4
+version: sha256:c397c386543e45ff2bbd198e769661b8afc4f48c7538db5182075dcb8428d9f2
+subject: https://example.com/people/ada
+title: Being someone the board can rely on
+stability: firm
+serves: []
+source:
+  author: https://example.com/people/ada
+timestamp: 2026-09-19T09:00:00Z
+acknowledgements: []
