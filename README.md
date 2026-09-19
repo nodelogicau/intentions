@@ -346,8 +346,7 @@ intention whose subject, or one of whose parties, is the availability's
 subject. `organisation` and `public` availability are visible to any resolver
 whose `resolver.scope` is at or narrower than theirs. So in an organisation
 workspace Priya's personal Tuesdays are never Ada's supply unless Priya is a
-party
-to what she is placing.
+party to what she is placing.
 
 **No instances.** Recurring availability is one object re-evaluated at
 resolution time. A standing disposition is not an act and needs no

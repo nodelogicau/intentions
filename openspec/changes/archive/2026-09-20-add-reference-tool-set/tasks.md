@@ -18,5 +18,5 @@
 
 - [x] 4.1 Commit and push
 - [x] 4.2 Close #23 with a comment naming the commit and where the answer differs from the proposal
-- [ ] 4.3 Archive with sync so `harness-tools` lands in the main specs
-- [ ] 4.4 Knowledge workspace: a claim for the reference set's standing and a qualification synthesis on the spine; commit and push
+- [x] 4.3 Archive with sync so `harness-tools` lands in the main specs
+- [x] 4.4 Knowledge workspace: a claim for the reference set's standing and a qualification synthesis on the spine; commit and push
