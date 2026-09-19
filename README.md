@@ -345,7 +345,7 @@ party entry says. A transparent commitment consumes nothing.
 intention whose subject, or one of whose parties, is the availability's
 subject. `organisation` and `public` availability are visible to any resolver
 whose `resolver.scope` is at or narrower than theirs. So in an organisation
-workspace Priya's personal Tuesdays are never Ada's supply unless Rob is a party
+workspace Priya's personal Tuesdays are never Ada's supply unless Priya is a party
 to what she is placing.
 
 **No instances.** Recurring availability is one object re-evaluated at
@@ -763,7 +763,7 @@ records        RESOLUTION      standalone — relates intention, placement, disp
    int: 90 min on the budget narrative
          │ in-order-to
          ▼
-   int: board pack out by 2026-W38            int: weekly 1:1 with Rob (recurring)
+   int: board pack out by 2026-W38            int: weekly 1:1 with Priya (recurring)
          │ in-order-to                              │ generates
          ▼                                          ▼
    int: run the finance function well      int: 1:1, occurrence 2026-09-15

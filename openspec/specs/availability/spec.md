@@ -95,11 +95,11 @@ The validity horizon SHALL be checked when RESOLUTION runs and when a consistenc
 - **THEN** a resolver acting for another party in the organisation may use it as supply
 
 #### Scenario: Personal stays personal
-- **WHEN** an organisation workspace holds Priya's `personal` availability and Ada resolves an intention that does not involve Rob
+- **WHEN** an organisation workspace holds Priya's `personal` availability and Ada resolves an intention that does not involve Priya
 - **THEN** it is not visible as supply
 
 #### Scenario: Party's personal availability
-- **WHEN** Ada's intention lists Rob in `parties` and Priya's availability is `personal`
+- **WHEN** Ada's intention lists Priya in `parties` and Priya's availability is `personal`
 - **THEN** it is visible as Priya's supply for that intention
 
 ### Requirement: Availability retirement kinds
