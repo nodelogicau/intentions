@@ -26,7 +26,7 @@
 
 **The principle goes in the text's own voice.** "The why is the price of entry" follows "A terminus is a person, not a task" in Design Principles. It says three things: a workspace's first act is a terminus, a harness's first question is who the person is trying to be, and the cost of capture is the point.
 
-**The site's example gains the chain rather than a warning.** The one-to-one with Priya serves the terminus `for-the-sake-of`. `serves` is outside the scheduling projection, so the resolve output and the figure are unchanged; the figure is regenerated anyway to prove it.
+**The site's example gains the chain rather than a warning.** The one-to-one with Priya serves the terminus `for-the-sake-of`. `serves` is part of the projection, so the object's version changes, but no candidate depends on it: the resolve output and every candidate bar in the figure are unchanged, and the figure is regenerated to prove it.
 
 **The CLI is asked, not told.** One issue on intentions-cli: the warning in `validate` and on write, the terminus firmness rules, `intention_firm` refusing a policy on a terminus, and a skill that walks an existing workspace up to its termini one at a time, asking rather than inventing.
 

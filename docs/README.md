@@ -71,6 +71,9 @@ intentions $W intention add --title "Draft the Q4 budget narrative" \
 
 Re-running that produces a workspace with different ids. The committed one is
 the one the figure was drawn from; do not rebuild it to regenerate the figure.
+One later edit, with intentions-cli 0.11.1 and the same fixed clock, gave the
+one-to-one its chain (`intention edit <id> --serves <terminus>:for-the-sake-of`)
+so that every intention reaches the terminus; no candidate changed.
 
 ## Regenerating the proof figure
 
