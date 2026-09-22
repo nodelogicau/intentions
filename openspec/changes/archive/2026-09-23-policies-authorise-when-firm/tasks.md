@@ -14,8 +14,8 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push; confirm the page is unaffected
-- [ ] 3.2 Open an issue on intentions-cli: the two refusals with their message, the `firmed_under` error, the record warning, and the retired case settled the same way
-- [ ] 3.3 Close #27 with a comment naming the commit and the two refinements
-- [ ] 3.4 Archive with sync so the four deltas land
-- [ ] 3.5 Knowledge workspace: one claim and a qualification synthesis on the spine; commit and push
+- [x] 3.1 Commit and push; confirm the page is unaffected
+- [x] 3.2 Open an issue on intentions-cli: the two refusals with their message, the `firmed_under` error, the record warning, and the retired case settled the same way
+- [x] 3.3 Close #27 with a comment naming the commit and the two refinements
+- [x] 3.4 Archive with sync so the four deltas land
+- [x] 3.5 Knowledge workspace: one claim and a qualification synthesis on the spine; commit and push

@@ -1113,9 +1113,9 @@ tags won when two overlapped, what the workspace is for. It has no schema and
 validation does not read it. It is the natural home for the terminus
 convention: a **Termini** heading saying that a terminus is titled as who the
 person is, not what they do, so that a harness reads it before it drafts one.
-The activity vocabulary itself is not fixed by this specification: terms are lowercase kebab-case, matched by exact equality,
-never rejected for being unknown, and reported at info level when only one
-object uses them.
+The activity vocabulary itself is not fixed by this specification: terms are
+lowercase kebab-case, matched by exact equality, never rejected for being
+unknown, and reported at info level when only one object uses them.
 
 ### `index.yaml`
 
