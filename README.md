@@ -82,7 +82,7 @@ the relationship.
 ---
 ## Core Object Types
 
-The format defines three object types, INTENTION, AVAILABILITY, and
+The format defines four object types, DESIRE, INTENTION, AVAILABILITY, and
 COMMITMENT, which are live state and are edited in place; three record types,
 RESOLUTION, ACKNOWLEDGEMENT, and RETIREMENT, which are events about objects
 and are append-only; and three embedded values, DURATION, WINDOW, and
@@ -96,6 +96,7 @@ canonical UUID version 7 ([RFC 9562](https://www.rfc-editor.org/rfc/rfc9562)):
 
 | Prefix | Type |
 |---|---|
+| `des_` | desire |
 | `int_` | intention |
 | `avl_` | availability |
 | `cmt_` | commitment |
@@ -150,6 +151,81 @@ The timestamp may precede the minting instant embedded in the id, and
 consumers MUST NOT require the two to agree. Neither `source` nor `timestamp`
 is part of any scheduling projection: correcting who wrote something or when
 does not change what it clashes with.
+
+### `DESIRE`
+
+A want the person has expressed and not yet committed to. Desire is the rung
+below intention in the ladder desire, intention, commitment: a world-to-mind
+pro-attitude, not a commissive act, so it is free to conflict with other
+desires, is never resolved, is checked against nothing, and need not say what
+it is for. It is where a passing remark goes until the person either adopts
+it into an intention, which costs a why, or lets it go.
+
+```yaml
+id: des_01a06d0e-2b1c-7f4a-9e6d-3c5a7b9d1e2f
+version: sha256:4f1e…9a07
+subject: https://example.com/people/ada
+title: Sort out the accountant
+description: |
+  Mentioned in passing on the way out of the board meeting.
+activity: admin
+serves:
+  - {id: int_01a05a00-1111-7000-8000-000000000001, role: for-the-sake-of}
+source:
+  author: https://example.com/people/ada
+  harness: claude
+  model: claude-fable-5-1
+timestamp: 2026-09-04T17:40:00Z
+```
+
+Fields, in canonical order:
+
+| Field | Required | Meaning |
+|---|---|---|
+| `id` | yes | |
+| `version` | yes | The projection hash. |
+| `subject` | on disk | URI of the particular whose desire this is, applied from `defaults.subject` as for an intention. |
+| `title` | yes | Prose. |
+| `description` | no | Prose. |
+| `activity` | no | A term from the workspace's activity vocabulary, kept as a hint and carried onto the intention on adoption. |
+| `location` | no | URIs, kept as a hint and carried onto the intention on adoption. |
+| `serves` | yes | Outbound references, possibly empty, with role `for-the-sake-of` only, each to a terminus of the same subject. The terminus may be tentative: a draft want may point at a draft self, and nothing rests on either. |
+| `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
+| `source` | yes | Who wrote it. |
+| `timestamp` | yes | Assertion time. |
+| `retired` | no | The appended record; see below. |
+
+A desire carries none of what makes an intention an intention: no
+`duration`, no `window`, no `stability`, no `parties`, no `cadence`, no
+policy condition, no placement, no acknowledgements. Validation reports any
+of them on a desire as an error. It carries no strength or priority either,
+for the reason severity is kept off flags: a number there would launder
+social force into something that sorts.
+
+**Exemptions.** Resolution never reads a desire. Consistency checks nothing
+against one and reports no flag on one. `unresolved` does not list desires.
+The rule that every intention reaches a terminus does not apply to them, so
+an empty `serves` is fine, and a desire that names a terminus is simply
+better prepared for adoption. Two desires may contradict each other in any
+way without any finding; that is what makes them desires.
+
+**Adoption.** A desire is retired with `kind` `abandoned`, `superseded`
+(with `superseded_by` naming another desire), or `adopted`. Adopting writes a
+new intention carrying the desire's subject, title, description, serves,
+reference, activity and location, plus the duration and window the plan now
+has, with `stability: tentative` and the adopting act's `source`; then the
+desire is retired with `adopted_as` naming that intention, required when and
+only when the kind is `adopted`. The intention is the record of the adoption;
+nothing else is written. Adopting a retired desire is refused. A harness may
+record a desire on the person's word, as it records a decline, and may adopt
+one, since adopting is drafting an intention; the result is tentative and
+subject to every rule an intention is subject to, including the unserved
+warning where its terminus is still a draft, which is the moment to ask the
+person to firm the self.
+
+**Projection.** `subject`, `serves`, `retired.kind`. A desire is mostly prose,
+and its version changes only on adoption, abandonment, or a change of
+terminus.
 
 ### `INTENTION`
 
@@ -237,7 +313,9 @@ it means a terminus, never a recurring one. `instance-of` links a generated
 instance to the recurring intention that produced it. The graph is directed and
 acyclic but not a tree: an intention may serve several ends and several may
 converge on one. Only these three roles are admitted; temporal relations
-belong to WINDOW, never to `serves`.
+belong to WINDOW, never to `serves`. A desire takes part in the graph only at
+its top: it may serve a terminus `for-the-sake-of`, tentative or firm, and is
+not grounded by it.
 
 Every intention that is not a terminus reaches a firm terminus of its own
 subject through that graph, by any path of the three roles. Reachability is
@@ -608,12 +686,15 @@ Kinds are per type:
 
 | Object | Kinds |
 |---|---|
+| desire | `abandoned`, `superseded`, `adopted` |
 | intention | `fulfilled`, `abandoned`, `superseded` |
 | availability | `retracted`, `superseded` |
 | commitment | `cancelled` |
 
 `superseded_by` is required when and only when `kind` is `superseded`, and
-validation requires its target to exist. A retired object is never edited
+validation requires its target to exist. `adopted_as`, on a desire, is
+required when and only when `kind` is `adopted`, and validation requires its
+target to exist and be an intention. A retired object is never edited
 again except to append acknowledgements, and its file is never deleted.
 `retired.kind` is part of the projection, because a retired object no longer
 clashes with anything and consistency must see that; `reason`, `source`, and
@@ -765,6 +846,11 @@ supply constrained location, resolution picks one URI from the intersection.
 ## Object Model
 
 ```
+DESIRE         what a person wants and has not committed to — the inbox
+                 ← subject: whose it is
+                 ← serves[]: for-the-sake-of → a terminus, possibly a draft
+                 → retired.kind: adopted, adopted_as → the INTENTION it became
+
 INTENTION      what a person means to do — no other party
                  ← subject: whose it is
                  ← duration, window: how long, within what bounds
@@ -787,7 +873,7 @@ COMMITMENT     an intention that interlocks with others — the hand-off
 
 records        RESOLUTION      standalone — relates intention, placement, displaced
                ACKNOWLEDGEMENT embedded — "I have seen this flag against this version"
-               RETIREMENT      embedded — kind, reason, superseded_by
+               RETIREMENT      embedded — kind, reason, superseded_by, adopted_as
 ```
 
 ### The serves graph
@@ -1050,6 +1136,9 @@ long as its format version is known.
 /intentions.md                 optional conventions for agents and people
 /.intentions                   optional pointer, when tools start elsewhere
 
+/desires/
+  des_01a06d0e-2b1c-7f4a-9e6d-3c5a7b9d1e2f.yaml
+
 /intentions/
   int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44.yaml
 
@@ -1138,8 +1227,11 @@ which has no `firmed_under`, `firmed_under` naming anything but an active,
 firm policy of the subject, `auto_select` or `auto_firm` on an intention that is
 not a terminus, `cadence` on an object whose window has no calendar anchor, a
 sub-day RRULE part in `cadence`, a fractional duration on an all-day
-placement, `firmed_under` on a terminus, and `transparent` on a commitment
-born of a resolution. It reports at warning level an intention that reaches
+placement, `firmed_under` on a terminus, a desire carrying any temporal or
+deontic field of an intention, a desire `serves` entry with any role but
+`for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming
+anything but an intention, and `transparent` on a commitment born of a
+resolution. It reports at warning level an intention that reaches
 no firm terminus of its own subject, naming the fix, and a resolution record
 whose `selector` names a policy since set tentative or retired; and at info
 level a terminus that is still tentative, as a draft. Where a write can tell
@@ -1188,7 +1280,8 @@ cost of capture is the point: this format does not hold an intention the
 person cannot say the point of. An unserved intention is a warning in this
 revision and a refusal in the next that breaks files, and a terminus grounds
 nothing and authorises nothing until the person, by their own act, has made
-it firm.
+it firm. A want that has not earned a why is a desire, not an intention: it
+sits in the inbox with no standing until the person adopts it or lets it go.
 
 **Resolution is a function.** Given the workspace, `intentions.yaml`, and a
 `now`, the candidate set and its order are determined: the range is bounded
@@ -1290,6 +1383,17 @@ optional. A tool's result is the same JSON as the implementation's
 non-interactive output for the verb, and its shape is the implementation's.
 Every refusal a verb makes, the tool makes.
 
+**Desire.**
+
+| Tool | Parameters | Does |
+|---|---|---|
+| `desire_add` | `title`, `subject?`, `activity?`, `description?`, `location?`, `reference?`, `serves?`, `source?`, `timestamp?` | Record a want the person expressed; no why required. |
+| `desire_edit` | `id`, any of the above, `clear?` | Change fields; the version changes only when `serves` does. |
+| `desire_adopt` | `id`, `duration?`, `window?`, `source?`, `timestamp?` | Write the intention, then retire the desire as `adopted` naming it. |
+| `desire_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record: `abandoned` or `superseded`. |
+| `desire_show` | `id` | One desire with its version and its terminus. |
+| `desire_list` | `subject?`, `retired?` | Desires, active by default. |
+
 **Intention.**
 
 | Tool | Parameters | Does |
@@ -1371,6 +1475,10 @@ implementation that exposes their names SHALL keep them:
   `incomplete` when duration or window is missing, or `unresolvable`. It is
   the inventory of intentions still carried without a plan, and it writes
   nothing.
+- **`desire_adopt` writes the intention first.** It creates the tentative
+  intention from the desire and the supplied duration and window, then
+  appends the desire's `adopted` retirement naming it, returns both ids, and
+  refuses a desire already retired.
 
 ---
 
