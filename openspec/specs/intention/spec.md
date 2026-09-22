@@ -28,7 +28,7 @@ The scheduling projection of an INTENTION SHALL be: `subject`, `duration`, `wind
 
 ### Requirement: Stability
 
-`stability` SHALL be `tentative` or `firm`. A firm intention SHALL be treated by resolution as costly to reconsider; a tentative one as cheap. Changing stability SHALL be an explicit edit and SHALL change the version. `firm` SHALL be set only by an act whose `source` carries no `harness`, or by a harness acting under a policy of the subject whose `auto_firm` condition the intention satisfies, in which case the write SHALL set `firmed_under` to that policy's id. `firmed_under` SHALL be required on any intention whose `stability` is `firm` and whose `source` carries a harness, and SHALL name an active terminus of the same subject carrying `auto_firm`. A person firming by their own act SHALL leave `firmed_under` absent. Whether the condition was satisfied is checked at write time; validation checks that the named policy exists and is a policy.
+`stability` SHALL be `tentative` or `firm`. A firm intention SHALL be treated by resolution as costly to reconsider; a tentative one as cheap. Changing stability SHALL be an explicit edit and SHALL change the version. `firm` SHALL be set only by an act whose `source` carries no `harness`, or by a harness acting under a policy of the subject whose `auto_firm` condition the intention satisfies, in which case the write SHALL set `firmed_under` to that policy's id. `firmed_under` SHALL be required on any intention whose `stability` is `firm` and whose `source` carries a harness, and SHALL name an active, firm terminus of the same subject carrying `auto_firm`. A person firming by their own act SHALL leave `firmed_under` absent. Whether the condition was satisfied is checked at write time; validation checks that the named policy exists, is a policy, and is firm. A person withdrawing a policy, by setting it tentative or retiring it, withdraws what rested on it: every intention firmed under it is then in error until the person re-firms it by their own act or sets it tentative.
 
 #### Scenario: Firming
 - **WHEN** a person marks an intention `firm`
@@ -50,6 +50,14 @@ The scheduling projection of an INTENTION SHALL be: `subject`, `duration`, `wind
 - **WHEN** a harness writes a new intention with `stability: tentative`
 - **THEN** the write is accepted
 
+#### Scenario: Policy named is a draft
+- **WHEN** an intention carries `firmed_under` naming a policy whose `stability` is `tentative`
+- **THEN** validation reports an error naming the intention and the policy to firm
+
+#### Scenario: Policy withdrawn after firming
+- **WHEN** a person sets a policy tentative after a harness has firmed an intention under it
+- **THEN** validation reports that intention in error, and the finding says to re-firm by the person's own act or set it tentative
+
 ### Requirement: The serves graph has two teleological roles
 
 Each entry in `serves` SHALL be `{id, role}` where `role` is one of `in-order-to` (this intention is a means to the target intention), `for-the-sake-of` (the target is this intention's terminus), or `instance-of` (this intention is a generated instance of the target recurring intention). No other role SHALL be admitted on `serves`. RFC 9253 relation types SHALL NOT be used on `serves`; temporal relations belong to WINDOW.
@@ -70,7 +78,7 @@ A terminus is an INTENTION with no `serves` entries, no `window`, and no `durati
 
 A terminus that is a self-understanding SHOULD be titled as who the person is, not as something to do: "being someone who follows through", not "follow through". The test is whether the title names a person or a task. Validation SHALL NOT reject a terminus for its wording.
 
-A terminus is the person's word. A terminus SHALL be `firm` to ground anything, and no policy applies to a terminus, so `firm` on a terminus SHALL come only from an act whose `source` carries no harness. A harness MAY write a terminus with `stability: tentative`; validation SHALL report a tentative terminus at info level as a draft, and it grounds no intention until the person firms it. A terminus grounds only intentions of its own `subject`.
+A terminus is the person's word. A terminus is inert until it is `firm`: it grounds nothing and authorises nothing. No policy applies to a terminus, so `firm` on a terminus SHALL come only from an act whose `source` carries no harness. A harness MAY write a terminus with `stability: tentative`; validation SHALL report a tentative terminus at info level as a draft, and it grounds no intention until the person firms it. A terminus grounds only intentions of its own `subject`.
 
 #### Scenario: Chain closes on a terminus
 - **WHEN** intention A serves B `in-order-to` and B serves T `for-the-sake-of`, and T has no `serves`
@@ -209,7 +217,7 @@ Instances of a recurring intention SHALL be materialised by a `generate` operati
 
 ### Requirement: Policies are termini
 
-A policy is a terminus carrying `auto_select` or `auto_firm`; each SHALL be a condition over an intention being acted on with terms `max_duration` (ISO 8601 duration) and `stability` (`tentative` or `firm`). A condition is satisfied when every term it states holds for the intention. `auto_select` and `auto_firm` SHALL be admitted on termini only; an intention with a window, a duration, or any `serves` entry SHALL NOT carry them, and validation SHALL report an error if it does. These are the only means by which a harness may select a candidate or set `firm` without a person's direct act. A policy's condition applies only to intentions that are not termini: no policy SHALL firm a terminus or select for one.
+A policy is a terminus carrying `auto_select` or `auto_firm`; each SHALL be a condition over an intention being acted on with terms `max_duration` (ISO 8601 duration) and `stability` (`tentative` or `firm`). A condition is satisfied when every term it states holds for the intention. `auto_select` and `auto_firm` SHALL be admitted on termini only; an intention with a window, a duration, or any `serves` entry SHALL NOT carry them, and validation SHALL report an error if it does. These are the only means by which a harness may select a candidate or set `firm` without a person's direct act. A policy's condition applies only while the policy is `firm` and only to intentions that are not termini: no policy SHALL firm a terminus or select for one. A tentative policy is a draft: a harness MAY write one, and until the person firms it by their own act, firming and selection SHALL refuse to act under it, naming the draft and the act that makes it the person's. Setting a firm policy tentative suspends it; retiring it ends it.
 
 #### Scenario: Policy condition met
 - **WHEN** a terminus carries `auto_firm: {max_duration: PT30M}` and a harness firms a twenty-minute intention citing it
@@ -226,3 +234,11 @@ A policy is a terminus carrying `auto_select` or `auto_firm`; each SHALL be a co
 #### Scenario: Policy cited for a terminus
 - **WHEN** a harness attempts to firm a terminus citing a policy whose condition would otherwise be satisfied
 - **THEN** the write is refused
+
+#### Scenario: Policy is a draft
+- **WHEN** a harness writes a terminus carrying `auto_firm` with `stability: tentative` and then attempts to firm an intention citing it
+- **THEN** the firming is refused, and the refusal names the draft policy and the act that firms it
+
+#### Scenario: Policy suspended
+- **WHEN** a person sets a firm policy to `tentative`
+- **THEN** no harness act is authorised under it until the person firms it again, and what was firmed under it is reported by validation

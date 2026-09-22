@@ -197,7 +197,7 @@ Fields, in canonical order:
 | `duration` | no | A DURATION. Required before the intention can be resolved. |
 | `window` | no | A WINDOW. Required before the intention can be resolved. |
 | `stability` | yes | `tentative` or `firm`. |
-| `firmed_under` | no | The policy under which a harness set `firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
+| `firmed_under` | no | The policy under which a harness set `firm`: an active, firm terminus of the subject carrying `auto_firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
 | `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
 | `location` | no | URIs at one of which this must happen. Absent means anywhere. |
 | `parties` | no | URIs of other particulars whose availability must be satisfied, where the workspace tracks it. |
@@ -221,7 +221,11 @@ The field is provenance, like `source`, and is outside the projection; it is
 required whenever a firm intention's `source` carries a harness, so that
 validation can tell an authorised firming from a forged one after the fact.
 Whether the condition held is checked at write time only, since the intention
-may legitimately change afterwards. A harness may draft; it may not resolve
+may legitimately change afterwards; that the policy is firm is checked both
+then and by validation afterwards, because a live intention's firmness rests
+on the policy now. A person who withdraws a policy withdraws what rested on
+it: every intention firmed under it is in error until the person re-firms it
+by their own act or sets it tentative. A harness may draft; it may not resolve
 on the person's behalf.
 
 **The serves graph.** `in-order-to` links an intention to another it is a means
@@ -247,7 +251,8 @@ unserved intention is a validation warning that names the fix, and a write
 that would leave one unserved is accepted and reports it. The next revision
 that breaks files refuses both, as DKF refuses a claim with no particular.
 
-A terminus is the person's word. It grounds nothing until it is `firm`, and
+A terminus is the person's word. It is inert until it is `firm`, grounding
+nothing and authorising nothing, and
 no policy applies to a terminus, so `firm` on one comes only from an act whose
 `source` carries no harness. A harness may draft a terminus, tentative, as it
 drafts anything; validation reports it as a draft, and every intention that
@@ -277,7 +282,12 @@ must not be able to authorise a firming. These are the only means by which a
 harness may select a candidate or set `firm` without a person's direct act. A
 policy is itself an intention the person holds, so the will that acts is
 still theirs. A policy's condition applies only to intentions that are not
-termini: no policy firms a terminus or selects for one.
+termini: no policy firms a terminus or selects for one. And it applies only
+while the policy is firm. A tentative policy is a draft: a harness may write
+one, and until the person firms it by their own act, firming and selection
+refuse to act under it, naming the draft and the act that makes it the
+person's. Setting a firm policy tentative suspends it; retiring it ends it.
+Either withdraws what rested on it.
 
 **Location.** A place is a URI the person chooses, matched by exact equality:
 a room, a house, a city, a meeting link. The format owns no hierarchy of
@@ -523,10 +533,13 @@ source:
 timestamp: 2026-09-08T14:02:00Z
 ```
 
-`selector` is `person` or the id of the policy whose `auto_select` condition
-authorised automatic selection. `selector` says whose will chose;
+`selector` is `person` or the id of the firm policy whose `auto_select`
+condition authorised automatic selection. `selector` says whose will chose;
 `source` says which hand performed it. A harness selecting under a policy
-carries the policy in `selector` and itself in `source.harness`. `supply`
+carries the policy in `selector` and itself in `source.harness`. A record is
+history: if the policy it names is later set tentative or retired, validation
+warns that the act was authorised under a policy since withdrawn, and the
+placement stands, the person's to keep or re-resolve. `supply`
 names the availabilities the placement was chosen against: what the selector
 saw, kept outside the projection. It is not what the placement rests on now,
 which consistency recomputes from the current workspace. `presumed` names the
@@ -1121,14 +1134,15 @@ dangling references, unknown `serves` roles, cycles, unparseable EDTF or ISO
 8601 values, unknown retirement kinds, `superseded` without `superseded_by`,
 duplicate active instances for one occurrence, an intention or availability
 with no author, `firm` on an intention whose `source` carries a harness and
-which has no `firmed_under`, `firmed_under` naming anything but an active
-policy of the subject, `auto_select` or `auto_firm` on an intention that is
+which has no `firmed_under`, `firmed_under` naming anything but an active,
+firm policy of the subject, `auto_select` or `auto_firm` on an intention that is
 not a terminus, `cadence` on an object whose window has no calendar anchor, a
 sub-day RRULE part in `cadence`, a fractional duration on an all-day
 placement, `firmed_under` on a terminus, and `transparent` on a commitment
 born of a resolution. It reports at warning level an intention that reaches
-no firm terminus of its own subject, naming the fix, and at info level a
-terminus that is still tentative, as a draft. Where a write can tell that its
+no firm terminus of its own subject, naming the fix, and a resolution record
+whose `selector` names a policy since set tentative or retired; and at info
+level a terminus that is still tentative, as a draft. Where a write can tell that its
 result would fail, it refuses; where it can tell that its result would warn,
 it accepts and reports the warning. Write-time refusal is a convenience;
 validation is the invariant, because files arrive by merge without passing
@@ -1172,7 +1186,8 @@ is who the person is trying to be. That is the right first question, and the
 cost of capture is the point: this format does not hold an intention the
 person cannot say the point of. An unserved intention is a warning in this
 revision and a refusal in the next that breaks files, and a terminus grounds
-nothing until the person, by their own act, has made it firm.
+nothing and authorises nothing until the person, by their own act, has made
+it firm.
 
 **Resolution is a function.** Given the workspace, `intentions.yaml`, and a
 `now`, the candidate set and its order are determined: the range is bounded
@@ -1335,12 +1350,13 @@ implementation that exposes their names SHALL keep them:
 - **`select` is the recorded act, and `resolve` chooses nothing.** `select`
   takes exactly one of a person's `candidate` index or a harness's `policy`
   id, refuses a call with both or neither, and honours a policy only where it
-  names a terminus of the subject carrying `auto_select` whose condition the
-  intention satisfies.
+  names a firm terminus of the subject carrying `auto_select` whose condition
+  the intention satisfies. A tentative policy is refused, and the refusal
+  names the draft and the act that firms it.
 - **`intention_firm` refuses a harness without a policy.** A call whose
-  `source` carries a harness must name, in `policy`, an active terminus of the
-  subject carrying `auto_firm` that the intention satisfies, and the write sets
-  `firmed_under`. A call with no harness firms by the person's own act. On a
+  `source` carries a harness must name, in `policy`, an active, firm terminus
+  of the subject carrying `auto_firm` that the intention satisfies, and the
+  write sets `firmed_under`; a tentative policy is refused by name. A call with no harness firms by the person's own act. On a
   terminus it refuses any policy and any harness, so a terminus is firmed only
   by the person.
 - **`commitment_accept` and `commitment_decline` take no policy.** They set
