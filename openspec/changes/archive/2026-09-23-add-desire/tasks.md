@@ -15,7 +15,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push; confirm the page is unaffected
-- [ ] 3.2 Open an issue on intentions-cli: the object, six verbs and tools, `resolve` and `unresolved` ignoring desires, validation, and the skill's advice that a passing remark is `desire add`
-- [ ] 3.3 Archive with sync so `desire` lands and the two deltas apply
-- [ ] 3.4 Knowledge workspace: qualify the Desire particular's synthesis to built, closing the two shape questions; commit and push
+- [x] 3.1 Commit and push; confirm the page is unaffected
+- [x] 3.2 Open an issue on intentions-cli: the object, six verbs and tools, `resolve` and `unresolved` ignoring desires, validation, and the skill's advice that a passing remark is `desire add`
+- [x] 3.3 Archive with sync so `desire` lands and the two deltas apply
+- [x] 3.4 Knowledge workspace: qualify the Desire particular's synthesis to built, closing the two shape questions; commit and push
