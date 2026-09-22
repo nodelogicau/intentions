@@ -235,6 +235,25 @@ acyclic but not a tree: an intention may serve several ends and several may
 converge on one. Only these three roles are admitted; temporal relations
 belong to WINDOW, never to `serves`.
 
+Every intention that is not a terminus reaches a firm terminus of its own
+subject through that graph, by any path of the three roles. Reachability is
+the test, not the presence of an entry: a chain that ends on a scheduled
+intention, or on a terminus that is still tentative, is unserved all the way
+down, and an instance reaches its terminus through the recurring intention it
+is an instance of. A terminus grounds an intention the way a particular
+grounds a DKF claim: it is what the intention is ultimately about, and an
+intention with none is a duration floating free. In this revision an
+unserved intention is a validation warning that names the fix, and a write
+that would leave one unserved is accepted and reports it. The next revision
+that breaks files refuses both, as DKF refuses a claim with no particular.
+
+A terminus is the person's word. It grounds nothing until it is `firm`, and
+no policy applies to a terminus, so `firm` on one comes only from an act whose
+`source` carries no harness. A harness may draft a terminus, tentative, as it
+drafts anything; validation reports it as a draft, and every intention that
+reaches only drafts is unserved until the person firms one. An invented self
+at the top of the graph is therefore visible, grounds nothing, and waits.
+
 **Recurring intentions and instances.** An intention with a `cadence` is a
 recurring intention; its window carries a calendar anchor for the cadence to
 expand within, and it generates instances: new intention objects carrying
@@ -257,7 +276,8 @@ duration, or any `serves` entry may not carry them, because a scheduled thing
 must not be able to authorise a firming. These are the only means by which a
 harness may select a candidate or set `firm` without a person's direct act. A
 policy is itself an intention the person holds, so the will that acts is
-still theirs.
+still theirs. A policy's condition applies only to intentions that are not
+termini: no policy firms a terminus or selects for one.
 
 **Location.** A place is a URI the person chooses, matched by exact equality:
 a room, a house, a city, a meeting link. The format owns no hierarchy of
@@ -1105,10 +1125,14 @@ which has no `firmed_under`, `firmed_under` naming anything but an active
 policy of the subject, `auto_select` or `auto_firm` on an intention that is
 not a terminus, `cadence` on an object whose window has no calendar anchor, a
 sub-day RRULE part in `cadence`, a fractional duration on an all-day
-placement, and `transparent` on a commitment born of a resolution. Where a write
-can tell that its result would fail, it refuses. Write-time refusal is a
-convenience; validation is the invariant, because files arrive by merge
-without passing through any writer.
+placement, `firmed_under` on a terminus, and `transparent` on a commitment
+born of a resolution. It reports at warning level an intention that reaches
+no firm terminus of its own subject, naming the fix, and at info level a
+terminus that is still tentative, as a draft. Where a write can tell that its
+result would fail, it refuses; where it can tell that its result would warn,
+it accepts and reports the warning. Write-time refusal is a convenience;
+validation is the invariant, because files arrive by merge without passing
+through any writer.
 
 ---
 
@@ -1140,6 +1164,15 @@ read at the level of what it is for resists reconsideration better than one
 read at the level of how it is done; the chain up to a terminus is the
 instrument of that reading. Validation never rejects a terminus for its
 wording.
+
+**The why is the price of entry.** A DKF claim cannot exist without the
+particular it is about, and an intention cannot stand without the terminus it
+is for. A workspace's first act is a terminus, and a harness's first question
+is who the person is trying to be. That is the right first question, and the
+cost of capture is the point: this format does not hold an intention the
+person cannot say the point of. An unserved intention is a warning in this
+revision and a refusal in the next that breaks files, and a terminus grounds
+nothing until the person, by their own act, has made it firm.
 
 **Resolution is a function.** Given the workspace, `intentions.yaml`, and a
 `now`, the candidate set and its order are determined: the range is bounded
@@ -1185,7 +1218,10 @@ first implementation, [intentions-cli](https://github.com/nodelogicau/intentions
 issues where it was ambiguous or silent, recorded in its
 [SPEC-FEEDBACK.md](https://github.com/nodelogicau/intentions-cli/blob/main/SPEC-FEEDBACK.md).
 All twenty-five are settled in the text as it now stands, five of them
-differently from what the implementation chose.
+differently from what the implementation chose. One rule is in transition:
+an intention that reaches no firm terminus is reported at warning level in
+this revision so that workspaces written before the rule keep validating, and
+the next revision that breaks files refuses the write.
 
 Deferred from this version, deliberately:
 
@@ -1242,7 +1278,7 @@ Every refusal a verb makes, the tool makes.
 
 | Tool | Parameters | Does |
 |---|---|---|
-| `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. |
+| `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. Anything else should serve one. |
 | `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
 | `intention_firm` | `id`, `policy?`, `source?` | Set stability to firm; a harness must name a policy. |
 | `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. |
@@ -1304,7 +1340,9 @@ implementation that exposes their names SHALL keep them:
 - **`intention_firm` refuses a harness without a policy.** A call whose
   `source` carries a harness must name, in `policy`, an active terminus of the
   subject carrying `auto_firm` that the intention satisfies, and the write sets
-  `firmed_under`. A call with no harness firms by the person's own act.
+  `firmed_under`. A call with no harness firms by the person's own act. On a
+  terminus it refuses any policy and any harness, so a terminus is firmed only
+  by the person.
 - **`commitment_accept` and `commitment_decline` take no policy.** They set
   only the named party's own entry, defaulting to the workspace's subject, and
   nothing infers a status: the tool records what the person said.

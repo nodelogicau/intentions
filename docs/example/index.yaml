@@ -33,7 +33,9 @@ entries:
     type: intention
     subject: https://example.com/people/ada
     path: intentions/int_01a0b732-5709-70e2-adcd-c4454fbd12b4.yaml
-    version: sha256:ca8f8abeac63e33cb7d90896d29fa4eb5cc21d1186ca0605bf560cd6f7cdb8c1
+    version: sha256:f21ae27d9b51916a438021227e78348e00dc9583e94b8067aafe47bed724ab62
+    refs:
+      - int_01a0b732-56c6-7bfe-8e36-fdf5458a6086
   - id: int_01a0b732-5759-7217-b9ad-9268865c63d2
     type: intention
     subject: https://example.com/people/ada

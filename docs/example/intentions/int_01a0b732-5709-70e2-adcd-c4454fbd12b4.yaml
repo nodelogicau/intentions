@@ -1,5 +1,5 @@
 id: int_01a0b732-5709-70e2-adcd-c4454fbd12b4
-version: sha256:ca8f8abeac63e33cb7d90896d29fa4eb5cc21d1186ca0605bf560cd6f7cdb8c1
+version: sha256:f21ae27d9b51916a438021227e78348e00dc9583e94b8067aafe47bed724ab62
 subject: https://example.com/people/ada
 title: One-to-one with Priya
 duration: PT45M
@@ -9,7 +9,8 @@ window:
 stability: tentative
 parties:
   - https://example.com/people/priya
-serves: []
+serves:
+  - {id: int_01a0b732-56c6-7bfe-8e36-fdf5458a6086, role: for-the-sake-of}
 placement:
   start: 2026-09-22T14:15:00+10:00
   duration: PT45M
