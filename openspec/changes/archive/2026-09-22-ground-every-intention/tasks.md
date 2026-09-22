@@ -23,5 +23,5 @@
 - [x] 4.1 Commit and push; confirm Pages rebuilt
 - [x] 4.2 Open an issue on intentions-cli: the unserved warning in `validate` and on write, the terminus firmness rules, `intention_firm` refusing a policy on a terminus, the draft-terminus info finding, and a skill that walks an existing workspace up to its termini by asking
 - [x] 4.3 Close #26 with a comment naming the commit and how the answer differs from the proposal: warning now, refusal later; a terminus is firm and the person's rather than refused from a harness; the subject match
-- [ ] 4.4 Archive with sync so the three deltas land
-- [ ] 4.5 Knowledge workspace: two claims and a synthesis on the spine; commit and push
+- [x] 4.4 Archive with sync so the three deltas land
+- [x] 4.5 Knowledge workspace: two claims and a synthesis on the spine; commit and push
