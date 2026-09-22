@@ -1142,8 +1142,9 @@ placement, `firmed_under` on a terminus, and `transparent` on a commitment
 born of a resolution. It reports at warning level an intention that reaches
 no firm terminus of its own subject, naming the fix, and a resolution record
 whose `selector` names a policy since set tentative or retired; and at info
-level a terminus that is still tentative, as a draft. Where a write can tell that its
-result would fail, it refuses; where it can tell that its result would warn,
+level a terminus that is still tentative, as a draft. Where a write can tell
+that its result would fail, it refuses; where it can tell that its result
+would warn,
 it accepts and reports the warning. Write-time refusal is a convenience;
 validation is the invariant, because files arrive by merge without passing
 through any writer.
