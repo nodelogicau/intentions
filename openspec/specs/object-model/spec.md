@@ -206,7 +206,7 @@ The format SHALL be named the Intentions Format, with slug `intentions` and form
 
 ### Requirement: Migration from intentions/0.1
 
-A workspace SHALL move from `intentions/0.1` to `intentions/0.2` only by an explicit `migrate` operation, the person's act. Migration SHALL: rewrite each commitment's `origin` from the 0.1 union shape to `origin: resolution` with a sibling `resolution`, or `origin: import`; rename `duration` to `capacity` and `conditional` to `activities` on every availability; recompute every version under 0.2; rewrite `counterpart_version` on every acknowledgement whose counterpart's version changed only because of the migration, so that no acknowledgement lapses for a change in shape; regenerate the index; and rewrite `format` in `intentions.yaml`. Nothing else SHALL change: no id, no field a person wrote, no `source`, no `timestamp`, no `retired` record. Migration SHALL refuse to rewrite `format` while any intention is unserved under the 0.2 rule, naming them, so that the walk-up to termini happens before the refusal applies.
+A workspace SHALL move from `intentions/0.1` to `intentions/0.2` only by an explicit `migrate` operation, the person's act. A 0.2 reader SHALL apply the 0.1 rules to a 0.1 workspace only where 0.2 changed a projection or a refusal; every other rule of this specification SHALL apply to a 0.1 workspace the moment a 0.2 implementation writes it. Migration SHALL: rewrite each commitment's `origin` from the 0.1 union shape to `origin: resolution` with a sibling `resolution`, or `origin: import`; rename `duration` to `capacity` and `conditional` to `activities` on every availability; recompute every version under 0.2; rewrite `counterpart_version` on every acknowledgement whose counterpart's version changed only because of the migration, so that no acknowledgement lapses for a change in shape; regenerate the index; and rewrite `format` in `intentions.yaml`. Nothing else SHALL change: no id, no field a person wrote, no `source`, no `timestamp`, no `retired` record. Migration SHALL refuse to rewrite `format` while any intention is unserved under the 0.2 rule, naming them, so that the walk-up to termini happens before the refusal applies.
 
 #### Scenario: Acknowledgement carried across
 - **WHEN** an intention carries an acknowledgement whose counterpart is a resolution-born commitment and the workspace is migrated
@@ -215,6 +215,10 @@ A workspace SHALL move from `intentions/0.1` to `intentions/0.2` only by an expl
 #### Scenario: Migration refused while unserved
 - **WHEN** a 0.1 workspace holding an unserved intention is migrated
 - **THEN** `format` is not rewritten and the refusal names the intention
+
+#### Scenario: Additive rule applies before migration
+- **WHEN** a 0.2 implementation edits an intention in a 0.1 workspace
+- **THEN** the intention's `timestamp` is the time of that write, and a desire in the same workspace may carry `parties`
 
 #### Scenario: Nothing else moves
 - **WHEN** a 0.1 workspace with no commitments, no availability and no acknowledgements is migrated

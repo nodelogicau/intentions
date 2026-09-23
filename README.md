@@ -1156,7 +1156,9 @@ A workspace moves from `intentions/0.1` to `intentions/0.2` only by an
 explicit `migrate` operation, the person's act. A 0.2 reader accepts a 0.1
 workspace as it is, reading and writing it under the 0.1 rules and shapes
 until then, and refuses a workspace whose `format` names a version it does
-not implement, naming both. Migration rewrites each commitment's `origin`
+not implement, naming both. The 0.1 rules apply only where 0.2 changed a
+projection or a refusal; every other rule of this text applies to a 0.1
+workspace the moment a 0.2 implementation writes it. Migration rewrites each commitment's `origin`
 from the 0.1 union shape to `origin: resolution` with a sibling `resolution`,
 or `origin: import`; renames `duration` to `capacity` and `conditional` to
 `activities` on every availability; recomputes every version under 0.2;
