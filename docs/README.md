@@ -34,13 +34,14 @@ to the apex once the custom domain is set).
 ## The example workspace
 
 `example/` is a real workspace, first written by intentions-cli 0.11.0 with the
-clock fixed at `2026-09-19T09:00:00Z` and since migrated to `intentions/0.2`. It holds one person's supply for the week of
-21 September 2026 (Tuesday and Thursday mornings kept for deep work, weekday
-afternoons for anything), a terminus, an intention to send the board pack the
-following week, a weekly one-to-one already placed on Tuesday afternoon and
-declined by the other party, and the ninety-minute budget intention the site's
-prose is about. Nothing in it is hand-edited. It was built with the following, shown with the 0.2 flag spellings; the 0.1
-binary that wrote it took `--duration` and `--conditional`:
+clock fixed at `2026-09-19T09:00:00Z` and since migrated to `intentions/0.2`.
+It holds one person's supply for the week of 21 September 2026 (Tuesday and
+Thursday mornings kept for deep work, weekday afternoons for anything), a
+terminus, an intention to send the board pack the following week, a weekly one-
+to-one already placed on Tuesday afternoon and declined by the other party, and
+the ninety-minute budget intention the site's prose is about. Nothing in it is
+hand-edited. It was built with the following, shown with the 0.2 flag
+spellings; the 0.1 binary that wrote it took `--duration` and `--conditional`:
 
 ```sh
 export INTENTIONS_NOW=2026-09-19T09:00:00Z TS=2026-09-19T09:00:00Z
