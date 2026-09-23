@@ -208,9 +208,15 @@ Every object and record SHALL carry a `source` block with fields `author` (a URI
 - **WHEN** an object's `source.author` is corrected after a counterpart acknowledged a flag against it
 - **THEN** its version is unchanged and the acknowledgement remains in force
 
+The person's own act is recorded by two conventions, one per kind of file. On a live object, the absence of an authorising policy means the person acted: `firmed_under` is absent when the person firmed. On a record, the actor SHALL always be written, `selector: person` when the person selected, because a record is read on its own and absence there would be silence.
+
+#### Scenario: Person's act on an object and on a record
+- **WHEN** a person firms an intention and then selects a candidate for it
+- **THEN** the intention carries no `firmed_under` and the resolution record carries `selector: person`
+
 ### Requirement: Timestamps
 
-Every object and record SHALL carry a `timestamp`: the assertion time as an RFC 3339 UTC datetime with seconds. On a record it is the time of the act. The timestamp MAY precede the minting instant embedded in the id, and consumers MUST NOT require the two to agree. `timestamp` SHALL be excluded from every scheduling projection.
+Every object and record SHALL carry a `timestamp`: the assertion time as an RFC 3339 UTC datetime with seconds. On a record it is the time of the act. On an object it is the time of the object's last write: each edit is a new assertion, and the history is git's. Creation time is carried by the id. The timestamp MAY precede the minting instant embedded in the id, and consumers MUST NOT require the two to agree. `timestamp` SHALL be excluded from every scheduling projection.
 
 #### Scenario: Backdated availability
 - **WHEN** an availability learned from a conversation last week is recorded today with last week's `timestamp`
@@ -219,6 +225,10 @@ Every object and record SHALL carry a `timestamp`: the assertion time as an RFC 
 #### Scenario: Timestamp correction does not change version
 - **WHEN** only an object's `timestamp` is corrected
 - **THEN** its version is unchanged
+
+#### Scenario: Edit updates the timestamp
+- **WHEN** an intention's window is edited
+- **THEN** its `timestamp` is the time of that edit and its version changes for the window, not for the timestamp
 
 ### Requirement: Canonical field order
 

@@ -147,10 +147,19 @@ who authors it. `source` is the only field that lets the format tell those
 apart, and it is why a harness may draft an intention but may not make it
 `firm` without a policy the person holds.
 
-The timestamp may precede the minting instant embedded in the id, and
-consumers MUST NOT require the two to agree. Neither `source` nor `timestamp`
-is part of any scheduling projection: correcting who wrote something or when
-does not change what it clashes with.
+On a record the timestamp is the time of the act. On an object it is the
+time of the object's last write: each edit is a new assertion, and the
+history is git's; creation time is carried by the id. The timestamp may
+precede the minting instant embedded in the id, and consumers MUST NOT
+require the two to agree. Neither `source` nor `timestamp` is part of any
+scheduling projection: correcting who wrote something or when does not
+change what it clashes with.
+
+The person's own act is recorded by two conventions, one per kind of file.
+On a live object, the absence of an authorising policy means the person
+acted: `firmed_under` is absent when the person firmed. On a record, the
+actor is always written, `selector: person` when the person selected,
+because a record is read on its own and absence there would be silence.
 
 ### `DESIRE`
 
@@ -184,11 +193,12 @@ Fields, in canonical order:
 |---|---|---|
 | `id` | yes | |
 | `version` | yes | The projection hash. |
-| `subject` | on disk | URI of the particular whose desire this is, applied from `defaults.subject` as for an intention. |
+| `subject` | yes | URI of the particular whose desire this is. Applied from `defaults.subject` when the caller omits it, as for an intention. |
 | `title` | yes | Prose. |
 | `description` | no | Prose. |
 | `activity` | no | A term from the workspace's activity vocabulary, kept as a hint and carried onto the intention on adoption. |
 | `location` | no | URIs, kept as a hint and carried onto the intention on adoption. |
+| `parties` | no | URIs of other particulars the want involves, kept as a hint and carried onto the intention on adoption. |
 | `serves` | yes | Outbound references, possibly empty, with role `for-the-sake-of` only, each to a terminus of the same subject. The terminus may be tentative: a draft want may point at a draft self, and nothing rests on either. |
 | `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
 | `source` | yes | Who wrote it. |
@@ -196,8 +206,8 @@ Fields, in canonical order:
 | `retired` | no | The appended record; see below. |
 
 A desire carries none of what makes an intention an intention: no
-`duration`, no `window`, no `stability`, no `parties`, no `cadence`, no
-policy condition, no placement, no acknowledgements. Validation reports any
+`duration`, no `window`, no `stability`, no `cadence`, no policy condition,
+no placement, no acknowledgements. Validation reports any
 of them on a desire as an error. It carries no strength or priority either,
 for the reason severity is kept off flags: a number there would launder
 social force into something that sorts.
@@ -212,7 +222,7 @@ way without any finding; that is what makes them desires.
 **Adoption.** A desire is retired with `kind` `abandoned`, `superseded`
 (with `superseded_by` naming another desire), or `adopted`. Adopting writes a
 new intention carrying the desire's subject, title, description, serves,
-reference, activity and location, plus the duration and window the plan now
+reference, activity, location and parties, plus the duration and window the plan now
 has, with `stability: tentative` and the adopting act's `source`; then the
 desire is retired with `adopted_as` naming that intention, required when and
 only when the kind is `adopted`. The intention is the record of the adoption;
@@ -276,8 +286,8 @@ Fields, in canonical order:
 | Field | Required | Meaning |
 |---|---|---|
 | `id` | yes | |
-| `version` | yes | The projection hash, written by every writer; the computed value is authoritative. |
-| `subject` | on disk | URI of the particular whose intention this is. The writer applies `defaults.subject` from `intentions.yaml` when the caller omits it; a workspace without a default requires it explicitly. |
+| `version` | yes | The projection hash. |
+| `subject` | yes | URI of the particular whose intention this is. Applied from `defaults.subject` in `intentions.yaml` when the caller omits it; a workspace without a default requires it explicitly. |
 | `title` | yes | Prose. |
 | `description` | no | Prose. |
 | `duration` | no | A DURATION. Required before the intention can be resolved. |
@@ -286,7 +296,7 @@ Fields, in canonical order:
 | `firmed_under` | no | The policy under which a harness set `firm`: an active, firm terminus of the subject carrying `auto_firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
 | `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
 | `location` | no | URIs at one of which this must happen. Absent means anywhere. |
-| `parties` | no | URIs of other particulars whose availability must be satisfied, where the workspace tracks it. |
+| `parties` | no | Bare URIs of other particulars whose availability must be satisfied, where the workspace tracks it. A different shape from a commitment's `parties`, which carry a status. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
 | `cadence` | no | An RRULE. Makes this a recurring intention; the window must then carry a calendar anchor. |
 | `occurrence` | no | On generated instances only: the EDTF granule the cadence produced. |
@@ -424,7 +434,7 @@ Fields, in canonical order:
 |---|---|---|
 | `id` | yes | |
 | `version` | yes | The projection hash. |
-| `subject` | yes | URI of the particular whose availability this is. |
+| `subject` | yes | URI of the particular whose availability this is. Never defaulted, because supply is often another particular's, a room's or a colleague's, and must not silently become the person's. |
 | `title`, `description` | no | Prose. |
 | `duration` | yes | Capacity offered per occasion, optionally ranged. May be shorter than the window's clock interval. |
 | `window` | yes | A WINDOW. |
@@ -508,8 +518,8 @@ placement:
   duration: PT1H
   location: https://example.com/rooms/3
 intention: int_01a06d10-4c2e-7a91-b3f0-2d8e1a7c5b44
-origin:
-  resolution: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
+origin: resolution
+resolution: res_01a06d14-7e2c-7b19-a0d3-5c8f2e4a6b91
 external:
   system: jscalendar
   uid: 2a6f0b3e-4d1c-4e8a-9b7f-0c5d3e2a1f44
@@ -527,10 +537,11 @@ Fields, in canonical order:
 |---|---|---|
 | `id` | yes | |
 | `version` | yes | The projection hash. |
-| `parties` | yes | `{uri, status}` per party, sorted by `uri`; status `tentative`, `accepted`, or `declined`. |
+| `parties` | yes | `{uri, status}` per party, sorted by `uri`; status `tentative`, `accepted`, or `declined`. A different shape from an intention's `parties`, which are bare URIs. `tentative` here is a party's answer in iCalendar's sense, tentatively accepted, not an intention's stability. |
 | `placement` | yes | A PLACEMENT. Commitments always have one. |
 | `intention` | no | The intention this fulfils. Absent on imports. |
-| `origin` | yes | `{resolution: res_…}` or `import`. |
+| `origin` | yes | `resolution` or `import`. |
+| `resolution` | no | The RESOLUTION record's id, present when and only when `origin` is `resolution`. |
 | `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`, and a writer omits it when false. Only an import may set it. |
 | `external` | no | `{system: icalendar or jscalendar, uid}`. The only link to an external calendar. |
 | `title`, `description` | no | Prose. |
@@ -585,8 +596,8 @@ leave that shares the calendar without claiming the person's time. Where the
 subject will be, as their own statement, is presence (see [Status](#status)),
 not a transparent intention.
 
-**Scheduling projection:** `parties`, `placement`, `intention`, `origin`, `transparent`,
-`external`, `retired.kind`.
+**Scheduling projection:** `parties`, `placement`, `intention`, `origin`,
+`resolution`, `transparent`, `external`, `retired.kind`.
 
 ### Records
 
@@ -878,7 +889,7 @@ AVAILABILITY   what a particular has capacity for — supply
 COMMITMENT     an intention that interlocks with others — the hand-off
                  ← parties[{uri, status}]: status is that party's act alone
                  ← placement: always
-                 ← origin: resolution | import
+                 ← origin: resolution | import; resolution: the record, when so
                  ← external.uid: the only link to iCalendar / JSCalendar
 
 records        RESOLUTION      standalone — relates intention, placement, displaced
@@ -1397,7 +1408,7 @@ Every refusal a verb makes, the tool makes.
 
 | Tool | Parameters | Does |
 |---|---|---|
-| `desire_add` | `title`, `subject?`, `activity?`, `description?`, `location?`, `reference?`, `serves?`, `source?`, `timestamp?` | Record a want the person expressed; no why required. |
+| `desire_add` | `title`, `subject?`, `activity?`, `description?`, `location?`, `parties?`, `reference?`, `serves?`, `source?`, `timestamp?` | Record a want the person expressed; no why required. |
 | `desire_edit` | `id`, any of the above, `clear?` | Change fields; the version changes only when `serves` does. |
 | `desire_adopt` | `id`, `duration?`, `window?`, `source?`, `timestamp?` | Write the intention, then retire the desire as `adopted` naming it; refused where the result would be a terminus. |
 | `desire_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record: `abandoned` or `superseded`; `adopted` is refused. |
