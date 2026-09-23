@@ -12,7 +12,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an issue on intentions-cli: `origin` and `resolution` on write, read and validate; `parties` on desires; `timestamp` on edit
-- [ ] 3.3 Archive with sync
-- [ ] 3.4 Knowledge workspace: one claim and a qualification synthesis; commit and push
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an issue on intentions-cli: `origin` and `resolution` on write, read and validate; `parties` on desires; `timestamp` on edit
+- [x] 3.3 Archive with sync
+- [x] 3.4 Knowledge workspace: one claim and a qualification synthesis; commit and push

@@ -222,8 +222,9 @@ way without any finding; that is what makes them desires.
 **Adoption.** A desire is retired with `kind` `abandoned`, `superseded`
 (with `superseded_by` naming another desire), or `adopted`. Adopting writes a
 new intention carrying the desire's subject, title, description, serves,
-reference, activity, location and parties, plus the duration and window the plan now
-has, with `stability: tentative` and the adopting act's `source`; then the
+reference, activity, location and parties, plus the duration and window the
+plan now has, with `stability: tentative` and the adopting act's `source`;
+then the
 desire is retired with `adopted_as` naming that intention, required when and
 only when the kind is `adopted`. The intention is the record of the adoption;
 nothing else is written. Adopting a retired desire is refused, and so is
