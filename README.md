@@ -216,7 +216,17 @@ reference, activity and location, plus the duration and window the plan now
 has, with `stability: tentative` and the adopting act's `source`; then the
 desire is retired with `adopted_as` naming that intention, required when and
 only when the kind is `adopted`. The intention is the record of the adoption;
-nothing else is written. Adopting a retired desire is refused. A harness may
+nothing else is written. Adopting a retired desire is refused, and so is
+adopting into a terminus: where the desire serves nothing and the act supplies
+neither duration nor window, the intention it would write is a self titled
+as an errand, and the act is refused naming what is missing, a why or a when.
+An adopted want is a plan; a self is declared, not adopted. This refusal is
+not subsumed by the rule that every intention reaches a terminus, because a
+terminus is exempt from that rule, so it stands in every revision. A harness
+may still draft a terminus through the ordinary intention write, which is a
+different act with a different meaning. Retiring a desire as `adopted` by
+hand is refused too, since only adoption writes the intention the pointer
+must name; `superseded_by` on a desire names another desire. A harness may
 record a desire on the person's word, as it records a decline, and may adopt
 one, since adopting is drafting an intention; the result is tentative and
 subject to every rule an intention is subject to, including the unserved
@@ -1230,8 +1240,8 @@ sub-day RRULE part in `cadence`, a fractional duration on an all-day
 placement, `firmed_under` on a terminus, a desire carrying any temporal or
 deontic field of an intention, a desire `serves` entry with any role but
 `for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming
-anything but an intention, and `transparent` on a commitment born of a
-resolution. It reports at warning level an intention that reaches
+anything but an intention, `superseded_by` on a desire naming anything but a
+desire, and `transparent` on a commitment born of a resolution. It reports at warning level an intention that reaches
 no firm terminus of its own subject, naming the fix, and a resolution record
 whose `selector` names a policy since set tentative or retired; and at info
 level a terminus that is still tentative, as a draft. Where a write can tell
@@ -1389,8 +1399,8 @@ Every refusal a verb makes, the tool makes.
 |---|---|---|
 | `desire_add` | `title`, `subject?`, `activity?`, `description?`, `location?`, `reference?`, `serves?`, `source?`, `timestamp?` | Record a want the person expressed; no why required. |
 | `desire_edit` | `id`, any of the above, `clear?` | Change fields; the version changes only when `serves` does. |
-| `desire_adopt` | `id`, `duration?`, `window?`, `source?`, `timestamp?` | Write the intention, then retire the desire as `adopted` naming it. |
-| `desire_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record: `abandoned` or `superseded`. |
+| `desire_adopt` | `id`, `duration?`, `window?`, `source?`, `timestamp?` | Write the intention, then retire the desire as `adopted` naming it; refused where the result would be a terminus. |
+| `desire_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record: `abandoned` or `superseded`; `adopted` is refused. |
 | `desire_show` | `id` | One desire with its version and its terminus. |
 | `desire_list` | `subject?`, `retired?` | Desires, active by default. |
 
@@ -1478,7 +1488,9 @@ implementation that exposes their names SHALL keep them:
 - **`desire_adopt` writes the intention first.** It creates the tentative
   intention from the desire and the supplied duration and window, then
   appends the desire's `adopted` retirement naming it, returns both ids, and
-  refuses a desire already retired.
+  refuses a desire already retired. It also refuses a bare adoption, one
+  whose desire serves nothing and which supplies neither duration nor
+  window, naming what is missing: a self is declared, not adopted.
 
 ---
 

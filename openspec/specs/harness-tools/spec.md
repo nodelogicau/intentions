@@ -19,7 +19,11 @@ The specification SHALL name a reference set of tools, one per operation, groupe
 
 #### Scenario: desire_adopt is exposed
 - **WHEN** an implementation exposes a tool called `desire_adopt`
-- **THEN** it SHALL write the intention first and the desire's `adopted` retirement second, return both ids, and refuse a desire already retired
+- **THEN** it SHALL write the intention first and the desire's `adopted` retirement second, return both ids, refuse a desire already retired, and refuse a bare adoption, one whose desire serves nothing and which supplies neither `duration` nor `window`, naming what is missing
+
+#### Scenario: desire_retire is exposed
+- **WHEN** an implementation exposes a tool called `desire_retire`
+- **THEN** it SHALL accept `abandoned` and `superseded` and SHALL refuse `adopted`
 
 ### Requirement: Parameters are typed after the format's structures
 Tool parameters SHALL use the format's own structures: a window is `{calendar, clock, relative: {target, relation, gap: {min, max}}}` with every part optional, a duration is an ISO 8601 string or `{nominal, min, max}`, `serves` is a list of `{id, role}`, `source` is `{author, harness, model}`, and identifiers are the prefixed ids the format defines. A tool's result SHALL be the same as the implementation's non-interactive output for the corresponding verb.
