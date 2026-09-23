@@ -33,13 +33,14 @@ to the apex once the custom domain is set).
 
 ## The example workspace
 
-`example/` is a real workspace written by intentions-cli 0.11.0 with the clock
-fixed at `2026-09-19T09:00:00Z`. It holds one person's supply for the week of
+`example/` is a real workspace, first written by intentions-cli 0.11.0 with the
+clock fixed at `2026-09-19T09:00:00Z` and since migrated to `intentions/0.2`. It holds one person's supply for the week of
 21 September 2026 (Tuesday and Thursday mornings kept for deep work, weekday
 afternoons for anything), a terminus, an intention to send the board pack the
 following week, a weekly one-to-one already placed on Tuesday afternoon and
 declined by the other party, and the ninety-minute budget intention the site's
-prose is about. Nothing in it is hand-edited. It was built with:
+prose is about. Nothing in it is hand-edited. It was built with the following, shown with the 0.2 flag spellings; the 0.1
+binary that wrote it took `--duration` and `--conditional`:
 
 ```sh
 export INTENTIONS_NOW=2026-09-19T09:00:00Z TS=2026-09-19T09:00:00Z
@@ -50,10 +51,10 @@ W="--workspace docs/example"
 intentions $W availability add --subject "$ADA" --title "Deep-work mornings" \
   --description "Tuesday and Thursday mornings are kept clear for focused work." \
   --calendar 2026-W39 --clock 09:00/12:00 --cadence "FREQ=WEEKLY;BYDAY=TU,TH" \
-  --duration PT3H --conditional deep-work --valid-until 2026-W40 --timestamp $TS
+  --capacity PT3H --activities deep-work --valid-until 2026-W40 --timestamp $TS
 intentions $W availability add --subject "$ADA" --title "Weekday afternoons" \
   --calendar 2026-W39 --clock 13:00/17:00 --cadence "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR" \
-  --duration PT4H --valid-until 2026-W40 --timestamp $TS
+  --capacity PT4H --valid-until 2026-W40 --timestamp $TS
 TERM=$(intentions $W intention add --title "Being someone the board can rely on" \
   --stability firm --timestamp $TS --json | jq -r .id)
 PACK=$(intentions $W intention add --title "Send the board pack" --duration PT30M \
@@ -69,6 +70,12 @@ intentions $W intention add --title "Draft the Q4 budget narrative" \
   --serves "$PACK:in-order-to" --serves "$TERM:for-the-sake-of" --timestamp $TS
 ```
 
+Re-running that produces a workspace with different ids. The committed one is
+the one the figure was drawn from; do not rebuild it to regenerate the figure.
+One later edit, with intentions-cli 0.11.1 and the same fixed clock, gave the
+one-to-one its chain (`intention edit <id> --serves <terminus>:for-the-sake-of`)
+so that every intention reaches the terminus; no candidate changed.
+
 The workspace was written by a 0.1 binary and migrated to `intentions/0.2`
 with intentions-cli 0.15.0 (`intentions migrate`): the two availabilities now
 carry `capacity` and `activities`, the commitment carries `origin: resolution`
@@ -76,12 +83,6 @@ with a sibling `resolution`, their versions were recomputed, and `format` was
 rewritten. Nothing a person wrote moved, no acknowledgement lapsed, and no
 candidate changed: `resolve` on every intention produced identical output
 before and after.
-
-Re-running that produces a workspace with different ids. The committed one is
-the one the figure was drawn from; do not rebuild it to regenerate the figure.
-One later edit, with intentions-cli 0.11.1 and the same fixed clock, gave the
-one-to-one its chain (`intention edit <id> --serves <terminus>:for-the-sake-of`)
-so that every intention reaches the terminus; no candidate changed.
 
 ## Regenerating the proof figure
 
