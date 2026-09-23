@@ -10,8 +10,8 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Comment on intentions-cli #7 with the three refinements
-- [ ] 3.3 Close #28 with a comment naming the commit
-- [ ] 3.4 Archive with sync
-- [ ] 3.5 Knowledge workspace: one claim on the Desire particular and a qualification synthesis; commit and push
+- [x] 3.1 Commit and push
+- [x] 3.2 Comment on intentions-cli #7 with the three refinements
+- [x] 3.3 Close #28 with a comment naming the commit
+- [x] 3.4 Archive with sync
+- [x] 3.5 Knowledge workspace: one claim on the Desire particular and a qualification synthesis; commit and push
