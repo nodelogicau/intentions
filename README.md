@@ -893,10 +893,9 @@ COMMITMENT     an intention that interlocks with others — the hand-off
                  ← origin: resolution | import; resolution: the record, when so
                  ← external.uid: the only link to iCalendar / JSCalendar
 
-records        RESOLUTION      standalone — relates intention, placement, displaced
-               ACKNOWLEDGEMENT embedded — "I have seen this flag against this version"
-               RETIREMENT      embedded — kind, reason, superseded_by, adopted_as
-```
+records        RESOLUTION      standalone — relates intention, placement,
+displaced ACKNOWLEDGEMENT embedded — "I have seen this flag against this
+version" RETIREMENT      embedded — kind, reason, superseded_by, adopted_as ```
 
 ### The serves graph
 
@@ -1259,29 +1258,28 @@ reports the drift as a warning.
 
 ### Validation
 
-`validate` checks the whole workspace and exits non-zero on any error:
-dangling references, unknown `serves` roles, cycles, unparseable EDTF or ISO
-8601 values, unknown retirement kinds, `superseded` without `superseded_by`,
+`validate` checks the whole workspace and exits non-zero on any error: dangling
+references, unknown `serves` roles, cycles, unparseable EDTF or ISO 8601
+values, unknown retirement kinds, `superseded` without `superseded_by`,
 duplicate active instances for one occurrence, an intention or availability
 with no author, `firm` on an intention whose `source` carries a harness and
-which has no `firmed_under`, `firmed_under` naming anything but an active,
-firm policy of the subject, `auto_select` or `auto_firm` on an intention that is
-not a terminus, `cadence` on an object whose window has no calendar anchor, a
-sub-day RRULE part in `cadence`, a fractional duration on an all-day
-placement, `firmed_under` on a terminus, a desire carrying any temporal or
-deontic field of an intention, a desire `serves` entry with any role but
-`for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming
-anything but an intention, `superseded_by` on a desire naming anything but a
-desire, and `transparent` on a commitment born of a resolution; and, under `intentions/0.2`, an intention that reaches
-no firm terminus of its own subject, named with the fix, which under
-`intentions/0.1` is a warning. It reports at warning level a resolution record
-whose `selector` names a policy since set tentative or retired; and at info
-level a terminus that is still tentative, as a draft. Where a write can tell
-that its result would fail, it refuses; where it can tell that its result
-would warn,
-it accepts and reports the warning. Write-time refusal is a convenience;
-validation is the invariant, because files arrive by merge without passing
-through any writer.
+which has no `firmed_under`, `firmed_under` naming anything but an active, firm
+policy of the subject, `auto_select` or `auto_firm` on an intention that is not
+a terminus, `cadence` on an object whose window has no calendar anchor, a sub-
+day RRULE part in `cadence`, a fractional duration on an all-day placement,
+`firmed_under` on a terminus, a desire carrying any temporal or deontic field
+of an intention, a desire `serves` entry with any role but `for-the-sake-of`,
+`adopted` without `adopted_as` or `adopted_as` naming anything but an
+intention, `superseded_by` on a desire naming anything but a desire, and
+`transparent` on a commitment born of a resolution; and, under
+`intentions/0.2`, an intention that reaches no firm terminus of its own
+subject, named with the fix, which under `intentions/0.1` is a warning. It
+reports at warning level a resolution record whose `selector` names a policy
+since set tentative or retired; and at info level a terminus that is still
+tentative, as a draft. Where a write can tell that its result would fail, it
+refuses; where it can tell that its result would warn, it accepts and reports
+the warning. Write-time refusal is a convenience; validation is the invariant,
+because files arrive by merge without passing through any writer.
 
 ---
 

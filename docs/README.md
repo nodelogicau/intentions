@@ -69,6 +69,12 @@ intentions $W intention add --title "Draft the Q4 budget narrative" \
   --serves "$PACK:in-order-to" --serves "$TERM:for-the-sake-of" --timestamp $TS
 ```
 
+The workspace is an `intentions/0.1` workspace, written by a 0.1 binary with
+the 0.1 field names and shapes (`duration` and `conditional` on availability,
+the union `origin`). The specification is now at `intentions/0.2`, and a 0.2
+reader accepts a 0.1 workspace as it is, so the figure script keeps working;
+the workspace migrates when a release of the CLI can migrate it.
+
 Re-running that produces a workspace with different ids. The committed one is
 the one the figure was drawn from; do not rebuild it to regenerate the figure.
 One later edit, with intentions-cli 0.11.1 and the same fixed clock, gave the
