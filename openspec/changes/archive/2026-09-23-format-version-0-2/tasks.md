@@ -26,7 +26,7 @@
 ## 5. Close out
 
 - [x] 5.1 Commit and push
-- [ ] 5.2 Open an issue on intentions-cli for 0.2: read 0.1 and write 0.2, `migrate` with the acknowledgement carry-across and the unserved check, the newer-format refusal, the two renames, the unserved refusal under 0.2; note it supersedes #8
-- [ ] 5.3 Close #29 with a comment naming the commit and the tag
-- [ ] 5.4 Archive with sync
-- [ ] 5.5 Knowledge workspace: one claim and a qualification synthesis on the spine; commit and push
+- [x] 5.2 Open an issue on intentions-cli for 0.2: read 0.1 and write 0.2, `migrate` with the acknowledgement carry-across and the unserved check, the newer-format refusal, the two renames, the unserved refusal under 0.2; note it supersedes #8
+- [x] 5.3 Close #29 with a comment naming the commit and the tag
+- [x] 5.4 Archive with sync
+- [x] 5.5 Knowledge workspace: one claim and a qualification synthesis on the spine; commit and push

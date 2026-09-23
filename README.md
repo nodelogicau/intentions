@@ -893,9 +893,10 @@ COMMITMENT     an intention that interlocks with others — the hand-off
                  ← origin: resolution | import; resolution: the record, when so
                  ← external.uid: the only link to iCalendar / JSCalendar
 
-records        RESOLUTION      standalone — relates intention, placement,
-displaced ACKNOWLEDGEMENT embedded — "I have seen this flag against this
-version" RETIREMENT      embedded — kind, reason, superseded_by, adopted_as ```
+records        RESOLUTION      standalone — relates intention, placement, displaced
+               ACKNOWLEDGEMENT embedded — "I have seen this flag against this version"
+               RETIREMENT      embedded — kind, reason, superseded_by, adopted_as
+```
 
 ### The serves graph
 
