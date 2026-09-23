@@ -115,7 +115,7 @@ canonical order, and `version` always comes second, after `id`. Writers emit
 fields in that order; readers MUST accept any order and MUST NOT reject a file
 for its arrangement. Fields an implementation adds beyond this specification
 are written after all specified fields. Lists of strings (`location`,
-`conditional`, an intention's `parties`, `displaced`) are block sequences,
+`activities`, an intention's `parties`, `displaced`) are block sequences,
 sorted as in the projection; small records (`serves` entries, ranged
 durations, `gap`, policy conditions) are flow mappings; multi-line prose is a
 literal block scalar; everything else is block style. A boolean equal to its
@@ -295,7 +295,7 @@ Fields, in canonical order:
 | `window` | no | A WINDOW. Required before the intention can be resolved. |
 | `stability` | yes | `tentative` or `firm`. |
 | `firmed_under` | no | The policy under which a harness set `firm`: an active, firm terminus of the subject carrying `auto_firm`. Required whenever `stability` is `firm` and `source` carries a harness; absent when a person firmed by their own act. |
-| `activity` | no | A term from the workspace's activity vocabulary, matched against availability `conditional`. |
+| `activity` | no | A term from the workspace's activity vocabulary, matched against availability `activities`. |
 | `location` | no | URIs at one of which this must happen. Absent means anywhere. |
 | `parties` | no | Bare URIs of other particulars whose availability must be satisfied, where the workspace tracks it. A different shape from a commitment's `parties`, which carry a status. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
@@ -345,10 +345,10 @@ intention, or on a terminus that is still tentative, is unserved all the way
 down, and an instance reaches its terminus through the recurring intention it
 is an instance of. A terminus grounds an intention the way a particular
 grounds a DKF claim: it is what the intention is ultimately about, and an
-intention with none is a duration floating free. In this revision an
+intention with none is a duration floating free. Under `intentions/0.1` an
 unserved intention is a validation warning that names the fix, and a write
-that would leave one unserved is accepted and reports it. The next revision
-that breaks files refuses both, as DKF refuses a claim with no particular.
+that would leave one unserved is accepted and reports it. Under
+`intentions/0.2` both are refused, as DKF refuses a claim with no particular.
 
 A terminus is the person's word. It is inert until it is `firm`, grounding
 nothing and authorising nothing, and
@@ -412,11 +412,11 @@ id: avl_01a06d12-9b7e-7c03-a5d1-6e2f4a8b0c77
 version: sha256:2e91…a47b
 subject: https://example.com/people/ada
 title: Tuesday mornings for deep work
-duration: PT3H
+capacity: PT3H
 window:
   calendar: 2026-09/2026-12
   clock: 09:00/12:00
-conditional:
+activities:
   - deep-work
   - writing
 location:
@@ -437,9 +437,9 @@ Fields, in canonical order:
 | `version` | yes | The projection hash. |
 | `subject` | yes | URI of the particular whose availability this is. Never defaulted, because supply is often another particular's, a room's or a colleague's, and must not silently become the person's. |
 | `title`, `description` | no | Prose. |
-| `duration` | yes | Capacity offered per occasion, optionally ranged. May be shorter than the window's clock interval. |
+| `capacity` | yes | A DURATION: the capacity offered per occasion, optionally ranged. May be shorter than the window's clock interval. |
 | `window` | yes | A WINDOW. |
-| `conditional` | no | Activity terms this supply is good for. Absent means anything. |
+| `activities` | no | Activity terms this supply is good for. Absent means anything. |
 | `location` | no | URIs at which this capacity holds. Absent means anywhere. |
 | `cadence` | no | An RRULE. Makes this recurring. |
 | `valid_until` | no | EDTF expression or datetime. See validity horizon. |
@@ -462,7 +462,7 @@ not a different rule for this one, and it is not in this version (see
 [Status](#status)). Until it is, a location-free capacity supplies an at-home
 intention on a day the person is away, and nothing flags it.
 
-**Capacity is consumed.** Each occasion offers its `duration` (the `max`
+**Capacity is consumed.** Each occasion offers its `capacity` (the `max`
 when ranged), less the opaque, unretired placements already resting on it. Two
 two-hour intentions cannot both land on one three-hour morning. A commitment
 consumes a party's capacity only where that party is `tentative` or
@@ -492,11 +492,11 @@ horizon is checked at resolution and consistency time, never by a background
 sweep.
 
 **Renewal versus supersession.** Renewing is an edit to `valid_until` on the
-same object. Changing the window, duration, conditional, or location is a different
+same object. Changing the window, capacity, activities, or location is a different
 disposition: a new object, with the old one retired as `superseded` pointing at
 it. A tool refuses an edit that changes those terms in place.
 
-**Scheduling projection:** `subject`, `duration`, `window`, `conditional`,
+**Scheduling projection:** `subject`, `capacity`, `window`, `activities`,
 `location`, `cadence`, `valid_until`, `retired.kind`.
 
 ### `COMMITMENT`
@@ -884,7 +884,7 @@ INTENTION      what a person means to do — no other party
 
 AVAILABILITY   what a particular has capacity for — supply
                  ← subject: any URI
-                 ← duration, window, conditional[], location[], cadence
+                 ← capacity, window, activities[], location[], cadence
                  ← valid_until: after which it is unusable, not false
 
 COMMITMENT     an intention that interlocks with others — the hand-off
@@ -934,7 +934,7 @@ are sinks by definition, which removes the most likely accidental cycle.
        │  range:  [max(window start, now), min(window end, now + horizon)]
        │  demand: duration, window, activity, subject + parties
        │  supply: ∩ eligible AVAILABILITY per tracked particular
-       │          (unretired, unexpired, conditional ∋ activity,
+       │          (unretired, unexpired, activities ∋ activity,
        │           location ∩ location ≠ ∅ or either absent, visible,
        │           remaining capacity ≥ duration)
        │          an untracked party constrains no supply and still
@@ -1045,7 +1045,7 @@ check rather than stored:
 | Kind | Meaning |
 |---|---|
 | `window-clash` | two placements overlap while sharing a party whom both occupy, or a placement falls where there is no eligible supply |
-| `condition-mismatch` | the supplying availability's `conditional` does not include the intention's `activity` |
+| `condition-mismatch` | the supplying availability's `activities` does not include the intention's `activity` |
 | `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
 | `intention-inconsistency` | two active unplaced intentions of one subject each have candidates alone but no non-overlapping pair; checked pairwise, never globally |
@@ -1126,7 +1126,7 @@ algorithm named by `hash` in `intentions.yaml`. Normalisation is:
   and `PT24H` stay distinct; no conversion of months or years; zero as `P0D`.
 - Datetimes as RFC 3339 UTC with seconds.
 - Every set-valued list sorted: references by id then role, commitment
-  `parties` by `uri`, and string lists (`location`, `conditional`, an
+  `parties` by `uri`, and string lists (`location`, `activities`, an
   intention's `parties`, `displaced`) lexically.
 - Absent optional fields omitted, and a boolean equal to its documented
   default omitted, so an explicit `transparent: false` hashes as absent.
@@ -1142,12 +1142,31 @@ version in the file, immediately after `id`, so that a diff shows whether an
 edit touched the projection; the computed value is authoritative and
 validation warns when the written value disagrees or is missing.
 
-Projection field sets are frozen per format version. `window.clock` and
-`transparent` joined them while v0.1 was still undeclared, which is the last
-moment such a change costs nothing. `intentions/0.1` hashes
-exactly the fields this document enumerates; a change to any projection is a
-new format version, so a stored `counterpart_version` stays comparable for as
-long as its format version is known.
+Projection field sets are frozen per format version, from the moment any
+implementation writes the version string into a file, not from any
+declaration. `window.clock` and `transparent` joined the 0.1 projection
+before any file carried the string. `intentions/0.2` hashes exactly the
+fields this document enumerates; a change to any projection is a new format
+version, so a stored `counterpart_version` stays comparable for as long as
+its format version is known.
+
+### Migration
+
+A workspace moves from `intentions/0.1` to `intentions/0.2` only by an
+explicit `migrate` operation, the person's act. A 0.2 reader accepts a 0.1
+workspace as it is, reading and writing it under the 0.1 rules and shapes
+until then, and refuses a workspace whose `format` names a version it does
+not implement, naming both. Migration rewrites each commitment's `origin`
+from the 0.1 union shape to `origin: resolution` with a sibling `resolution`,
+or `origin: import`; renames `duration` to `capacity` and `conditional` to
+`activities` on every availability; recomputes every version under 0.2;
+rewrites `counterpart_version` on every acknowledgement whose counterpart's
+version changed only because of the migration, so that no acknowledgement
+lapses for a change in shape; regenerates the index; and rewrites `format`.
+Nothing else changes: no id, no field a person wrote, no `source`, no
+`timestamp`, no `retired` record. Migration refuses to rewrite `format` while
+any intention is unserved under the 0.2 rule, naming them, so the walk up to
+termini happens before the refusal applies.
 
 ---
 
@@ -1184,7 +1203,7 @@ git's. Retirement appends; nothing is ever deleted.
 ### `intentions.yaml`
 
 ```yaml
-format: intentions/0.1
+format: intentions/0.2
 hash: sha256
 resolver:
   timezone: Australia/Melbourne
@@ -1253,8 +1272,9 @@ placement, `firmed_under` on a terminus, a desire carrying any temporal or
 deontic field of an intention, a desire `serves` entry with any role but
 `for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming
 anything but an intention, `superseded_by` on a desire naming anything but a
-desire, and `transparent` on a commitment born of a resolution. It reports at warning level an intention that reaches
-no firm terminus of its own subject, naming the fix, and a resolution record
+desire, and `transparent` on a commitment born of a resolution; and, under `intentions/0.2`, an intention that reaches
+no firm terminus of its own subject, named with the fix, which under
+`intentions/0.1` is a warning. It reports at warning level a resolution record
 whose `selector` names a policy since set tentative or retired; and at info
 level a terminus that is still tentative, as a draft. Where a write can tell
 that its result would fail, it refuses; where it can tell that its result
@@ -1299,8 +1319,8 @@ particular it is about, and an intention cannot stand without the terminus it
 is for. A workspace's first act is a terminus, and a harness's first question
 is who the person is trying to be. That is the right first question, and the
 cost of capture is the point: this format does not hold an intention the
-person cannot say the point of. An unserved intention is a warning in this
-revision and a refusal in the next that breaks files, and a terminus grounds
+person cannot say the point of. An unserved intention is a warning under
+`intentions/0.1` and a refusal under `intentions/0.2`, and a terminus grounds
 nothing and authorises nothing until the person, by their own act, has made
 it firm. A want that has not earned a why is a desire, not an intention: it
 sits in the inbox with no standing until the person adopts it or lets it go.
@@ -1339,7 +1359,9 @@ a git repository. The index is a cache of the files, never the reverse.
 
 ## Status
 
-This specification is in early draft. The object and record types, identifier
+v0.1 of this specification was declared on 2026-09-23 at the tag `v0.1`, the
+text the first implementation read and implements as `intentions/0.1`. This
+text is the `intentions/0.2` draft. The object and record types, identifier
 format, field sets and canonical order, the projection and its hashing, the
 serves graph and its roles, the WINDOW anchor forms and their admitted
 vocabularies, the resolution ranking and the flag kinds are believed settled
@@ -1349,10 +1371,13 @@ first implementation, [intentions-cli](https://github.com/nodelogicau/intentions
 issues where it was ambiguous or silent, recorded in its
 [SPEC-FEEDBACK.md](https://github.com/nodelogicau/intentions-cli/blob/main/SPEC-FEEDBACK.md).
 All twenty-five are settled in the text as it now stands, five of them
-differently from what the implementation chose. One rule is in transition:
-an intention that reaches no firm terminus is reported at warning level in
-this revision so that workspaces written before the rule keep validating, and
-the next revision that breaks files refuses the write.
+differently from what the implementation chose. 0.2 breaks files in four
+ways, each deferred to it by the text: a commitment's `origin` is a plain
+value with a sibling `resolution`; availability's `duration` is `capacity`
+and its `conditional` is `activities`; and an intention that reaches no firm
+terminus is refused rather than warned about. A 0.1 workspace is read as it
+is until its owner migrates it (see Migration), which is refused while any
+intention is unserved, so the walk up to termini comes first.
 
 Deferred from this version, deliberately:
 
@@ -1369,7 +1394,7 @@ Deferred from this version, deliberately:
   and making every location-bearing availability constrain would turn two
   overlapping capacities at different places into nothing. If added it is a
   `PRESENCE` object with subject, window, cadence, a required `location` list,
-  and a validity horizon, but no duration or conditional. It supplies nothing;
+  and a validity horizon, but no capacity or activities. It supplies nothing;
   it narrows the location set of every candidate its window covers, absent
   meaning anywhere. A placement outside every covering presence would be a
   new flag kind, `presence-clash`, reported on both objects. Not supported;
@@ -1431,11 +1456,11 @@ Every refusal a verb makes, the tool makes.
 
 | Tool | Parameters | Does |
 |---|---|---|
-| `availability_add` | `title?`, `subject`, `duration`, `window`, `cadence?`, `conditional?`, `description?`, `location?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Declare a subject's capacity within a window. |
+| `availability_add` | `title?`, `subject`, `capacity`, `window`, `cadence?`, `activities?`, `description?`, `location?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Declare a subject's capacity within a window. |
 | `availability_renew` | `id`, `source?`, `valid_until` | Extend the validity horizon. |
-| `availability_supersede` | `id`, `title?`, `subject?`, `duration?`, `window?`, `cadence?`, `conditional?`, `description?`, `location?`, `reason?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Retire and replace with changed terms. |
+| `availability_supersede` | `id`, `title?`, `subject?`, `capacity?`, `window?`, `cadence?`, `activities?`, `description?`, `location?`, `reason?`, `scope?`, `source?`, `timestamp?`, `valid_until?` | Retire and replace with changed terms. |
 | `availability_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record. |
-| `availability_list` | `subject?`, `conditional?`, `now?`, `retired?`, `scope?` | Availability, filtered. |
+| `availability_list` | `subject?`, `activities?`, `now?`, `retired?`, `scope?` | Availability, filtered. |
 
 **Commitment.**
 
@@ -1470,6 +1495,7 @@ Every refusal a verb makes, the tool makes.
 | `bounds` | `id?`, `calendar?`, `clock?`, `hemisphere?`, `now?`, `timezone?` | Clock-time bounds of a window; writes nothing. |
 | `validate` | — | Check the whole workspace. |
 | `workspace_status` | — | Where the server is bound and what the workspace holds. |
+| `migrate` | — | Move a 0.1 workspace to 0.2: rewrite shapes and names, recompute versions, carry acknowledgements across, refuse while any intention is unserved. |
 
 Four of these carry the format's rules into a tool call, and an
 implementation that exposes their names SHALL keep them:

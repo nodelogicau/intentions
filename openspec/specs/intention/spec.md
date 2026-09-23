@@ -105,7 +105,7 @@ A terminus is the person's word. A terminus is inert until it is `firm`: it grou
 - **THEN** the write is accepted and every intention reaching it is served
 
 ### Requirement: Every intention reaches a terminus
-An intention that is not a terminus SHALL reach a firm terminus of its own `subject` through its `serves` graph, by any path of `in-order-to`, `for-the-sake-of` and `instance-of` references. Reachability is the test, not the presence of an entry: a chain that ends on a scheduled intention, or on a tentative terminus, is unserved. Generated instances reach a terminus through the recurring intention they are `instance-of`. In this revision validation SHALL report an unserved intention at warning level, naming the intention and the fix, and a write that would leave an intention unserved SHALL be accepted and SHALL carry the same finding in its result. A later revision that breaks files SHALL raise both to refusal.
+An intention that is not a terminus SHALL reach a firm terminus of its own `subject` through its `serves` graph, by any path of `in-order-to`, `for-the-sake-of` and `instance-of` references. Reachability is the test, not the presence of an entry: a chain that ends on a scheduled intention, or on a tentative terminus, is unserved. Generated instances reach a terminus through the recurring intention they are `instance-of`. Under `intentions/0.1` validation reports an unserved intention at warning level, naming the intention and the fix, and a write that would leave an intention unserved is accepted and carries the same finding in its result. Under `intentions/0.2` validation SHALL report an unserved intention as an error, naming the intention and the fix, and a write that would leave an intention unserved SHALL be refused. A 0.2 reader applies the 0.1 rule to a workspace whose `format` is still `intentions/0.1`.
 
 #### Scenario: Chain ends on a scheduled intention
 - **WHEN** A serves B `in-order-to`, B has a window and a duration, and B has no `serves`
@@ -123,9 +123,13 @@ An intention that is not a terminus SHALL reach a firm terminus of its own `subj
 - **WHEN** Ada's intention serves Priya's terminus `for-the-sake-of` and no terminus of Ada's
 - **THEN** validation reports Ada's intention as unserved
 
-#### Scenario: Unserved write in this revision
-- **WHEN** a harness adds an intention with an empty `serves` in a workspace holding no terminus
+#### Scenario: Unserved write under 0.1
+- **WHEN** a harness adds an intention with an empty `serves` in a workspace whose `format` is `intentions/0.1` and which holds no terminus
 - **THEN** the write is accepted and the result carries the unserved warning naming the intention
+
+#### Scenario: Unserved write under 0.2
+- **WHEN** a harness adds an intention with an empty `serves` in a workspace whose `format` is `intentions/0.2` and which holds no terminus
+- **THEN** the write is refused, naming the intention and the fix
 
 ### Requirement: Recurring intentions and generated instances
 
@@ -189,7 +193,7 @@ Whether an existing intention should be reconsidered SHALL be surfaced when a ne
 
 ### Requirement: Activity vocabulary
 
-`activity` on an intention and each term in `conditional` on an availability SHALL be a lowercase kebab-case term. The specification SHALL NOT fix the vocabulary; terms are documented in the workspace conventions file. Matching between `activity` and `conditional` SHALL be by exact string equality. An unknown term SHALL NOT be a validation error; validation SHALL report at info level any term used by exactly one object.
+`activity` on an intention and each term in `activities` on an availability SHALL be a lowercase kebab-case term. The specification SHALL NOT fix the vocabulary; terms are documented in the workspace conventions file. Matching between `activity` and `activities` SHALL be by exact string equality. An unknown term SHALL NOT be a validation error; validation SHALL report at info level any term used by exactly one object.
 
 #### Scenario: Unknown term accepted
 - **WHEN** an intention carries `activity: piano-practice` and no other object uses that term
