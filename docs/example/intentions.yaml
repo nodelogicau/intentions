@@ -1,4 +1,4 @@
-format: intentions/0.1
+format: intentions/0.2
 hash: sha256
 resolver:
   timezone: Australia/Melbourne

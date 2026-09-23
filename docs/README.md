@@ -69,11 +69,13 @@ intentions $W intention add --title "Draft the Q4 budget narrative" \
   --serves "$PACK:in-order-to" --serves "$TERM:for-the-sake-of" --timestamp $TS
 ```
 
-The workspace is an `intentions/0.1` workspace, written by a 0.1 binary with
-the 0.1 field names and shapes (`duration` and `conditional` on availability,
-the union `origin`). The specification is now at `intentions/0.2`, and a 0.2
-reader accepts a 0.1 workspace as it is, so the figure script keeps working;
-the workspace migrates when a release of the CLI can migrate it.
+The workspace was written by a 0.1 binary and migrated to `intentions/0.2`
+with intentions-cli 0.15.0 (`intentions migrate`): the two availabilities now
+carry `capacity` and `activities`, the commitment carries `origin: resolution`
+with a sibling `resolution`, their versions were recomputed, and `format` was
+rewritten. Nothing a person wrote moved, no acknowledgement lapsed, and no
+candidate changed: `resolve` on every intention produced identical output
+before and after.
 
 Re-running that produces a workspace with different ids. The committed one is
 the one the figure was drawn from; do not rebuild it to regenerate the figure.

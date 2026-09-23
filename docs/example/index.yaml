@@ -1,19 +1,19 @@
-format: intentions/0.1
+format: intentions/0.2
 entries:
   - id: avl_01a0b732-56af-77f7-a52f-eb704e6b88de
     type: availability
     subject: https://example.com/people/ada
     path: availability/avl_01a0b732-56af-77f7-a52f-eb704e6b88de.yaml
-    version: sha256:6dbaa43c768c19318b48a40b3b39d4490b5d53360d1a439a4a1cef11b5df1f38
+    version: sha256:14238e050968024ca7b95846ea82e9e96a7619e47c0e89677ee17938b77feb8c
   - id: avl_01a0b732-56bb-7566-94a8-8bd078f062b2
     type: availability
     subject: https://example.com/people/ada
     path: availability/avl_01a0b732-56bb-7566-94a8-8bd078f062b2.yaml
-    version: sha256:9093dc75aa28664e67c44e3a557fb9e72357f51e356c0f833abcb64c572e2552
+    version: sha256:813f31e5d55c073b078d3ddc9f7e409ed4f0b66db53e235a65fbefaf9317043f
   - id: cmt_01a0b732-572b-70af-a702-9687a8d7ca6b
     type: commitment
     path: commitments/cmt_01a0b732-572b-70af-a702-9687a8d7ca6b.yaml
-    version: sha256:6c30f0c49e96bde087ed1fa45eb162f1e7af60b5702c55c85807a95ba1b3493a
+    version: sha256:dca8bd11b68bd76f0a0b857cc3135dd6440ac0ccd6cc644e7c06e2649708caca
     refs:
       - int_01a0b732-5709-70e2-adcd-c4454fbd12b4
       - res_01a0b732-571f-70bf-8688-04a4bb52f59c

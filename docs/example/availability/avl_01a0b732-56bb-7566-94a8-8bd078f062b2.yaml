@@ -1,8 +1,8 @@
 id: avl_01a0b732-56bb-7566-94a8-8bd078f062b2
-version: sha256:9093dc75aa28664e67c44e3a557fb9e72357f51e356c0f833abcb64c572e2552
+version: sha256:813f31e5d55c073b078d3ddc9f7e409ed4f0b66db53e235a65fbefaf9317043f
 subject: https://example.com/people/ada
 title: Weekday afternoons
-duration: PT4H
+capacity: PT4H
 window:
   calendar: 2026-W39
   clock: 13:00/17:00

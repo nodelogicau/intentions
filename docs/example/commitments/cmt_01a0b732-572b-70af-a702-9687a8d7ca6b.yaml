@@ -1,5 +1,5 @@
 id: cmt_01a0b732-572b-70af-a702-9687a8d7ca6b
-version: sha256:6c30f0c49e96bde087ed1fa45eb162f1e7af60b5702c55c85807a95ba1b3493a
+version: sha256:dca8bd11b68bd76f0a0b857cc3135dd6440ac0ccd6cc644e7c06e2649708caca
 parties:
   - uri: https://example.com/people/ada
     status: tentative
@@ -9,8 +9,8 @@ placement:
   start: 2026-09-22T14:15:00+10:00
   duration: PT45M
 intention: int_01a0b732-5709-70e2-adcd-c4454fbd12b4
-origin:
-  resolution: res_01a0b732-571f-70bf-8688-04a4bb52f59c
+origin: resolution
+resolution: res_01a0b732-571f-70bf-8688-04a4bb52f59c
 title: One-to-one with Priya
 source:
   author: https://example.com/people/ada

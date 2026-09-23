@@ -122,8 +122,9 @@ def main():
         (h1, m1), (h2, m2) = [map(int, t.split(":")) for t in clock.split("/")]
         y1 = Y0 + (h1 + m1 / 60 - HOUR_FROM) * HOUR_H
         y2 = Y0 + (h2 + m2 / 60 - HOUR_FROM) * HOUR_H
-        cond = ", ".join(a.get("conditional", [])) or "anything"
-        tip = escape(f'availability: {a["title"]} · {clock} · {a.get("cadence", "every day")} · good for {cond} · capacity {a["duration"]} per occasion')
+        # 0.2 names, with the 0.1 spellings as a fallback for an unmigrated workspace.
+        cond = ", ".join(a.get("activities", a.get("conditional", []))) or "anything"
+        tip = escape(f'availability: {a["title"]} · {clock} · {a.get("cadence", "every day")} · good for {cond} · capacity {a.get("capacity", a.get("duration"))} per occasion')
         for i, d in enumerate(days):
             if WEEKDAY[d.weekday()] not in by_day(a.get("cadence")):
                 continue
