@@ -1405,6 +1405,13 @@ Deferred from this version, deliberately:
 - **v0.1.** Its condition, a second reader implementing from this text, is
   met. Declaring it is a deliberate act still to come.
 
+[`intentions-bench`](https://github.com/nodelogicau/intentions-bench), so far
+a proposal, will measure any implementation as a system with an agent on
+scripted scenarios: whether a remark lands on the right rung, whether a
+window is kept as the person said it, and whether the agent leaves to the
+person the acts that are theirs. It depends only on this specification and
+MCP; its results are not normative.
+
 Feedback on the object model, field names, and missing cases is the most
 valuable contribution at this stage.
 
