@@ -42,6 +42,18 @@ person's own resolve or an accretion of other people's claims on their time,
 and the artifact looks identical either way. A format that cannot say who
 authored a commitment cannot help a person tell the difference.
 
+The third problem is deliberation. A person who notices everything can find
+that every reason has a further reason behind it. Dostoyevsky's underground
+man, asking where his primary causes are, finds that each draws after it
+another still more primary, and so on to infinity, and the fruit of so much
+consciousness is inertia. Bratman's answer is that this is what intentions
+are for: a settled plan spares a limited agent from deliberating again, so
+that attention can rest on what is in front of them. That works only if what
+is settled is held somewhere the person trusts, ends at a reason the person
+has chosen to rest on, and comes back only when something actually conflicts
+with it. A calendar holds the slot and none of the rest, and a passing want
+has nowhere to go at all, so the rest is held in the head.
+
 ---
 
 ## The Approach
