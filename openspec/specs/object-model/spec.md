@@ -5,9 +5,7 @@
 Defines the storage, identity, reference, mutability, versioning, and validation rules shared by every object type in the intentions specification (WINDOW, DURATION, INTENTION, AVAILABILITY, RESOLUTION, COMMITMENT, ACKNOWLEDGEMENT), and the boundaries between this specification and the two systems it composes with: the Dialectical Knowledge Format (DKF) for the retrospective, contested, evidential layer, and iCalendar/JSCalendar for interpersonal calendar interchange.
 
 The specification is standalone. It owns all prospective and temporal structure natively and composes with other systems by external reference only, never by shared object model.
-
 ## Requirements
-
 ### Requirement: File-per-object YAML storage
 
 Each object SHALL be stored as exactly one YAML file, in a directory named for its object type, under a workspace root identified by an `intentions.yaml` configuration file. A file SHALL contain only the object it names.
@@ -116,7 +114,7 @@ Every object and every RESOLUTION record SHALL carry its computed version in the
 
 ### Requirement: Validation
 
-A `validate` operation SHALL check the whole workspace and report findings with severity `error`, `warning`, or `info`. Errors SHALL include: dangling references, unknown reference roles, cycles in the intention serves graph, unparseable EDTF or ISO 8601 values, unknown retirement kinds, `superseded` without `superseded_by`, duplicate active instances for one occurrence, an intention or availability with no author, `firm` on an intention whose `source` carries a harness and which has no `firmed_under`, `firmed_under` naming anything other than an active, firm policy of the intention's subject, `firmed_under` on a terminus, `auto_select` or `auto_firm` on an intention that is not a terminus, `cadence` on an object whose window has no calendar anchor, a sub-day RRULE part in `cadence`, a fractional duration on an all-day placement, a DESIRE carrying any field of an intention's temporal or deontic kind (`duration`, `window`, `stability`, `parties`, `cadence`, `auto_select`, `auto_firm`, `firmed_under`, `placement`, `acknowledgements`), a DESIRE `serves` entry with any role but `for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming anything but an intention, `superseded_by` on a desire naming anything but a desire, and `transparent` on a commitment born of a resolution. Under `intentions/0.2` errors SHALL also include an intention that reaches no firm terminus of its own subject, named with the fix; under `intentions/0.1` that finding is a warning. Warnings SHALL include a RESOLUTION record whose `selector` names a policy that is no longer firm or no longer active, as an act authorised when it happened under a policy since withdrawn; the placement it produced stands and is the person's to keep or re-resolve. Info SHALL include a tentative terminus, as a draft. Validation SHALL be runnable in continuous integration and SHALL exit non-zero on any error.
+A `validate` operation SHALL check the whole workspace and report findings with severity `error`, `warning`, or `info`. Errors SHALL include: dangling references, unknown reference roles, cycles in the intention serves graph, unparseable EDTF or ISO 8601 values, unknown retirement kinds, `superseded` without `superseded_by`, duplicate active instances for one occurrence, an intention or availability with no author, `firm` on an intention whose `source` carries a harness and which has no `firmed_under`, `firmed_under` naming anything other than an active, firm policy of the intention's subject, `firmed_under` on a terminus, `auto_select` or `auto_firm` on an intention that is not a terminus, `cadence` on an object whose window has no calendar anchor, `habit` on an intention without `cadence`, a sub-day RRULE part in `cadence`, a fractional duration on an all-day placement, a DESIRE carrying any field of an intention's temporal or deontic kind (`duration`, `window`, `stability`, `parties`, `cadence`, `auto_select`, `auto_firm`, `firmed_under`, `placement`, `acknowledgements`), a DESIRE `serves` entry with any role but `for-the-sake-of`, `adopted` without `adopted_as` or `adopted_as` naming anything but an intention, `superseded_by` on a desire naming anything but a desire, and `transparent` on a commitment born of a resolution. Under `intentions/0.2` errors SHALL also include an intention that reaches no firm terminus of its own subject, named with the fix; under `intentions/0.1` that finding is a warning. Warnings SHALL include a RESOLUTION record whose `selector` names a policy that is no longer firm or no longer active, as an act authorised when it happened under a policy since withdrawn; the placement it produced stands and is the person's to keep or re-resolve. Info SHALL include a tentative terminus, as a draft. Validation SHALL be runnable in continuous integration and SHALL exit non-zero on any error.
 
 Where a write operation can determine that the result would fail validation with an error, it SHALL refuse the write. Where it can determine that the result would carry a warning, it SHALL accept the write and report the warning in its result. Write-time refusal is a convenience; validation is the invariant, because files may arrive by merge without passing through any write operation.
 
@@ -143,6 +141,10 @@ Where a write operation can determine that the result would fail validation with
 #### Scenario: Selected under a policy since withdrawn
 - **WHEN** a RESOLUTION record's `selector` names a policy that has since been set tentative or retired
 - **THEN** validation reports a warning on the record and does not exit non-zero for it
+
+#### Scenario: Habit on an instance
+- **WHEN** a generated instance carries `habit: true`
+- **THEN** validation reports an error naming the instance and the field
 
 ### Requirement: Composition with DKF by reference only
 
@@ -325,3 +327,4 @@ Tools SHALL locate the workspace by, in order of precedence: a `--workspace` arg
 #### Scenario: Bad environment variable
 - **WHEN** `INTENTIONS_WORKSPACE` names a directory with no `intentions.yaml`
 - **THEN** the tool exits with the no-workspace code rather than searching ancestors
+

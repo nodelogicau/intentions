@@ -5,12 +5,10 @@
 Defines the consistency check, its flags, and acknowledgements. The check surfaces every way the prospective graph fails to hang together: overlaps, mismatched conditions, expired grounds, mutually unsatisfiable intentions, and cycles. It never decides; it makes the imposition visible so the person can contest or accept it. Philosophically this is how the specification protects resoluteness against the schedule silently filling with other people's claims on one's time.
 
 Flags are derived and recomputed. What persists is the person's acknowledgement.
-
 ## Requirements
-
 ### Requirement: Flag kinds
 
-A flag SHALL have exactly one `kind` from: `window-clash` (two placements overlap while sharing a party whom both occupy, occupancy being by each party's own entry, or a placement falls in a window with no eligible supply), `condition-mismatch` (the availability supplying a placement has an `activities` list that does not include the intention's `activity`), `location-mismatch` (the availability supplying a placement has a location list that does not include the placement's location, or the placement's location is not in the intention's location list), `expired-ground` (an availability the placement rests on has passed its horizon or been retired), `intention-inconsistency` (two active unplaced intentions of one subject, each with duration and window and with intersecting resolution ranges, each have candidates alone but no pair of non-overlapping candidates exists; the check is pairwise and never global), `party-declined` (a commitment has a party at `declined` while the intention it fulfils is still placed), and `cycle` (the intention is in a strongly-connected component of the serves graph). Flags SHALL NOT carry a numeric severity.
+A flag SHALL have exactly one `kind` from: `window-clash` (two placements overlap while sharing a party whom both occupy, occupancy being by each party's own entry, or a placement falls in a window with no eligible supply), `condition-mismatch` (the availability supplying a placement has an `activities` list that does not include the intention's `activity`), `location-mismatch` (the availability supplying a placement has a location list that does not include the placement's location, or the placement's location is not in the intention's location list), `expired-ground` (an availability the placement rests on has passed its horizon or been retired), `intention-inconsistency` (two active unplaced intentions of one subject, neither a dormant instance of a habit, each with duration and window and with intersecting resolution ranges, each have candidates alone but no pair of non-overlapping candidates exists; the check is pairwise and never global), `party-declined` (a commitment has a party at `declined` while the intention it fulfils is still placed), and `cycle` (the intention is in a strongly-connected component of the serves graph). Flags SHALL NOT carry a numeric severity.
 
 Whether the workspace tracks a party's availability SHALL make no difference to `window-clash`: a party's placements clash whether or not the workspace holds any capacity for them.
 
@@ -37,6 +35,10 @@ Whether the workspace tracks a party's availability SHALL make no difference to 
 #### Scenario: Overlap on an untracked party
 - **WHEN** two commitments overlap and both carry the same untracked external party at `tentative`
 - **THEN** a `window-clash` is reported on both, naming the shared party in `detail`
+
+#### Scenario: Dormant instance not counted
+- **WHEN** an unplaced intention and a dormant instance of a habit each fit the subject's single occasion alone but not together
+- **THEN** no `intention-inconsistency` flag is reported on either
 
 ### Requirement: Flag shape
 
@@ -159,3 +161,4 @@ The flag SHALL NOT change any party status, clear any placement, or retire anyth
 #### Scenario: Acknowledgement lapses on a reversal
 - **WHEN** an acknowledged declining party later sets their status to `accepted`
 - **THEN** the commitment's projection changes, the acknowledgement lapses, and the flag is not reported because no party is declined
+

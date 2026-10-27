@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines the reference tool set through which a harness reaches an implementation: one tool per operation, named after the verb, with the standing DKF gives its names. The names are a reference and an implementation may use others; one that exposes a listed name keeps its semantics, so that a skill written against one implementation works against another. The four semantics stated here are where the format's rules (resolution ranks and never chooses, a harness may draft but not firm without a policy, a party's status is theirs alone) meet a tool call.
-
 ## Requirements
-
 ### Requirement: The reference tool set and its standing
 The specification SHALL name a reference set of tools, one per operation, grouped by the object acted on and named after the verb: `desire_add`, `desire_edit`, `desire_adopt`, `desire_retire`, `desire_show`, `desire_list`; `intention_add`, `intention_edit`, `intention_firm`, `intention_retire`, `intention_show`, `intention_list`; `availability_add`, `availability_renew`, `availability_supersede`, `availability_retire`, `availability_list`; `commitment_accept`, `commitment_decline`, `commitment_cancel`, `commitment_show`, `commitment_list`; `generate`, `resolve`, `select`, `unresolved`, `check`, `acknowledge`, `bounds`, `validate`, `workspace_status`. These names are a reference, not a requirement: an implementation MAY expose its operations under other names. An implementation that exposes a listed name SHALL keep that tool's semantics and accept its parameters as the specification states them, so that a skill or prompt written against one implementation works against another.
 
@@ -70,7 +68,7 @@ Tool parameters SHALL use the format's own structures: a window is `{calendar, c
 - **THEN** the subject's own entry becomes `declined` and every other entry is unchanged
 
 ### Requirement: unresolved lists what still awaits a placement, and why
-`unresolved` SHALL list every unretired intention that has no placement and could take one: not a terminus and not a recurring intention. Each entry SHALL carry a status derived from a dry resolution: `ready` with the candidate count and best rank, `blocked` on a relational target without a placement, `no_candidates` with the resolver's reason, `incomplete` when duration or window is missing, or `unresolvable` when the serves graph or the object prevents resolution. It SHALL write nothing.
+`unresolved` SHALL list every unretired intention that has no placement and could take one: not a terminus, not a recurring intention, and not a dormant instance of a habit. Each entry SHALL carry a status derived from a dry resolution: `ready` with the candidate count and best rank, `blocked` on a relational target without a placement, `no_candidates` with the resolver's reason, `incomplete` when duration or window is missing, or `unresolvable` when the serves graph or the object prevents resolution. It SHALL write nothing.
 
 #### Scenario: A blocked intention
 - **WHEN** an intention's window carries a relational anchor whose target has no placement
@@ -79,3 +77,19 @@ Tool parameters SHALL use the format's own structures: a window is `{calendar, c
 #### Scenario: Nothing carried
 - **WHEN** every placeable intention has a placement
 - **THEN** `unresolved` returns an empty list and a count of zero
+
+#### Scenario: A habit asks nothing
+- **WHEN** the only unplaced intentions in a workspace are instances of a recurring intention carrying `habit`
+- **THEN** `unresolved` returns an empty list and a count of zero
+
+### Requirement: intention_edit sets habit only by the person's act
+`intention_edit` SHALL refuse a call that sets `habit` to true when its `source` carries a harness, whatever `policy` it names, and SHALL name the act as the person's. It SHALL accept a call that clears `habit` from any source.
+
+#### Scenario: Harness habituates
+- **WHEN** `intention_edit` is called with `source.harness` set and `habit: true` on a recurring intention
+- **THEN** the call is refused and the intention is unchanged
+
+#### Scenario: Harness reverts
+- **WHEN** `intention_edit` is called with `source.harness` set and clears `habit`
+- **THEN** the call is accepted and the intention's version changes
+

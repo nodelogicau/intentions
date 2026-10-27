@@ -15,7 +15,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an issue on intentions-cli: the field and its order, the write-time refusal, `generate` skipping a habit, dormant instances in `resolve`, `unresolved` and `check`, and the skill's advice that a harness may suggest habituation but not set it
-- [ ] 3.3 Comment on and close issue #30 with a pointer to the change
-- [ ] 3.4 Archive with sync so the five deltas apply
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an issue on intentions-cli: the field and its order, the write-time refusal, `generate` skipping a habit, dormant instances in `resolve`, `unresolved` and `check`, and the skill's advice that a harness may suggest habituation but not set it
+- [x] 3.3 Comment on and close issue #30 with a pointer to the change
+- [x] 3.4 Archive with sync so the five deltas apply

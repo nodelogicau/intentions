@@ -5,9 +5,7 @@
 Defines RESOLUTION, the operation that matches an intention's demand (duration, window, activity, required parties) against the availability of every required particular and produces an ordered set of candidate placements. Resolution is the moment a partial plan becomes definite and the one place this specification collapses a window to clock time.
 
 Resolution never chooses on the person's behalf. Its output is a ranked candidate set; selecting one is a recorded act, by the person or by a self-governing policy the person authored.
-
 ## Requirements
-
 ### Requirement: Demand and supply
 
 Resolution SHALL take one unretired intention with both `duration` and `window` as demand. Supply SHALL be the intersection of eligible availability whose `subject` equals the intention's `subject` and, for every URI in the intention's `parties`, eligible availability whose `subject` equals that URI. Availability is eligible only if it carries no `retired` record, its validity horizon has not passed, its `activities` (if any) include the intention's `activity`, its `location` (if any) shares a URI with the intention's `location` or the intention has none, and it is visible: `personal` availability only when its `subject` is the intention's `subject` or one of its `parties`, and `organisation` or `public` availability when its scope is at or wider than `resolver.scope`. Where the intention's window or a supplying availability's window carries a `clock` anchor, a candidate placement SHALL lie wholly within every such clock interval on the local day concerned. An occasion's remaining capacity is its offered `capacity` less the opaque, unretired placements already resting on it (see Availability); a candidate SHALL fit within the remaining capacity of every occasion it rests on.
@@ -46,11 +44,15 @@ Resolution SHALL take one unretired intention with both `duration` and `window` 
 
 ### Requirement: Preconditions
 
-Resolution SHALL refuse an intention that lacks `duration` or `window`, is retired, carries a `cycle` flag, or has a relative anchor whose target is unplaced. It SHALL report the reason.
+Resolution SHALL refuse an intention that lacks `duration` or `window`, is retired, carries a `cycle` flag, has a relative anchor whose target is unplaced, or is a dormant instance of a habit (see Intention). It SHALL report the reason.
 
 #### Scenario: Blocked on anchor
 - **WHEN** an intention's window is relative to an unplaced intention
 - **THEN** resolution reports it as blocked and places nothing
+
+#### Scenario: Dormant instance
+- **WHEN** resolution is asked for an unplaced instance whose recurring intention carries `habit`
+- **THEN** resolution refuses it, reporting that the recurring intention is held as habit, and places nothing
 
 ### Requirement: Candidate ranking by reconsideration cost
 
@@ -245,3 +247,4 @@ Every unretired placement in the workspace that names an untracked party, and th
 #### Scenario: Declined untracked party frees the hour
 - **WHEN** the untracked party's entry on the earlier commitment is `declined`
 - **THEN** that commitment does not occupy them and a candidate at the same hour displaces nothing on their account
+
