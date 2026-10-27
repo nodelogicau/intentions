@@ -28,6 +28,6 @@ None.
 
 - README: under INTENTION, the fields table, the projection, a short habit subsection after recurrence, and the validation list. The reference tool set gains a bullet on `intention_edit` and `habit`.
 - Five deltas, no new capability.
-- Lands within `intentions/0.2`. No existing file changes meaning. A reader that doesn't know `habit` computes a different version for an intention carrying it and keeps generating instances, which is accepted (see design).
+- Lands within `intentions/0.2`, which is unreleased. `habit` joins the 0.2 projection, and the README's Versioning section records it alongside the 0.1 precedent. No existing hash changes.
 - intentions-cli: the field, the refusal, `generate` skipping, and dormant instances in `resolve`, `unresolved` and `check`. The skill should say that a harness may suggest habituation after a run of fulfilled instances, but must not set it.
 - Issue #30: closed by this change, with a pointer.

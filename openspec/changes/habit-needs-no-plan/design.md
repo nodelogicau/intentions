@@ -38,7 +38,7 @@ Grounding still applies, through `instance-of`. Habituating is one edit to one f
 
 **Occupancy comes from availability.** A 6am habit means the person isn't available at 6am, and availability is the format's assertion of exactly that. A habit cued by after-dinner or after-coffee has no hour to reserve at all. Reserving capacity from a habit's window would need instances that are computed but never written, which breaks the rule that instances are written to disk. That can be revisited if the cost shows up in practice.
 
-**Lands within `intentions/0.2`.** No existing file changes meaning, and no workspace needs migrating. A reader that doesn't know `habit` ignores it, keeps generating instances, and computes a different version for an intention that carries it. That disagreement is confined to recurring intentions the person has habituated, and is accepted as the cost of not waiting for a version bump.
+**Lands within `intentions/0.2`.** 0.2 is unreleased, so `habit` joins its projection the way `window.clock` and `transparent` joined 0.1's before it froze, and the Versioning section records that. No existing hash changes, because a boolean at its default is omitted, and no workspace needs migrating.
 
 **Grounding is unchanged.** A habit is an active non-terminus intention, so it must reach a firm terminus of its subject. When the person sets that terminus tentative, the habit is unserved, and validation reports it at the format's level for unserved intentions: a warning under 0.1, an error under 0.2. That report is the reflection prompt. This change adds no requirement to the grounding capability. It only adds a scenario under habit that says this happens.
 

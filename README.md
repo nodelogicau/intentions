@@ -312,6 +312,7 @@ Fields, in canonical order:
 | `parties` | no | Bare URIs of other particulars whose availability must be satisfied, where the workspace tracks it. A different shape from a commitment's `parties`, which carry a status. |
 | `serves` | yes | Outbound references, possibly empty: `{id, role}` with role `in-order-to`, `for-the-sake-of`, or `instance-of`. |
 | `cadence` | no | An RRULE. Makes this a recurring intention; the window must then carry a calendar anchor. |
+| `habit` | no | On recurring intentions only: `true` when the person holds it as habit. Default `false`, omitted. |
 | `occurrence` | no | On generated instances only: the EDTF granule the cadence produced. |
 | `placement` | no | A PLACEMENT, written only by resolution. |
 | `preference` | no | `earliest`, `latest`, `adjacent`, or `spread`. |
@@ -384,6 +385,24 @@ acknowledgements have something to attach to. Generation is idempotent on
 the recurring intention ends the arrangement and leaves already-generated
 instances to be retired individually.
 
+**Habit.** A recurring intention practised long enough becomes habit: its
+context cues it, and it no longer needs a plan to happen. `habit: true` says
+so. It is admitted only on an intention carrying `cadence`, and only the
+person's own act sets it: a write that sets it is refused when its `source`
+carries a harness, and no policy authorises it. A harness may suggest it
+after a run of fulfilled instances. Clearing it reverts, and anyone may do
+that, since it only brings the plan back into view. A habit generates no
+instances. Those already generated are left as they are: an unplaced one is
+dormant while its recurring intention is a habit, so resolution refuses it,
+`unresolved` omits it, and consistency does not count it, while a placed one
+keeps its placement until the person retires it. Reverting wakes the dormant
+instances, and generation resumes. A habit is not retired, because nothing
+has ended. It stays active, and so stays grounded: when the person sets the
+terminus it serves tentative, the habit is unserved, which is how the format
+notices a habit that has outlived its reason. A habit reserves no time. One
+that holds a fixed hour is reflected in the person's availability, which no
+longer offers that hour.
+
 **Policies.** A policy is a terminus carrying `auto_select` or `auto_firm`,
 each a condition with terms `max_duration` and `stability`. A condition is
 satisfied when every term it states holds for the intention being acted on.
@@ -409,8 +428,9 @@ in both `parties` and `location`: one consumes supply, the other constrains
 placement.
 
 **Scheduling projection:** `subject`, `duration`, `window`, `stability`,
-`activity`, `location`, `parties`, `serves`, `cadence`, `occurrence`,
-`placement`, `retired.kind`. Neither `version` nor `firmed_under` is in it.
+`activity`, `location`, `parties`, `serves`, `cadence`, `habit`,
+`occurrence`, `placement`, `retired.kind`. Neither `version` nor
+`firmed_under` is in it.
 
 ### `AVAILABILITY`
 
@@ -892,6 +912,7 @@ INTENTION      what a person means to do — no other party
                              for-the-sake-of → a terminus
                              instance-of → the recurring intention that generated it
                  ← cadence: makes it recurring; instances are generated from it
+                 ← habit: held as habit; no instances, the reason stays live
                  → placement: written by RESOLUTION
 
 AVAILABILITY   what a particular has capacity for — supply
@@ -973,8 +994,9 @@ are sinks by definition, which removes the most likely accidental cycle.
 ```
 
 Resolution refuses an intention that lacks duration or window, is retired,
-carries a `cycle` flag, has a relational anchor whose target is unplaced, or
-is already placed and the caller did not ask to replace. A window that has
+carries a `cycle` flag, has a relational anchor whose target is unplaced, is
+a dormant instance of a habit, or is already placed and the caller did not
+ask to replace. A window that has
 passed, or starts beyond the horizon, yields no candidates and a reason;
 nothing before now is ever offered.
 
@@ -1060,7 +1082,7 @@ check rather than stored:
 | `condition-mismatch` | the supplying availability's `activities` does not include the intention's `activity` |
 | `location-mismatch` | the placement's location is outside the supplying availability's `location` list, or outside the intention's |
 | `expired-ground` | an availability the placement rests on has expired or been retired |
-| `intention-inconsistency` | two active unplaced intentions of one subject each have candidates alone but no non-overlapping pair; checked pairwise, never globally |
+| `intention-inconsistency` | two active unplaced intentions of one subject, neither a dormant instance of a habit, each have candidates alone but no non-overlapping pair; checked pairwise, never globally |
 | `party-declined` | a commitment has a party at `declined` while the intention it fulfils is still placed |
 | `cycle` | the intention is in a strongly connected component of the serves graph |
 
@@ -1157,7 +1179,8 @@ validation warns when the written value disagrees or is missing.
 Projection field sets are frozen per format version, from the moment any
 implementation writes the version string into a file, not from any
 declaration. `window.clock` and `transparent` joined the 0.1 projection
-before any file carried the string. `intentions/0.2` hashes exactly the
+before any file carried the string, and `habit` joined the 0.2 projection
+while 0.2 was unreleased. `intentions/0.2` hashes exactly the
 fields this document enumerates; a change to any projection is a new format
 version, so a stored `counterpart_version` stays comparable for as long as
 its format version is known.
@@ -1280,8 +1303,8 @@ duplicate active instances for one occurrence, an intention or availability
 with no author, `firm` on an intention whose `source` carries a harness and
 which has no `firmed_under`, `firmed_under` naming anything but an active, firm
 policy of the subject, `auto_select` or `auto_firm` on an intention that is not
-a terminus, `cadence` on an object whose window has no calendar anchor, a sub-
-day RRULE part in `cadence`, a fractional duration on an all-day placement,
+a terminus, `cadence` on an object whose window has no calendar anchor,
+`habit` on an intention without `cadence`, a sub-day RRULE part in `cadence`, a fractional duration on an all-day placement,
 `firmed_under` on a terminus, a desire carrying any temporal or deontic field
 of an intention, a desire `serves` entry with any role but `for-the-sake-of`,
 `adopted` without `adopted_as` or `adopted_as` naming anything but an
@@ -1465,8 +1488,8 @@ Every refusal a verb makes, the tool makes.
 
 | Tool | Parameters | Does |
 |---|---|---|
-| `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. Anything else should serve one. |
-| `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
+| `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. Anything else should serve one. |
+| `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
 | `intention_firm` | `id`, `policy?`, `source?` | Set stability to firm; a harness must name a policy. |
 | `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. |
 | `intention_show` | `id`, `now?` | One intention with its version, its resolved serves targets and its flags. |
@@ -1517,7 +1540,7 @@ Every refusal a verb makes, the tool makes.
 | `workspace_status` | — | Where the server is bound and what the workspace holds. |
 | `migrate` | — | Move a 0.1 workspace to 0.2: rewrite shapes and names, recompute versions, carry acknowledgements across, refuse while any intention is unserved. |
 
-Four of these carry the format's rules into a tool call, and an
+Six of these carry the format's rules into a tool call, and an
 implementation that exposes their names SHALL keep them:
 
 - **`select` is the recorded act, and `resolve` chooses nothing.** `select`
@@ -1532,12 +1555,16 @@ implementation that exposes their names SHALL keep them:
   write sets `firmed_under`; a tentative policy is refused by name. A call with no harness firms by the person's own act. On a
   terminus it refuses any policy and any harness, so a terminus is firmed only
   by the person.
+- **`intention_edit` sets `habit` only by the person's act.** A call whose
+  `source` carries a harness and sets `habit` is refused, whatever policy it
+  names, and the refusal names the act as the person's. A call that clears
+  `habit` is accepted from any source.
 - **`commitment_accept` and `commitment_decline` take no policy.** They set
   only the named party's own entry, defaulting to the workspace's subject, and
   nothing infers a status: the tool records what the person said.
 - **`unresolved` lists what still awaits a placement, and why.** Every
   unretired, unplaced intention that could take a placement, neither a
-  terminus nor a recurring intention, with a status from a dry resolution:
+  terminus, a recurring intention, nor a dormant instance of a habit, with a status from a dry resolution:
   `ready` with the candidate count and best rank, `blocked` on a relational
   target without a placement, `no_candidates` with the resolver's reason,
   `incomplete` when duration or window is missing, or `unresolvable`. It is
