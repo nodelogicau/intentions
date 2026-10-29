@@ -12,7 +12,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an issue on intentions-cli: the walk, the warning, the refusal, the harness rule, the new errors
-- [ ] 3.3 Comment on and close issue #31 with a pointer to the change
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an issue on intentions-cli: the walk, the warning, the refusal, the harness rule, the new errors
+- [x] 3.3 Comment on and close issue #31 with a pointer to the change
+- [x] 3.4 Archive with sync
