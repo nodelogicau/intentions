@@ -360,8 +360,22 @@ is an instance of. A terminus grounds an intention the way a particular
 grounds a DKF claim: it is what the intention is ultimately about, and an
 intention with none is a duration floating free. Under `intentions/0.1` an
 unserved intention is a validation warning that names the fix, and a write
-that would leave one unserved is accepted and reports it. Under
-`intentions/0.2` both are refused, as DKF refuses a claim with no particular.
+that would leave the intention it writes unserved is accepted and reports it.
+Under `intentions/0.2` both are refused, as DKF refuses a claim with no
+particular. The refusal covers only the intention being written: setting a
+terminus tentative is accepted, and what rested on it becomes unserved until
+it is grounded again.
+
+The walk passes through retired intentions. At a link to one retired as
+`superseded`, it continues at `superseded_by`; at a link to one retired any
+other way, it continues through that intention's own `serves`. Ending a
+recurring arrangement therefore leaves its pending instances grounded, to be
+retired individually. A terminus grounds only while it is firm and unretired:
+a retired terminus grounds nothing, and a superseded one grounds through its
+successor. A means whose end was abandoned is still served, but validation
+warns, naming the end, because a means that has outlived its point is worth
+the person's attention. A means whose end was fulfilled raises nothing, since
+finishing in another order is routine.
 
 A terminus is the person's word. It is inert until it is `firm`, grounding
 nothing and authorising nothing, and
@@ -370,6 +384,21 @@ no policy applies to a terminus, so `firm` on one comes only from an act whose
 drafts anything; validation reports it as a draft, and every intention that
 reaches only drafts is unserved until the person firms one. An invented self
 at the top of the graph is therefore visible, grounds nothing, and waits.
+
+A terminus is structural more than assertive: it is what the graph hangs
+from, not a claim that lapses. A self-understanding is never discharged, so a
+terminus retires only as `abandoned` or `superseded`, and its `superseded_by`
+names a terminus of the same subject. Retiring a terminus is refused when it
+would leave some intention that is served now with no firm terminus, and the
+refusal names those intentions and the two alternatives: set the terminus
+tentative to withdraw it, or supersede it with a firm terminus to replace it.
+An intention with another firm ground does not block, nor do the dependents
+of a draft, nor desires, nor intentions firmed under it as a policy. A firm
+terminus is retired only by the person's own act; a harness may retire a
+tentative terminus only when it wrote it, its `source` carrying a harness.
+Supersession is how a reason evolves. What rested on the old terminus rests
+on the new one with no edit, and the change shows in `retired.kind`, where a
+terminus reworded in place would show nothing.
 
 **Recurring intentions and instances.** An intention with a `cadence` is a
 recurring intention; its window carries a calendar anchor for the cadence to
@@ -741,12 +770,13 @@ Kinds are per type:
 | Object | Kinds |
 |---|---|
 | desire | `abandoned`, `superseded`, `adopted` |
-| intention | `fulfilled`, `abandoned`, `superseded` |
+| intention | `fulfilled`, `abandoned`, `superseded`; a terminus only `abandoned`, `superseded` |
 | availability | `retracted`, `superseded` |
 | commitment | `cancelled` |
 
 `superseded_by` is required when and only when `kind` is `superseded`, and
-validation requires its target to exist. `adopted_as`, on a desire, is
+validation requires its target to exist; on a terminus, it must be a terminus
+of the same subject. `adopted_as`, on a desire, is
 required when and only when `kind` is `adopted`, and validation requires its
 target to exist and be an intention. A retired object is never edited
 again except to append acknowledgements, and its file is never deleted.
@@ -1303,21 +1333,25 @@ duplicate active instances for one occurrence, an intention or availability
 with no author, `firm` on an intention whose `source` carries a harness and
 which has no `firmed_under`, `firmed_under` naming anything but an active, firm
 policy of the subject, `auto_select` or `auto_firm` on an intention that is not
-a terminus, `cadence` on an object whose window has no calendar anchor,
-`habit` on an intention without `cadence`, a sub-day RRULE part in `cadence`, a fractional duration on an all-day placement,
-`firmed_under` on a terminus, a desire carrying any temporal or deontic field
-of an intention, a desire `serves` entry with any role but `for-the-sake-of`,
-`adopted` without `adopted_as` or `adopted_as` naming anything but an
-intention, `superseded_by` on a desire naming anything but a desire, and
-`transparent` on a commitment born of a resolution; and, under
+a terminus, `cadence` on an object whose window has no calendar anchor, `habit`
+on an intention without `cadence`, a sub-day RRULE part in `cadence`, a
+fractional duration on an all-day placement, `firmed_under` on a terminus, a
+desire carrying any temporal or deontic field of an intention, a desire
+`serves` entry with any role but `for-the-sake-of`, `adopted` without
+`adopted_as` or `adopted_as` naming anything but an intention, `superseded_by`
+on a desire naming anything but a desire, `fulfilled` on a terminus,
+`superseded_by` on a terminus naming anything but a terminus of its subject,
+and `transparent` on a commitment born of a resolution; and, under
 `intentions/0.2`, an intention that reaches no firm terminus of its own
 subject, named with the fix, which under `intentions/0.1` is a warning. It
-reports at warning level a resolution record whose `selector` names a policy
-since set tentative or retired; and at info level a terminus that is still
-tentative, as a draft. Where a write can tell that its result would fail, it
-refuses; where it can tell that its result would warn, it accepts and reports
-the warning. Write-time refusal is a convenience; validation is the invariant,
-because files arrive by merge without passing through any writer.
+reports at warning level an unretired intention with an `in-order-to` or
+`instance-of` link to an intention retired as `abandoned`, naming the end; a
+resolution record whose `selector` names a policy since set tentative or
+retired; and at info level a terminus that is still tentative, as a draft.
+Where a write can tell that its result would fail, it refuses; where it can
+tell that its result would warn, it accepts and reports the warning. Write-time
+refusal is a convenience; validation is the invariant, because files arrive by
+merge without passing through any writer.
 
 ---
 
@@ -1540,7 +1574,7 @@ Every refusal a verb makes, the tool makes.
 | `workspace_status` | — | Where the server is bound and what the workspace holds. |
 | `migrate` | — | Move a 0.1 workspace to 0.2: rewrite shapes and names, recompute versions, carry acknowledgements across, refuse while any intention is unserved. |
 
-Six of these carry the format's rules into a tool call, and an
+Seven of these carry the format's rules into a tool call, and an
 implementation that exposes their names SHALL keep them:
 
 - **`select` is the recorded act, and `resolve` chooses nothing.** `select`
@@ -1559,6 +1593,12 @@ implementation that exposes their names SHALL keep them:
   `source` carries a harness and sets `habit` is refused, whatever policy it
   names, and the refusal names the act as the person's. A call that clears
   `habit` is accepted from any source.
+- **`intention_retire` guards termini.** On a terminus it refuses `fulfilled`,
+  a `superseded_by` that is not a terminus of the same subject, and any
+  retirement that would leave a served intention with no firm terminus,
+  naming those intentions and the alternatives of setting it tentative or
+  superseding it. It refuses a harness, except on a tentative terminus whose
+  own `source` carries one.
 - **`commitment_accept` and `commitment_decline` take no policy.** They set
   only the named party's own entry, defaulting to the workspace's subject, and
   nothing infers a status: the tool records what the person said.
