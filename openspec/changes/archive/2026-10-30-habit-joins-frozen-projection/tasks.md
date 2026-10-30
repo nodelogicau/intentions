@@ -11,7 +11,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Comment on intentions-cli#10: the 0.1 refusal, the validation error, hashing `habit` under 0.2 only
-- [ ] 3.3 Comment on and close issue #32 with a pointer to the change
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Comment on intentions-cli#10: the 0.1 refusal, the validation error, hashing `habit` under 0.2 only
+- [x] 3.3 Comment on and close issue #32 with a pointer to the change
+- [x] 3.4 Archive with sync
