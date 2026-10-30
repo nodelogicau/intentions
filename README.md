@@ -430,7 +430,9 @@ has ended. It stays active, and so stays grounded: when the person sets the
 terminus it serves tentative, the habit is unserved, which is how the format
 notices a habit that has outlived its reason. A habit reserves no time. One
 that holds a fixed hour is reflected in the person's availability, which no
-longer offers that hour.
+longer offers that hour. `habit` is admitted only under `intentions/0.2`. In
+a 0.1 workspace a write that sets it is refused, naming `migrate`, and one
+that arrives by merge is hashed and treated as absent.
 
 **Policies.** A policy is a terminus carrying `auto_select` or `auto_firm`,
 each a condition with terms `max_duration` and `stability`. A condition is
@@ -459,7 +461,8 @@ placement.
 **Scheduling projection:** `subject`, `duration`, `window`, `stability`,
 `activity`, `location`, `parties`, `serves`, `cadence`, `habit`,
 `occurrence`, `placement`, `retired.kind`. Neither `version` nor
-`firmed_under` is in it.
+`firmed_under` is in it. `habit` is in it only under `intentions/0.2` (see
+Versioning); the 0.1 projection is the same list without it.
 
 ### `AVAILABILITY`
 
@@ -1209,11 +1212,17 @@ validation warns when the written value disagrees or is missing.
 Projection field sets are frozen per format version, from the moment any
 implementation writes the version string into a file, not from any
 declaration. `window.clock` and `transparent` joined the 0.1 projection
-before any file carried the string, and `habit` joined the 0.2 projection
-while 0.2 was unreleased. `intentions/0.2` hashes exactly the
-fields this document enumerates; a change to any projection is a new format
-version, so a stored `counterpart_version` stays comparable for as long as
-its format version is known.
+before any file carried the string. `intentions/0.2` hashes exactly the
+fields this document enumerates, and a change to any projection is a new
+format version, with one named exception. `habit` joined the 0.2 projection
+after files carried `intentions/0.2`. It was admitted because it is optional
+and omitted at its default, so no existing hash moved. The cost falls on
+readers older than the field: they compute a different version for any
+object carrying `habit: true`, and they keep generating its instances. No
+other field joins a frozen projection this way, including another field
+omitted at its default; every further change is a new format version. A
+stored `counterpart_version` therefore stays comparable between readers that
+know the same format version and agree on its admitted fields.
 
 ### Migration
 
@@ -1334,7 +1343,8 @@ with no author, `firm` on an intention whose `source` carries a harness and
 which has no `firmed_under`, `firmed_under` naming anything but an active, firm
 policy of the subject, `auto_select` or `auto_firm` on an intention that is not
 a terminus, `cadence` on an object whose window has no calendar anchor, `habit`
-on an intention without `cadence`, a sub-day RRULE part in `cadence`, a
+on an intention without `cadence`, `habit` in an `intentions/0.1` workspace
+(the fix is `migrate`), a sub-day RRULE part in `cadence`, a
 fractional duration on an all-day placement, `firmed_under` on a terminus, a
 desire carrying any temporal or deontic field of an intention, a desire
 `serves` entry with any role but `for-the-sake-of`, `adopted` without
@@ -1447,7 +1457,10 @@ value with a sibling `resolution`; availability's `duration` is `capacity`
 and its `conditional` is `activities`; and an intention that reaches no firm
 terminus is refused rather than warned about. A 0.1 workspace is read as it
 is until its owner migrates it (see Migration), which is refused while any
-intention is unserved, so the walk up to termini comes first.
+intention is unserved, so the walk up to termini comes first. `habit` joined
+the 0.2 projection after files carried the string (see Versioning), so a
+reader that predates it must be upgraded before anyone sharing the workspace
+sets `habit`.
 
 Deferred from this version, deliberately:
 
