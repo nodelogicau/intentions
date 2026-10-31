@@ -1447,7 +1447,7 @@ serves graph and its roles, the WINDOW anchor forms and their admitted
 vocabularies, the resolution ranking and the flag kinds are believed settled
 and are backed by a reasoning chain in a companion knowledge workspace. A
 first implementation, [intentions-cli](https://github.com/nodelogicau/intentions-cli)
-(now v0.11.0), has been written from this text and has raised twenty-five
+(now v0.16.0), has been written from this text and has raised twenty-five
 issues where it was ambiguous or silent, recorded in its
 [SPEC-FEEDBACK.md](https://github.com/nodelogicau/intentions-cli/blob/main/SPEC-FEEDBACK.md).
 All twenty-five are settled in the text as it now stands, five of them
@@ -1487,12 +1487,13 @@ Deferred from this version, deliberately:
 - **v0.1.** Its condition, a second reader implementing from this text, is
   met. Declaring it is a deliberate act still to come.
 
-[`intentions-bench`](https://github.com/nodelogicau/intentions-bench), so far
-a proposal, will measure any implementation as a system with an agent on
-scripted scenarios: whether a remark lands on the right rung, whether a
-window is kept as the person said it, and whether the agent leaves to the
-person the acts that are theirs. It depends only on this specification and
-MCP; its results are not normative.
+[`intentions-bench`](https://github.com/nodelogicau/intentions-bench) measures
+any implementation as a system with an agent on scripted scenarios: whether a
+remark lands on the right rung, whether a window is kept as the person said
+it, and whether the agent leaves to the person the acts that are theirs. It
+depends only on this specification and MCP; its results are not normative.
+Its first report, on intentions-cli 0.16.0 with Claude Haiku 5.5 as the agent,
+is in its [`reports/`](https://github.com/nodelogicau/intentions-bench/tree/main/reports).
 
 Feedback on the object model, field names, and missing cases is the most
 valuable contribution at this stage.
