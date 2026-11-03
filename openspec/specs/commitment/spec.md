@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines COMMITMENT, the interpersonal counterpart of an intention. Both are commissive: an intention involves no other party, a commitment is directed at someone and carries a negotiation history. A commitment is the only object with a placement by construction and the only object that references an external calendar, because it is the point at which this specification hands off to iCalendar or JSCalendar for interchange.
+Defines COMMITMENT, the interpersonal counterpart of an intention. Both are commissive: an intention involves no other party, a commitment is directed at someone and carries a negotiation history. A commitment is the only object with a placement by construction and the point at which this specification hands off to iCalendar or JSCalendar for interchange. The one other reference to an external calendar is a placed intention's link to the busy hold written for it (see Calendar hold in Intention).
 
 A commitment's status is a deontic fact about a party's will. Per Searle's felicity conditions it requires sincerity, so software SHALL never set it; it only records and flags.
 

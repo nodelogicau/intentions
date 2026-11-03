@@ -78,8 +78,8 @@ by how much existing intention each would disturb. It never chooses. Selection
 is a recorded act by the person, or by a policy the person holds.
 
 **COMMITMENT** is the interpersonal object: parties, a placement, a deontic
-status per party that only that party's act may change, and the single link to
-an external iCalendar or JSCalendar object. A commitment arises either from a
+status per party that only that party's act may change, and its link to an
+external iCalendar or JSCalendar object. A commitment arises either from a
 resolution, in which case it is consistent by construction, or by import, in
 which case it is expected to clash with what the person meant and the clash is
 surfaced as a flag. Flags are never decisions.
@@ -315,6 +315,7 @@ Fields, in canonical order:
 | `habit` | no | On recurring intentions only: `true` when the person holds it as habit. Default `false`, omitted. |
 | `occurrence` | no | On generated instances only: the EDTF granule the cadence produced. |
 | `placement` | no | A PLACEMENT, written only by resolution. |
+| `external` | no | `{system: icalendar or jscalendar, uid}`. On a placed intention with no `parties` only: the link to the busy hold written for its placement (see Calendar hold). |
 | `preference` | no | `earliest`, `latest`, `adjacent`, or `spread`. |
 | `auto_select`, `auto_firm` | no | On termini only: policy conditions. |
 | `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
@@ -458,10 +459,41 @@ time. A room that must be booked and is also where the thing happens appears
 in both `parties` and `location`: one consumes supply, the other constrains
 placement.
 
+**Calendar hold.** When a placement is selected, a harness with write access
+to the person's calendar may write a busy hold for it. An intention with
+`parties` gets a commitment, and the hold is the commitment's. An intention
+with no `parties` gets none, so it carries the link itself: `external`,
+`{system, uid}`, the only link between the intention and that event. It is
+present only with a `placement`, no two intentions share one, and a write that
+adds `parties` to an intention carrying it is refused unless it clears it. A
+harness may set or clear it without a policy; it confers nothing.
+
+A hold carries the least that makes it legible to the person in their own
+calendar: the placement's start and duration (all-day form for an all-day
+placement), `placement.location` where it is a URI, and the `title` as
+`SUMMARY` or `title`. It is always opaque (`TRANSP:OPAQUE`,
+`freeBusyStatus: busy`), since an intention is never transparent, and it
+carries `STATUS:TENTATIVE` for a tentative intention and `STATUS:CONFIRMED`
+for a firm one (JSCalendar `status: tentative` or `confirmed`). Nothing else
+crosses: no description, serves graph, activity, policy or source.
+
+An imported event whose `system` and `uid` match an intention's `external`,
+retired or not, is that intention's own hold coming back, and creates no
+commitment. A replacing selection keeps `external`, so the harness moves the
+same event. Retirement keeps it too: the harness releases the hold of an
+intention retired as `abandoned` or `superseded` and leaves the hold of one
+retired as `fulfilled`, which needs no write to the workspace.
+
+The hold is never a reply. Answering an invitation changes a party's status
+and stays that party's own act. Nor is availability ever written as busy time:
+availability is supply, not occupation, and publishing it for others to book
+is federation (see [Status](#status)).
+
 **Scheduling projection:** `subject`, `duration`, `window`, `stability`,
 `activity`, `location`, `parties`, `serves`, `cadence`, `habit`,
-`occurrence`, `placement`, `retired.kind`. Neither `version` nor
-`firmed_under` is in it. `habit` is in it only under `intentions/0.2` (see
+`occurrence`, `placement`, `retired.kind`. Neither `version`, `firmed_under`
+nor `external` is in it: a hold mirrors the placement, which is already
+hashed, so writing or moving one changes no version. `habit` is in it only under `intentions/0.2` (see
 Versioning); the 0.1 projection is the same list without it.
 
 ### `AVAILABILITY`
@@ -565,7 +597,8 @@ it. A tool refuses an edit that changes those terms in place.
 
 ### `COMMITMENT`
 
-The interpersonal object, and the only one that touches an external calendar.
+The interpersonal object, and the point at which this format hands off to an
+external calendar. The one other link is a solo intention's calendar hold.
 An intention becomes a commitment when it must interlock with another party.
 
 ```yaml
@@ -608,7 +641,7 @@ Fields, in canonical order:
 | `origin` | yes | `resolution` or `import`. |
 | `resolution` | no | The RESOLUTION record's id, present when and only when `origin` is `resolution`. |
 | `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`, and a writer omits it when false. Only an import may set it. |
-| `external` | no | `{system: icalendar or jscalendar, uid}`. The only link to an external calendar. |
+| `external` | no | `{system: icalendar or jscalendar, uid}`. The commitment's only link to an external calendar. |
 | `title`, `description` | no | Prose. |
 | `source`, `timestamp` | yes | |
 | `acknowledgements` | yes | Append-only list. |
@@ -652,7 +685,9 @@ Free-text locations are dropped. Two more properties cross: iCalendar
 `TRANSP:TRANSPARENT` or JSCalendar `freeBusyStatus: free` becomes
 `transparent: true` and is written back on export, an absent `TRANSP` being
 opaque; and a `DTSTART` of value type `DATE`, or JSCalendar `showWithoutTime`,
-becomes an all-day placement and is written back in that form.
+becomes an all-day placement and is written back in that form. An event that
+is an intention's own hold is recognised by its `uid` and not imported (see
+Calendar hold under INTENTION).
 
 **Transparency.** A commitment from a resolution consumed supply to exist and
 is opaque by construction; `transparent: true` on it is a validation error.
@@ -947,6 +982,7 @@ INTENTION      what a person means to do — no other party
                  ← cadence: makes it recurring; instances are generated from it
                  ← habit: held as habit; no instances, the reason stays live
                  → placement: written by RESOLUTION
+                 ← external.uid: its calendar hold, when it has no parties
 
 AVAILABILITY   what a particular has capacity for — supply
                  ← subject: any URI
@@ -957,7 +993,7 @@ COMMITMENT     an intention that interlocks with others — the hand-off
                  ← parties[{uri, status}]: status is that party's act alone
                  ← placement: always
                  ← origin: resolution | import; resolution: the record, when so
-                 ← external.uid: the only link to iCalendar / JSCalendar
+                 ← external.uid: its link to iCalendar / JSCalendar
 
 records        RESOLUTION      standalone — relates intention, placement, displaced
                ACKNOWLEDGEMENT embedded — "I have seen this flag against this version"
@@ -1076,6 +1112,7 @@ without a plan, and a session that shrinks it has done the format's work.
 
 ```
   iCalendar / JSCalendar  ◀── external.uid ──  COMMITMENT
+                          ◀── external.uid ──  INTENTION (hold, no parties)
                                                     ▲
   this format owns all prospective state            │ id (+ version)
                                                     │
@@ -1201,8 +1238,9 @@ algorithm named by `hash` in `intentions.yaml`. Normalisation is:
 The version is written `sha256:<lowercase hex>`. This version of the format
 admits only `sha256`.
 
-Prose, `source`, `timestamp`, acknowledgements, and a retirement's `reason`,
-`source`, and `timestamp` are never in a projection. Editing them leaves the
+Prose, `source`, `timestamp`, acknowledgements, an intention's `external`,
+and a retirement's `reason`, `source`, and `timestamp` are never in a
+projection. Editing them leaves the
 version unchanged, so an acknowledgement lapses only when what was
 acknowledged changed. Every object and every RESOLUTION record carries its
 version in the file, immediately after `id`, so that a diff shows whether an
@@ -1351,7 +1389,9 @@ desire carrying any temporal or deontic field of an intention, a desire
 `adopted_as` or `adopted_as` naming anything but an intention, `superseded_by`
 on a desire naming anything but a desire, `fulfilled` on a terminus,
 `superseded_by` on a terminus naming anything but a terminus of its subject,
-and `transparent` on a commitment born of a resolution; and, under
+`transparent` on a commitment born of a resolution, `external` on an intention
+with no `placement` or with `parties`, and two intentions carrying the same
+`external`; and, under
 `intentions/0.2`, an intention that reaches no firm terminus of its own
 subject, named with the fix, which under `intentions/0.1` is a warning. It
 reports at warning level an unretired intention with an `in-order-to` or
@@ -1460,7 +1500,10 @@ is until its owner migrates it (see Migration), which is refused while any
 intention is unserved, so the walk up to termini comes first. `habit` joined
 the 0.2 projection after files carried the string (see Versioning), so a
 reader that predates it must be upgraded before anyone sharing the workspace
-sets `habit`.
+sets `habit`. Likewise a reader that predates an intention's `external` keeps
+it as an unknown key and would import a calendar hold back as a commitment,
+so every reader of a shared workspace must be upgraded before a harness
+writes holds.
 
 Deferred from this version, deliberately:
 
@@ -1537,7 +1580,7 @@ Every refusal a verb makes, the tool makes.
 | Tool | Parameters | Does |
 |---|---|---|
 | `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. Anything else should serve one. |
-| `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
+| `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `external?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
 | `intention_firm` | `id`, `policy?`, `source?` | Set stability to firm; a harness must name a policy. |
 | `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. |
 | `intention_show` | `id`, `now?` | One intention with its version, its resolved serves targets and its flags. |
