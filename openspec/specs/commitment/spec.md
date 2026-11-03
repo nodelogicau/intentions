@@ -5,9 +5,7 @@
 Defines COMMITMENT, the interpersonal counterpart of an intention. Both are commissive: an intention involves no other party, a commitment is directed at someone and carries a negotiation history. A commitment is the only object with a placement by construction and the point at which this specification hands off to iCalendar or JSCalendar for interchange. The one other reference to an external calendar is a placed intention's link to the busy hold written for it (see Calendar hold in Intention).
 
 A commitment's status is a deontic fact about a party's will. Per Searle's felicity conditions it requires sincerity, so software SHALL never set it; it only records and flags.
-
 ## Requirements
-
 ### Requirement: Commitment fields
 
 A COMMITMENT SHALL carry, in canonical order: `id`; `version`; `parties` (a list of `{uri, status}` where `status` is one of `tentative`, `accepted`, `declined`, sorted by `uri`; a different shape from an intention's `parties`, which are bare URIs; `tentative` here is a party's answer in iCalendar's sense, tentatively accepted, not an intention's stability); `placement`; optional `intention` (the id of the intention it fulfils); `origin` (one of `resolution` or `import`); `resolution` (the id of the RESOLUTION record, present when and only when `origin` is `resolution`); optional `transparent` (a boolean; absent means false; true means the commitment occupies none of the subject's time; a writer SHALL omit it when false); optional `external` (`{system: icalendar|jscalendar, uid}`); optional `title` and `description`; `source`; `timestamp`; `acknowledgements`; and at most one `retired` record.
@@ -78,7 +76,7 @@ A commitment SHALL be cancelled by appending a `retired` record with `kind: canc
 
 ### Requirement: External reference only
 
-`external.uid` SHALL be the only link between this specification and an external calendar object. The external object's recurrence, timezone definitions, alarms, and attendee metadata SHALL NOT be copied into the commitment. A recurring external event SHALL be imported as one commitment per occurrence the importer chooses to bring in, each carrying the same `uid` plus the occurrence's placement. On import, a JSCalendar `locations` or `virtualLocations` entry, or an iCalendar `LOCATION`, that carries a URI SHALL become `placement.location`; on export `placement.location` SHALL be written to the corresponding property. On import, an iCalendar `TRANSP:TRANSPARENT` or a JSCalendar `freeBusyStatus` of `free` SHALL become `transparent: true`; on export a transparent commitment SHALL be written with `TRANSP:TRANSPARENT` or `freeBusyStatus: free` and an opaque one with `TRANSP:OPAQUE` or `freeBusyStatus: busy`. On import, an iCalendar `DTSTART` of value type `DATE` or a JSCalendar `showWithoutTime` of true SHALL become an all-day placement whose `start` is that calendar day; on export an all-day placement SHALL be written back in that form. No other metadata SHALL cross the boundary.
+A commitment's `external.uid` SHALL be the only link between it and an external calendar object; a placed intention with no `parties` MAY carry its own link to a hold (see Calendar hold in Intention), and every other object type SHALL carry none. The external object's recurrence, timezone definitions, alarms, and attendee metadata SHALL NOT be copied into the commitment. A recurring external event SHALL be imported as one commitment per occurrence the importer chooses to bring in, each carrying the same `uid` plus the occurrence's placement. On import, a JSCalendar `locations` or `virtualLocations` entry, or an iCalendar `LOCATION`, that carries a URI SHALL become `placement.location`; on export `placement.location` SHALL be written to the corresponding property. On import, an iCalendar `TRANSP:TRANSPARENT` or a JSCalendar `freeBusyStatus` of `free` SHALL become `transparent: true`; on export a transparent commitment SHALL be written with `TRANSP:TRANSPARENT` or `freeBusyStatus: free` and an opaque one with `TRANSP:OPAQUE` or `freeBusyStatus: busy`. On import, an iCalendar `DTSTART` of value type `DATE` or a JSCalendar `showWithoutTime` of true SHALL become an all-day placement whose `start` is that calendar day; on export an all-day placement SHALL be written back in that form. No other metadata SHALL cross the boundary.
 
 #### Scenario: Recurring import
 - **WHEN** a weekly iCalendar event is imported for the next four occurrences
@@ -104,6 +102,10 @@ A commitment SHALL be cancelled by appending a `retired` record with `kind: canc
 - **WHEN** a commitment with `transparent: true` and an all-day placement is exported to iCalendar
 - **THEN** the event carries `TRANSP:TRANSPARENT` and a `DTSTART` of value type `DATE`
 
+#### Scenario: Hold is not a commitment
+- **WHEN** an imported event's `uid` matches an intention's `external`
+- **THEN** no commitment is created for it
+
 ### Requirement: Consistency check on create and update
 
 A consistency check (see Consistency) SHALL run whenever a commitment is created or its projection changes, and whenever an availability or intention it rests on changes.
@@ -123,3 +125,4 @@ A consistency check (see Consistency) SHALL run whenever a commitment is created
 #### Scenario: Imported commitment may be transparent
 - **WHEN** an imported commitment carries `transparent: true`
 - **THEN** validation passes
+

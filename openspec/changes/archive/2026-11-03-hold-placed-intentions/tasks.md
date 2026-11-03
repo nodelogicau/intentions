@@ -17,7 +17,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an intentions-cli issue: the field, the three validation errors, the write refusals, import recognition, hold export shape
-- [ ] 3.3 Comment on and close issue #34 with a pointer to the change
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an intentions-cli issue: the field, the three validation errors, the write refusals, import recognition, hold export shape
+- [x] 3.3 Comment on and close issue #34 with a pointer to the change
+- [x] 3.4 Archive with sync
