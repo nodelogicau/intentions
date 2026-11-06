@@ -479,7 +479,15 @@ crosses: no description, serves graph, activity, policy or source.
 
 An imported event whose `system` and `uid` match an intention's `external`,
 retired or not, is that intention's own hold coming back, and creates no
-commitment. A replacing selection keeps `external`, so the harness moves the
+commitment. That prevents the loop only from then on. A hold imported before
+it was recognised (by a harness that wrote holds before the field existed, by
+an older importer, or by a merge) leaves an intention and an unretired
+commitment linked to one event, which overlap and clash. Validation reports
+the pair as a warning, and a write that sets such a link is accepted and
+reports it too. If the commitment is the intention's own hold, the fix is to
+retire it as `cancelled`, which leaves the intention untouched; if it is a
+real event that shares the UID, the fix is to clear the intention's
+`external`. A replacing selection keeps `external`, so the harness moves the
 same event. Retirement keeps it too: the harness releases the hold of an
 intention retired as `abandoned` or `superseded` and leaves the hold of one
 retired as `fulfilled`, which needs no write to the workspace.
@@ -1397,7 +1405,11 @@ subject, named with the fix, which under `intentions/0.1` is a warning. It
 reports at warning level an unretired intention with an `in-order-to` or
 `instance-of` link to an intention retired as `abandoned`, naming the end; a
 resolution record whose `selector` names a policy since set tentative or
-retired; and at info level a terminus that is still tentative, as a draft.
+retired; an intention, retired or not, whose `external` matches an unretired
+commitment's, naming both and the two fixes (retire the commitment as
+`cancelled` if it is the intention's own hold imported before it was
+recognised; clear the intention's `external` if it is a real event that
+shares the UID); and at info level a terminus that is still tentative, as a draft.
 Where a write can tell that its result would fail, it refuses; where it can
 tell that its result would warn, it accepts and reports the warning. Write-time
 refusal is a convenience; validation is the invariant, because files arrive by
@@ -1503,7 +1515,10 @@ reader that predates it must be upgraded before anyone sharing the workspace
 sets `habit`. Likewise a reader that predates an intention's `external` keeps
 it as an unknown key and would import a calendar hold back as a commitment,
 so every reader of a shared workspace must be upgraded before a harness
-writes holds.
+writes holds. A workspace whose harness wrote holds before that, or was read
+by an older importer, may already hold a hold imported as a commitment; once
+the reader reports the warning for an intention and a commitment sharing a
+link, run `validate` to find them.
 
 Deferred from this version, deliberately:
 
