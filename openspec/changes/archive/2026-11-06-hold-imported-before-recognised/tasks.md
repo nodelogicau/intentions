@@ -10,7 +10,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an intentions-cli issue: the warning in `validate` (with both fixes in its detail), and the same warning in the result of a write that sets `external`
-- [ ] 3.3 Comment on and close issue #36 with a pointer to the change
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an intentions-cli issue: the warning in `validate` (with both fixes in its detail), and the same warning in the result of a write that sets `external`
+- [x] 3.3 Comment on and close issue #36 with a pointer to the change
+- [x] 3.4 Archive with sync

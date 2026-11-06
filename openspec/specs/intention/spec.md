@@ -368,7 +368,7 @@ A placed INTENTION with no `parties` MAY carry `external` (`{system: icalendar|j
 
 A hold SHALL be exported with only: the placement's start and duration, in all-day form for an all-day placement; `placement.location` where it is a URI, written to the location property as for a commitment; the intention's `title` as iCalendar `SUMMARY` or JSCalendar `title`; `TRANSP:OPAQUE` or `freeBusyStatus: busy`, always, since an intention is never transparent; and `STATUS:TENTATIVE` or JSCalendar `status: tentative` for `stability: tentative`, `STATUS:CONFIRMED` or `status: confirmed` for `firm`. No other field SHALL cross the boundary.
 
-On import, an external event whose `system` and `uid` match any intention's `external`, retired or not, SHALL be recognised as that intention's hold and SHALL NOT create a commitment.
+On import, an external event whose `system` and `uid` match any intention's `external`, retired or not, SHALL be recognised as that intention's hold and SHALL NOT create a commitment. Recognition prevents the case only from then on: a hold imported as a commitment before it was recognised, by an older importer, or by a merge, leaves an intention and an unretired commitment sharing one `system` and `uid`, which validation SHALL report as a warning (see Validation in Object model). A write that sets `external` to a `system` and `uid` an unretired commitment already carries SHALL be accepted and SHALL report that warning.
 
 A replacing selection SHALL keep `external`, so the same event is moved to the new placement. Retirement SHALL keep `external`. A harness SHOULD release the hold of an intention retired as `abandoned` or `superseded`, and SHOULD leave the hold of one retired as `fulfilled`.
 
@@ -383,6 +383,10 @@ A replacing selection SHALL keep `external`, so the same event is moved to the n
 #### Scenario: Own hold not imported
 - **WHEN** a harness imports from the calendar it wrote a hold to, and the hold's UID matches an intention's `external`
 - **THEN** no commitment is created for that event and no `window-clash` arises
+
+#### Scenario: Hold imported before it was recognised
+- **WHEN** a harness records `external` on an intention whose hold was imported as a commitment before the import check existed
+- **THEN** the write is accepted, the result reports the warning naming the commitment, and the person may retire the commitment as `cancelled` without touching the intention
 
 #### Scenario: Re-selection moves the hold
 - **WHEN** a replacing selection is made for a placed intention carrying `external`
