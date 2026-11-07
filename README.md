@@ -645,7 +645,7 @@ Fields, in canonical order:
 | `version` | yes | The projection hash. |
 | `parties` | yes | `{uri, status}` per party, sorted by `uri`; status `tentative`, `accepted`, or `declined`. A different shape from an intention's `parties`, which are bare URIs. `tentative` here is a party's answer in iCalendar's sense, tentatively accepted, not an intention's stability. |
 | `placement` | yes | A PLACEMENT. Commitments always have one. |
-| `intention` | no | The intention this fulfils. Absent on imports. |
+| `intention` | no | The intention this fulfils. Set by resolution, or on an import when the person adopts it (see Adopting an imported commitment); an import never sets it. |
 | `origin` | yes | `resolution` or `import`. |
 | `resolution` | no | The RESOLUTION record's id, present when and only when `origin` is `resolution`. |
 | `transparent` | no | `true` means this occupies none of the subject's time. Absent means `false`, and a writer omits it when false. Only an import may set it. |
@@ -661,7 +661,61 @@ calendars have no concept of availability and cannot respect it, so an
 imported commitment is expected to clash with what the person meant. It is
 created exactly as the import states it and the clash is surfaced as a flag.
 An import creates one commitment per occurrence brought in, sharing the
-external `uid`, and never creates an intention or an availability.
+external `uid`, and never creates an intention or an availability. Its
+`parties` are mapped from the event by rule (below), and it names no
+intention: only the person can say an event is an intention's occasion.
+
+**Parties on import.** An import is made on behalf of one subject, the
+workspace's `defaults.subject` unless the import names another. Each iCalendar
+`ATTENDEE` and the `ORGANIZER`, and each JSCalendar participant with a
+calendar address in `sendTo` (`imip` first), becomes one party. An entry that
+only receives information (`ROLE=NON-PARTICIPANT`, or JSCalendar `roles`
+holding only `informational`) does not, since nothing occupies it, and nor
+does an entry with no address. A room or resource does: it is a particular,
+as in an intention's `parties`. The party's `uri` is the subject URI under
+which `calendar.addresses` lists that address, or else the address itself, a
+`mailto:` lowercased in full so that the hash does not depend on case. One
+`uri` gives one entry, an attendee entry's status winning over an organizer's.
+
+| `PARTSTAT` / `participationStatus` | `status` |
+|---|---|
+| `ACCEPTED` | `accepted` |
+| `TENTATIVE`, `NEEDS-ACTION`, or absent | `tentative` |
+| `DECLINED`, `DELEGATED` | `declined` |
+
+An organizer with no attendee entry is `accepted`: organising is their act. A
+delegate listed on the event is their own entry. The subject is always a
+party. Where the event names them, their status is mapped as above, so it is
+what they did in their own calendar. Where it names no one, as with a ticket
+or a block they entered, they are `accepted`, the event being in their
+calendar by their own act. Where it names others but not them, they are
+`tentative`. Nothing else about an attendee crosses. Every import of an event
+applies the same mapping, so two importers agree on `parties` and on the
+version; a status changed on re-import is that party's act as it reached the
+calendar: another party's reply, or the subject's own answer.
+
+An event that names no one but the subject imports as a commitment directed
+at no one. That is still a commitment, received from outside, and validation
+reports it at info level as something that may be better recorded as an
+intention.
+
+**Adopting an imported commitment.** A person who plans a concert as an
+intention and also has the venue's ticket event in their calendar has two
+objects for one evening. Adopting says the event is the intention's occasion.
+It is a selection, so it is recorded as one: a RESOLUTION record with
+`selector: person` and `candidates_considered: 1`, whose placement is the
+commitment's and need not be among the candidates; the intention gains that
+placement; and the commitment gains `intention`, keeping `origin: import` and
+no `resolution`. The event stays the venue's: no hold is written, and a
+re-import keeps the link. It is refused unless the intention is unretired, its
+subject is one of the commitment's parties, it has no `parties` (one that has
+them gets its commitment from resolution), it carries no `external` (the
+event is now its calendar presence; clear the hold first), and no other
+unretired commitment names it. A harness may perform it on the person's
+instruction, never under a policy. If the event later moves, the commitment's
+placement and the intention's differ and validation warns, naming both;
+adopting again is the fix. Cancelling an adopted commitment clears the
+intention's placement, as for any commitment.
 
 **Party status is that party's act.** A status changes only through an explicit
 act attributed to the party: the workspace owner's own action for their entry,
@@ -686,7 +740,8 @@ resolved again.
 
 **External reference only.** Recurrence, timezone definitions, alarms, attendee
 delegation, and iTIP negotiation stay in the external system. Nothing of them
-is copied here. The one exception is place: a JSCalendar `locations` or
+is copied here. Of attendee metadata, only each participant's calendar
+address and participation status cross, as `parties` (see Parties on import). The one exception is place: a JSCalendar `locations` or
 `virtualLocations` entry with a URI, or an iCalendar `LOCATION` that is a URI,
 becomes `placement.location` on import and is written back on export.
 Free-text locations are dropped. Two more properties cross: iCalendar
@@ -1170,10 +1225,16 @@ never the subject or counterpart of `window-clash`, and never the subject of
 supplying availability to compare it against. An opaque import still clashes
 with everything it overlaps, which is the point.
 
+A commitment and the intention it fulfils are one occupation. They are never
+a `window-clash` with each other, whether the commitment came from a
+resolution or was adopted, and where both occupy the subject over the same
+interval it consumes their capacity once and counts once in resolution. Each
+is still checked against everything else.
+
 A decline is flagged only where it contradicts something. An imported
-commitment has no intention behind it, so declining one frees the decliner's
-hour and there is nothing left to disagree with. A commitment from a
-resolution is different: the intention's own placement still occupies the
+commitment nobody has adopted has no intention behind it, so declining one
+frees the decliner's hour and there is nothing left to disagree with. A
+commitment from a resolution, or an adopted one, is different: the intention's own placement still occupies the
 subject's time, so their decline frees nothing and they have said they will
 not attend a thing they still intend at that hour. `party-declined` names
 that, on both objects, with the declining party in the detail. A counterparty's
@@ -1339,6 +1400,10 @@ defaults:
   subject: https://example.com/people/ada     # optional
   source:
     author: https://example.com/people/ada
+calendar:                                     # optional
+  addresses:
+    https://example.com/people/ada:
+      - mailto:ada@example.com
 ```
 
 `resolver.horizon` is the one planning horizon: how far ahead resolution
@@ -1353,6 +1418,10 @@ level. `defaults.subject` is optional. When present it is applied to any
 intention written without one; when absent every intention names its subject. A
 workspace may hold objects for several subjects: rooms and equipment already
 require it, and an organisation workspace will leave the default unset.
+`calendar.addresses` is optional: for each subject, the calendar addresses
+that identify that particular in imported events, so that every importer maps
+the same attendee to the same subject URI (see Parties on import). No object's
+hash depends on it.
 
 Tools find the workspace by `--workspace`, then `$INTENTIONS_WORKSPACE`, then
 the nearest ancestor directory containing `intentions.yaml` or a
@@ -1398,8 +1467,10 @@ desire carrying any temporal or deontic field of an intention, a desire
 on a desire naming anything but a desire, `fulfilled` on a terminus,
 `superseded_by` on a terminus naming anything but a terminus of its subject,
 `transparent` on a commitment born of a resolution, `external` on an intention
-with no `placement` or with `parties`, and two intentions carrying the same
-`external`; and, under
+with no `placement` or with `parties`, two intentions carrying the same
+`external`, an imported commitment naming an intention whose subject is not
+one of its parties, or that has `parties`, or that carries `external`, and two
+unretired commitments naming one intention; and, under
 `intentions/0.2`, an intention that reaches no firm terminus of its own
 subject, named with the fix, which under `intentions/0.1` is a warning. It
 reports at warning level an unretired intention with an `in-order-to` or
@@ -1409,7 +1480,13 @@ retired; an intention, retired or not, whose `external` matches an unretired
 commitment's, naming both and the two fixes (retire the commitment as
 `cancelled` if it is the intention's own hold imported before it was
 recognised; clear the intention's `external` if it is a real event that
-shares the UID); and at info level a terminus that is still tentative, as a draft.
+shares the UID); an adopted commitment whose placement differs from its
+intention's, naming both, with adopting again as the fix; and at info level a
+terminus that is still tentative, as a draft, an imported commitment directed
+at no one (its only party one particular, naming no intention and sharing no
+`external` with one), as something that may be better recorded as an
+intention that adopts it, and a workspace holding imported commitments with
+no `calendar.addresses`.
 Where a write can tell that its result would fail, it refuses; where it can
 tell that its result would warn, it accepts and reports the warning. Write-time
 refusal is a convenience; validation is the invariant, because files arrive by
@@ -1518,7 +1595,13 @@ so every reader of a shared workspace must be upgraded before a harness
 writes holds. A workspace whose harness wrote holds before that, or was read
 by an older importer, may already hold a hold imported as a commitment; once
 the reader reports the warning for an intention and a commitment sharing a
-link, run `validate` to find them.
+link, run `validate` to find them. The mapping from an event's participants to
+`parties` was unstated until Parties on import, so an importer that guessed
+differently will give an existing imported commitment new `parties`, and a
+new version, on its next import; acknowledgements naming it lapse, as for
+any re-import change. A reader that predates adopting may report a clash
+between an adopted commitment and its own intention, so every reader of a
+shared workspace should be upgraded before anyone adopts.
 
 Deferred from this version, deliberately:
 
@@ -1618,6 +1701,7 @@ Every refusal a verb makes, the tool makes.
 | `commitment_accept` | `id`, `party?`, `source?` | Record a party's own answer; no policy, nothing inferred. |
 | `commitment_decline` | `id`, `party?`, `source?` | Record a party's own answer; no policy, nothing inferred. |
 | `commitment_cancel` | `id`, `reason?`, `source?`, `timestamp?` | Cancel and free the intention it was for. |
+| `commitment_adopt` | `id`, `intention`, `now?`, `source?` | Adopt an imported commitment for an intention: the RESOLUTION record, the placement, the link. |
 | `commitment_show` | `id`, `now?` | One commitment with its intention and flags. |
 | `commitment_list` | `party?`, `cancelled?`, `intention?`, `status?` | Commitments, filtered. |
 
@@ -1646,7 +1730,7 @@ Every refusal a verb makes, the tool makes.
 | `workspace_status` | — | Where the server is bound and what the workspace holds. |
 | `migrate` | — | Move a 0.1 workspace to 0.2: rewrite shapes and names, recompute versions, carry acknowledgements across, refuse while any intention is unserved. |
 
-Seven of these carry the format's rules into a tool call, and an
+Eight of these carry the format's rules into a tool call, and an
 implementation that exposes their names SHALL keep them:
 
 - **`select` is the recorded act, and `resolve` chooses nothing.** `select`
@@ -1688,6 +1772,13 @@ implementation that exposes their names SHALL keep them:
   refuses a desire already retired. It also refuses a bare adoption, one
   whose desire serves nothing and which supplies neither duration nor
   window, naming what is missing: a self is declared, not adopted.
+- **`commitment_adopt` is the person's selection.** It takes no policy and
+  records `selector: person`, with any harness in `source.harness`. It refuses
+  a commitment that is retired or not imported, an intention that is retired,
+  has `parties`, carries `external`, is already named by another unretired
+  commitment, or whose subject is not among the commitment's parties, naming
+  which. It writes the RESOLUTION record, the intention's placement and the
+  commitment's `intention` as one act, and lists anything else displaced.
 
 ---
 
