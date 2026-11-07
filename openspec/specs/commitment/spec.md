@@ -4,6 +4,8 @@
 
 Defines COMMITMENT, the interpersonal counterpart of an intention. Both are commissive: an intention involves no other party, a commitment is directed at someone and carries a negotiation history. A commitment is the only object with a placement by construction and the point at which this specification hands off to iCalendar or JSCalendar for interchange. The one other reference to an external calendar is a placed intention's link to the busy hold written for it (see Calendar hold in Intention).
 
+A commitment from resolution is directed at the parties the intention named. One from import is directed at whomever the event names, and an event that names no one but the subject (a ticket, a block the person entered) imports as a commitment directed at no one; validation names it at info level as something that may be better recorded as an intention, which can then adopt it.
+
 A commitment's status is a deontic fact about a party's will. Per Searle's felicity conditions it requires sincerity, so software SHALL never set it; it only records and flags.
 ## Requirements
 ### Requirement: Commitment fields
