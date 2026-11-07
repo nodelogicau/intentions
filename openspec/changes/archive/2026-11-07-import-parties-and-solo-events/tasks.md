@@ -19,7 +19,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an intentions-cli issue: mapping and `calendar.addresses`, adopt, one-occupation counting, the six findings
-- [ ] 3.3 Comment on and close issue #35 with a pointer to the change
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an intentions-cli issue: mapping and `calendar.addresses`, adopt, one-occupation counting, the six findings
+- [x] 3.3 Comment on and close issue #35 with a pointer to the change
+- [x] 3.4 Archive with sync
