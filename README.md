@@ -87,9 +87,11 @@ surfaced as a flag. Flags are never decisions.
 Everything is a YAML file in a git repository. Objects are live state edited in
 place; the events that happen to them (resolution, acknowledgement, retirement)
 are append-only records. Every object and record says who wrote it. A
-retrospective account of what actually happened is not this format's job: a
-DKF claim may cite any object here by id and version, and that is the whole of
-the relationship.
+retrospective account of what actually happened is not this format's job.
+What happened is an episode, in the [episodes](https://github.com/nodelogicau/episodes)
+format, which may name an object here as its occasion; what a person takes it
+to show is a DKF claim, which may cite any object here by id and version. Both
+references point into this format, and that is the whole of the relationship.
 
 ---
 ## Core Object Types
@@ -1078,7 +1080,8 @@ records        RESOLUTION      standalone — relates intention, placement, disp
    int: being someone who follows through  ◀────────┘
          (terminus: no window, no duration, no serves;
           reference → a DKF claim Ada holds about herself,
-          held because DKF records what she did)
+          held because claims citing episodes of
+          what she did support it)
 ```
 
 The graph is a DAG reconstructed by walking outbound references; no object
@@ -1179,22 +1182,33 @@ without a plan, and a session that shrinks it has done the format's work.
                                                     ▲
   this format owns all prospective state            │ id (+ version)
                                                     │
+  EPISODE  ── occasion ──▶  any object here         │
+  (what happened: episodes)  ───────────────────────┤
+                                                    │
   DKF claim  ── cites ──▶  any object here          │
-  (retrospective, contested, evidential)  ──────────┘
+  (what is believed: contested, evidential)  ───────┘
+       └── cites ──▶ EPISODE
   INTENTION.reference ── informal ──▶ DKF claim (never validated)
-  DKF claims about what was done ──▶ are what make that claim held
+  DKF claims citing episodes ──▶ are what make that claim held
 ```
 
 Three deliberate reuses cross the iCalendar boundary: ISO 8601 durations,
 RRULE cadence, and the RFC 9253 relation vocabulary. Nothing else does. No
-object here depends on a DKF object to exist or validate.
+object here depends on a DKF object or an episode to exist or validate, and
+no file here changes when either is written.
 
 The relationship is a loop. A terminus may reference a claim the person holds
-about themselves; what was actually done against resolved intentions is
-recorded as DKF claims citing those objects at a version; and that record is
-the evidence that makes the self-claim held rather than aspirational. A person
-infers who they are from what they did, and the two formats hold the two
-halves.
+about themselves; what was actually done is recorded as episodes, which may
+name the intention or commitment they were the occasion of; and DKF claims
+citing those episodes are the evidence that makes the self-claim held rather
+than aspirational. A person infers who they are from what they did, and the
+three formats hold the three parts: what was meant, what happened, and what
+the person takes it to show.
+
+Retiring an intention as `fulfilled` is the person's act of letting it go,
+recorded with when they did so, not when the thing was done. It is not the
+evidence that it was done: that is an episode, and whether what happened
+fulfilled what was meant is a claim. The two need not agree.
 
 ---
 
@@ -1558,7 +1572,8 @@ and never rewritten.
 
 **Compose by reference, never by shared schema.** ISO 8601, RRULE, RFC 9253
 and EDTF are borrowed as grammars. iCalendar and JSCalendar are linked by a
-uid. DKF is linked by an id. No other system's object model is embedded here
+uid. DKF and episodes are linked by an id, each pointing in. No other
+system's object model is embedded here
 and this format's is embedded in none.
 
 **Files over databases.** The canonical store is a directory of YAML files in
@@ -1609,9 +1624,14 @@ Deferred from this version, deliberately:
   another workspace's availability, and how commitments travel between
   workspaces (most likely as iCalendar or JSCalendar over iTIP rather than as
   this format at all), are undesigned.
-- **A retrospective record.** What was actually done against a resolved
-  intention is DKF's job, by a claim citing the object at a version. Whether a
-  personal workspace that never writes DKF claims needs something minimal of
+- **A retrospective record.** What was actually done against an intention is
+  an episode, in the [episodes](https://github.com/nodelogicau/episodes)
+  format, which is an early draft; whether it fulfilled the intention is a DKF
+  claim citing both. This format neither cites episodes nor validates them.
+  Which object and version an episode names as its occasion (an instance or
+  its recurring intention, a commitment or the intention it fulfils, a habit
+  that generates no instances) is for that format to settle. Whether a
+  personal workspace that keeps no episodes needs something minimal of
   its own is open.
 - **Presence.** Where a subject will be, independent of what they have
   capacity for. Not an availability: capacity unions, whereabouts intersects,
@@ -1785,7 +1805,8 @@ implementation that exposes their names SHALL keep them:
 ## References
 
 **Dialectical Knowledge Format (DKF).** The format this one composes with for
-the retrospective layer, and whose conventions (file-per-object YAML,
+what is believed, including what a person takes their record to show, and
+whose conventions (file-per-object YAML,
 prefixed UUIDv7 ids, canonical field order, `source`, derived index,
 review through git) this specification adopts. Reading its README first will
 make this one's shape familiar.
@@ -1793,6 +1814,11 @@ make this one's shape familiar.
 [particulars.fyi](https://particulars.fyi), a visual introduction ·
 [particulars-cli](https://github.com/nodelogicau/particulars-cli), the
 reference implementation.
+
+**Episodes.** The format this one composes with for what happened: episodic
+memory that keeps its standpoint, whose episodes may name an object here as
+their occasion and are what DKF claims about what was done cite. An early
+draft. [Specification](https://github.com/nodelogicau/episodes).
 
 **Standards borrowed as grammars.**
 [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) UUID version 7 ·
@@ -1837,7 +1863,7 @@ Peter Gollwitzer, "Implementation intentions: strong effects of simple plans",
 *American Psychologist* (1999), and Gollwitzer and Paschal Sheeran's
 meta-analysis (2006), on decisions closed in advance, behind policies and
 firmness. Daryl Bem, "Self-perception theory" (1972), on inferring who one is
-from what one did, behind the return path from DKF.
+from what one did, behind the return path through episodes and DKF.
 
 ---
 
