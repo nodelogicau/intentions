@@ -472,7 +472,8 @@ harness may set or clear it without a policy; it confers nothing.
 
 A hold carries the least that makes it legible to the person in their own
 calendar: the placement's start and duration (all-day form for an all-day
-placement), `placement.location` where it is a URI, and the `title` as
+placement, and a local time in the placement's zone where `start` carries
+one), `placement.location` where it is a URI, and the `title` as
 `SUMMARY` or `title`. It is always opaque (`TRANSP:OPAQUE`,
 `freeBusyStatus: busy`), since an intention is never transparent, and it
 carries `STATUS:TENTATIVE` for a tentative intention and `STATUS:CONFIRMED`
@@ -750,7 +751,16 @@ Free-text locations are dropped. Two more properties cross: iCalendar
 `TRANSP:TRANSPARENT` or JSCalendar `freeBusyStatus: free` becomes
 `transparent: true` and is written back on export, an absent `TRANSP` being
 opaque; and a `DTSTART` of value type `DATE`, or JSCalendar `showWithoutTime`,
-becomes an all-day placement and is written back in that form. An event that
+becomes an all-day placement and is written back in that form. And a start's
+zone crosses by name. An iCalendar `DTSTART;TZID=` or a JSCalendar `timeZone`
+that is an IANA name becomes the zone suffix on `placement.start`, with the
+offset the event gives at that instant. A UTC start, or a `TZID` that is not
+an IANA name (a Windows zone, a custom `VTIMEZONE`), imports as an offset
+alone, since mapping it would assert a zone the event never named. On export
+a zoned start is written as a local time in its zone, `DTSTART;TZID=` or
+`start` with `timeZone`, and the exporter supplies whatever zone definition
+the external format needs. The name refers to the IANA database, as a
+location URI refers to a place; no zone definition is ever stored. An event that
 is an intention's own hold is recognised by its `uid` and not imported (see
 Calendar hold under INTENTION).
 
@@ -1013,7 +1023,7 @@ A concrete start, a duration, and optionally one location:
 
 ```yaml
 placement:
-  start: 2026-09-15T10:00:00+10:00
+  start: 2026-09-15T10:00:00+10:00[Australia/Melbourne]
   duration: PT1H
   location: https://example.com/rooms/3
 ```
@@ -1023,6 +1033,31 @@ day makes the placement all-day: `duration` is then whole days and the
 placement spans those local days in the resolver's timezone, so a day with a
 timezone transition is still one day. Resolution writes datetimes; only an
 import writes a calendar day.
+
+**Zone.** A datetime `start` may carry an
+[RFC 9557](https://www.rfc-editor.org/rfc/rfc9557) suffix naming the IANA time
+zone whose clock the placement was made on. An offset fixes an instant but not
+a place: `+10:00` is Melbourne in winter and Brisbane all year, and only the
+zone says which local time was meant once the resolver's timezone or a
+government's daylight-saving rules change. The suffix is a bare zone name.
+An offset-form suffix (`[+10:00]`), any other suffix tag, and the critical
+flag `!` are not admitted, nor is a suffix on a calendar day or on any
+datetime but a placement's `start` (on an intention, a commitment, or a
+resolution record). Resolution writes the zone it resolved in, which is
+`resolver.timezone` or the call's override. Import writes the zone the event
+names, where that is an IANA name (see External reference only under
+COMMITMENT). Adopting copies the commitment's. Nothing adds a zone to a
+placement it did not make, so a placement written without one stays as it
+is, and valid.
+
+The offset fixes the instant. A placement is what was selected, against the
+supply and displacement of that instant, and what its parties answered for. A
+rule change that gives the zone a different offset at that instant therefore
+moves nothing: the placement stays where its offset puts it, and validation
+warns, naming both offsets and re-selection as the way back to the local time
+it was made at. The zone changes no computation either. Windows, clock
+anchors and all-day spans are still read in the resolver context, and two
+placements are compared by instant, duration and location, never by zone.
 
 It exists only on a resolved intention and on a commitment, and is written only
 by a resolution or an import. It is the single point where this format touches
@@ -1311,7 +1346,8 @@ algorithm named by `hash` in `intentions.yaml`. Normalisation is:
   hours, minutes and seconds (`PT90M` becomes `PT1H30M`, `PT60M` becomes
   `PT1H`); no conversion between the date part and the time part, so `P1D`
   and `PT24H` stay distinct; no conversion of months or years; zero as `P0D`.
-- Datetimes as RFC 3339 UTC with seconds.
+- Datetimes as RFC 3339 UTC with seconds, any RFC 9557 zone suffix dropped,
+  so adding, changing or removing a placement's zone moves no version.
 - Every set-valued list sorted: references by id then role, commitment
   `parties` by `uri`, and string lists (`location`, `activities`, an
   intention's `parties`, `displaced`) lexically.
@@ -1483,8 +1519,10 @@ on a desire naming anything but a desire, `fulfilled` on a terminus,
 `transparent` on a commitment born of a resolution, `external` on an intention
 with no `placement` or with `parties`, two intentions carrying the same
 `external`, an imported commitment naming an intention whose subject is not
-one of its parties, or that has `parties`, or that carries `external`, and two
-unretired commitments naming one intention; and, under
+one of its parties, or that has `parties`, or that carries `external`, two
+unretired commitments naming one intention, a zone suffix on a placement
+`start` that is not a bare IANA name, the critical flag on one, and a zone
+suffix on a calendar day or on any datetime but a placement's `start`; and, under
 `intentions/0.2`, an intention that reaches no firm terminus of its own
 subject, named with the fix, which under `intentions/0.1` is a warning. It
 reports at warning level an unretired intention with an `in-order-to` or
@@ -1495,7 +1533,10 @@ commitment's, naming both and the two fixes (retire the commitment as
 `cancelled` if it is the intention's own hold imported before it was
 recognised; clear the intention's `external` if it is a real event that
 shares the UID); an adopted commitment whose placement differs from its
-intention's, naming both, with adopting again as the fix; and at info level a
+intention's, naming both, with adopting again as the fix; a placement whose
+offset differs from the one its zone gives at that instant, naming both
+offsets, with re-selection as the fix; and a zone the reader's time-zone
+database does not know, naming it; and at info level a
 terminus that is still tentative, as a draft, an imported commitment directed
 at no one (its only party one particular, naming no intention and sharing no
 `external` with one), as something that may be better recorded as an
@@ -1616,7 +1657,10 @@ differently will give an existing imported commitment new `parties`, and a
 new version, on its next import; acknowledgements naming it lapse, as for
 any re-import change. A reader that predates adopting may report a clash
 between an adopted commitment and its own intention, so every reader of a
-shared workspace should be upgraded before anyone adopts.
+shared workspace should be upgraded before anyone adopts. A placement's zone
+moves no projection and applies under 0.1 as well, but a reader that predates
+it rejects a zoned `start` as an unparseable datetime, so every reader of a
+shared workspace must be upgraded before a writer emits one.
 
 Deferred from this version, deliberately:
 
@@ -1730,7 +1774,7 @@ Every refusal a verb makes, the tool makes.
 | Tool | Parameters | Does |
 |---|---|---|
 | `generate` | `horizon?`, `now?`, `recurring?`, `source?` | Materialise instances of recurring intentions over the horizon. |
-| `resolve` | `id`, `limit?`, `now?`, `scope?`, `source?`, `step?` | Rank candidate placements; writes nothing. |
+| `resolve` | `id`, `limit?`, `now?`, `scope?`, `source?`, `step?` | Rank candidate placements, each `start` carrying the zone resolved in; writes nothing. |
 | `select` | `id`, `candidate?`, `policy?`, `now?`, `replace?`, `scope?`, `source?` | The recorded act: the RESOLUTION record, the placement, a commitment when parties are involved. |
 | `unresolved` | `subject?`, `now?`, `scope?` | What still awaits a placement, and why; writes nothing. |
 
@@ -1823,6 +1867,8 @@ draft. [Specification](https://github.com/nodelogicau/episodes).
 **Standards borrowed as grammars.**
 [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) UUID version 7 ·
 [RFC 3339](https://www.rfc-editor.org/rfc/rfc3339) timestamps ·
+[RFC 9557](https://www.rfc-editor.org/rfc/rfc9557) time-zone suffixes for a
+placement's zone ·
 [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) durations ·
 [EDTF](https://www.loc.gov/standards/datetime/), the Extended Date/Time
 Format (ISO 8601-2), for calendar anchors ·
