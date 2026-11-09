@@ -17,7 +17,7 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an intentions-cli issue: parse and emit RFC 9557 on placements, normalise by dropping the suffix, write the zone on resolution and import, carry it on export, the five findings
-- [ ] 3.3 Comment on issue #37 with a pointer to the change, and close it when archived
-- [ ] 3.4 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an intentions-cli issue: parse and emit RFC 9557 on placements, normalise by dropping the suffix, write the zone on resolution and import, carry it on export, the five findings
+- [x] 3.3 Comment on issue #37 with a pointer to the change, and close it when archived
+- [x] 3.4 Archive with sync

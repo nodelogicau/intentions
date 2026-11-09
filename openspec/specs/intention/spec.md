@@ -366,7 +366,7 @@ A firm terminus SHALL be retired only by an act whose `source` carries no harnes
 
 A placed INTENTION with no `parties` MAY carry `external` (`{system: icalendar|jscalendar, uid}`), recording the event written to the person's calendar as a busy hold for its placement. It SHALL be the only link between the intention and that event, with the same shape and meaning as a commitment's `external`. An intention with `parties` SHALL NOT carry `external`: on selection it gets a COMMITMENT, and its hold is the commitment's. `external` SHALL NOT be present without `placement`, and no two intentions SHALL carry the same `system` and `uid`. A write that adds `parties` to an intention carrying `external` SHALL be refused unless the same write clears `external`. A write setting or clearing `external` MAY carry a harness and needs no policy.
 
-A hold SHALL be exported with only: the placement's start and duration, in all-day form for an all-day placement; `placement.location` where it is a URI, written to the location property as for a commitment; the intention's `title` as iCalendar `SUMMARY` or JSCalendar `title`; `TRANSP:OPAQUE` or `freeBusyStatus: busy`, always, since an intention is never transparent; and `STATUS:TENTATIVE` or JSCalendar `status: tentative` for `stability: tentative`, `STATUS:CONFIRMED` or `status: confirmed` for `firm`. No other field SHALL cross the boundary.
+A hold SHALL be exported with only: the placement's start and duration, in all-day form for an all-day placement, and as a local time in the zone of its RFC 9557 time-zone suffix when the start carries one (iCalendar `DTSTART;TZID=`, JSCalendar `timeZone`); `placement.location` where it is a URI, written to the location property as for a commitment; the intention's `title` as iCalendar `SUMMARY` or JSCalendar `title`; `TRANSP:OPAQUE` or `freeBusyStatus: busy`, always, since an intention is never transparent; and `STATUS:TENTATIVE` or JSCalendar `status: tentative` for `stability: tentative`, `STATUS:CONFIRMED` or `status: confirmed` for `firm`. No other field SHALL cross the boundary.
 
 On import, an external event whose `system` and `uid` match any intention's `external`, retired or not, SHALL be recognised as that intention's hold and SHALL NOT create a commitment. Recognition prevents the case only from then on: a hold imported as a commitment before it was recognised, by an older importer, or by a merge, leaves an intention and an unretired commitment sharing one `system` and `uid`, which validation SHALL report as a warning (see Validation in Object model). A write that sets `external` to a `system` and `uid` an unretired commitment already carries SHALL be accepted and SHALL report that warning.
 
@@ -403,4 +403,8 @@ A replacing selection SHALL keep `external`, so the same event is moved to the n
 #### Scenario: Abandoned with a hold
 - **WHEN** an intention carrying `external` is retired as `abandoned`
 - **THEN** it keeps `external`, and the harness releases the hold without writing to the workspace
+
+#### Scenario: Hold exported in its zone
+- **WHEN** a placed intention whose `placement.start` is `2026-09-15T10:00:00+10:00[Australia/Melbourne]` is exported as a hold to iCalendar
+- **THEN** the event carries `DTSTART;TZID=Australia/Melbourne:20260915T100000` and the intention's version is unchanged
 
