@@ -375,7 +375,9 @@ other way, it continues through that intention's own `serves`. Ending a
 recurring arrangement therefore leaves its pending instances grounded, to be
 retired individually. A terminus grounds only while it is firm and unretired:
 a retired terminus grounds nothing, and a superseded one grounds through its
-successor. A means whose end was abandoned is still served, but validation
+successor. A terminus superseded by several grounds through each of them: the
+walk tries every successor and grounds if any does, and a walk that comes back
+round through `superseded_by` ends there, on each branch alike. A means whose end was abandoned is still served, but validation
 warns, naming the end, because a means that has outlived its point is worth
 the person's attention. A means whose end was fulfilled raises nothing, since
 finishing in another order is routine.
@@ -391,17 +393,34 @@ at the top of the graph is therefore visible, grounds nothing, and waits.
 A terminus is structural more than assertive: it is what the graph hangs
 from, not a claim that lapses. A self-understanding is never discharged, so a
 terminus retires only as `abandoned` or `superseded`, and its `superseded_by`
-names a terminus of the same subject. Retiring a terminus is refused when it
+names a terminus of the same subject, or several. Retiring a terminus is refused when it
 would leave some intention that is served now with no firm terminus, and the
 refusal names those intentions and the two alternatives: set the terminus
-tentative to withdraw it, or supersede it with a firm terminus to replace it.
-An intention with another firm ground does not block, nor do the dependents
+tentative to withdraw it, or supersede it with one or more termini, at least
+one of them firm, to replace or refine it. An intention with another firm ground does not block, nor do the dependents
 of a draft, nor desires, nor intentions firmed under it as a policy. A firm
 terminus is retired only by the person's own act; a harness may retire a
 tentative terminus only when it wrote it, its `source` carrying a harness.
 Supersession is how a reason evolves. What rested on the old terminus rests
 on the new one with no edit, and the change shows in `retired.kind`, where a
 terminus reworded in place would show nothing.
+
+A person's understanding of who they are is refined over time, and one self
+is often found to be two: *being someone who looks after their health* becomes
+*being someone who is strong in old age* and *being someone with a calm mind*.
+A terminus may therefore be superseded by a list of termini, and the record
+says what happened, where `abandoned` would say the self was dropped and a
+single successor would say half of it. What rested on the old terminus stays
+grounded through the split, but nothing yet says which successor each
+dependent is for, so validation reports each one at info level with
+re-pointing as the fix. It is information and not a warning, because a
+dependent may truly serve both, and which self an intention is for is the
+person's to say. Once every dependent is re-pointed the finding goes quiet
+and the list remains as the trail. A self found to serve a deeper self is not
+layered: the deeper one supersedes it, and the earlier wording is kept in the
+retirement `reason` or in a DKF claim, since a terminus stays a sink. An early,
+uncertain self, held to find out whether it is one's own, is an ordinary
+terminus, refined in the same way.
 
 **Recurring intentions and instances.** An intention with a `cadence` is a
 recurring intention; its window carries a calendar anchor for the cadence to
@@ -889,7 +908,23 @@ Kinds are per type:
 
 `superseded_by` is required when and only when `kind` is `superseded`, and
 validation requires its target to exist; on a terminus, it must be a terminus
-of the same subject. `adopted_as`, on a desire, is
+of the same subject. A terminus refined into several carries a list of two or
+more distinct termini of its subject, sorted by id, as a block sequence:
+
+```yaml
+retired:
+  kind: superseded
+  reason: Looking after my health turned out to be two things.
+  superseded_by:
+    - int_01a07b10-1c2d-7e3f-8a4b-5c6d7e8f9a01
+    - int_01a07b10-1c2d-7e3f-8a4b-5c6d7e8f9a02
+  source:
+    author: https://example.com/people/ada
+  timestamp: 2026-11-12T08:00:00Z
+```
+
+A single successor is always written as an id, never as a one-element list,
+and no other object carries a list there. `adopted_as`, on a desire, is
 required when and only when `kind` is `adopted`, and validation requires its
 target to exist and be an intention. A retired object is never edited
 again except to append acknowledgements, and its file is never deleted.
@@ -1515,8 +1550,9 @@ desire carrying any temporal or deontic field of an intention, a desire
 `serves` entry with any role but `for-the-sake-of`, `adopted` without
 `adopted_as` or `adopted_as` naming anything but an intention, `superseded_by`
 on a desire naming anything but a desire, `fulfilled` on a terminus,
-`superseded_by` on a terminus naming anything but a terminus of its subject,
-`transparent` on a commitment born of a resolution, `external` on an intention
+`superseded_by` on a terminus naming or listing anything but a terminus of its
+subject, a list-valued `superseded_by` on anything but a terminus or with
+fewer than two entries or a repeated one, `transparent` on a commitment born of a resolution, `external` on an intention
 with no `placement` or with `parties`, two intentions carrying the same
 `external`, an imported commitment naming an intention whose subject is not
 one of its parties, or that has `parties`, or that carries `external`, two
@@ -1537,7 +1573,10 @@ intention's, naming both, with adopting again as the fix; a placement whose
 offset differs from the one its zone gives at that instant, naming both
 offsets, with re-selection as the fix; and a zone the reader's time-zone
 database does not know, naming it; and at info level a
-terminus that is still tentative, as a draft, an imported commitment directed
+terminus that is still tentative, as a draft, an unretired intention whose
+`serves` reaches, through supersession, a terminus superseded by several,
+naming the intention, that terminus and its successors, with re-pointing to
+the one or ones it is for as the fix, an imported commitment directed
 at no one (its only party one particular, naming no intention and sharing no
 `external` with one), as something that may be better recorded as an
 intention that adopts it, and a workspace holding imported commitments with
@@ -1660,7 +1699,10 @@ between an adopted commitment and its own intention, so every reader of a
 shared workspace should be upgraded before anyone adopts. A placement's zone
 moves no projection and applies under 0.1 as well, but a reader that predates
 it rejects a zoned `start` as an unparseable datetime, so every reader of a
-shared workspace must be upgraded before a writer emits one.
+shared workspace must be upgraded before a writer emits one. A reader that
+predates a terminus superseded by several expects a single id in
+`superseded_by` and may reject the list or misread it, so every reader of a
+shared workspace must be upgraded before anyone splits a terminus.
 
 Deferred from this version, deliberately:
 
@@ -1744,7 +1786,7 @@ Every refusal a verb makes, the tool makes.
 | `intention_add` | `title`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `description?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Create an intention; a terminus when it has no window, duration or `serves`. Anything else should serve one. |
 | `intention_edit` | `id`, `title?`, `subject?`, `duration?`, `window?`, `policy?`, `activity?`, `auto_firm?`, `auto_select?`, `cadence?`, `clear?`, `description?`, `external?`, `habit?`, `location?`, `parties?`, `preference?`, `reference?`, `serves?`, `source?`, `stability?`, `timestamp?` | Change fields, `clear` removes them; the version changes when the projection does. |
 | `intention_firm` | `id`, `policy?`, `source?` | Set stability to firm; a harness must name a policy. |
-| `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. |
+| `intention_retire` | `id`, `kind`, `reason?`, `source?`, `superseded_by?`, `timestamp?` | Append a retired record with a kind. On a terminus `superseded_by` may be a list. |
 | `intention_show` | `id`, `now?` | One intention with its version, its resolved serves targets and its flags. |
 | `intention_list` | `subject?`, `activity?`, `instances_of?`, `placed?`, `recurring?`, `retired?`, `stability?`, `unplaced?` | Active intentions, filtered. |
 
@@ -1814,11 +1856,13 @@ implementation that exposes their names SHALL keep them:
   names, and the refusal names the act as the person's. A call that clears
   `habit` is accepted from any source.
 - **`intention_retire` guards termini.** On a terminus it refuses `fulfilled`,
-  a `superseded_by` that is not a terminus of the same subject, and any
-  retirement that would leave a served intention with no firm terminus,
-  naming those intentions and the alternatives of setting it tentative or
-  superseding it. It refuses a harness, except on a tentative terminus whose
-  own `source` carries one.
+  a `superseded_by` that is not a terminus of the same subject or a list of
+  two or more distinct ones, and any retirement that would leave a served
+  intention with no firm terminus, naming those intentions and the
+  alternatives of setting it tentative or superseding it with one or more
+  termini, at least one firm. It refuses a list on anything but a terminus,
+  and a split's result names each dependent left resting on it. It refuses a
+  harness, except on a tentative terminus whose own `source` carries one.
 - **`commitment_accept` and `commitment_decline` take no policy.** They set
   only the named party's own entry, defaulting to the workspace's subject, and
   nothing infers a status: the tool records what the person said.
