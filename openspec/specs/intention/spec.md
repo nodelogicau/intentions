@@ -113,7 +113,7 @@ A terminus is the person's word. A terminus is inert until it is `firm`: it grou
 ### Requirement: Every intention reaches a terminus
 An intention that is not a terminus SHALL reach a firm terminus of its own `subject` through its `serves` graph, by any path of `in-order-to`, `for-the-sake-of` and `instance-of` references. Reachability is the test, not the presence of an entry: a chain that ends on a scheduled intention, or on a tentative terminus, is unserved. Generated instances reach a terminus through the recurring intention they are `instance-of`.
 
-The walk SHALL pass through retired intentions. At a link whose target is retired as `superseded`, the walk SHALL continue at the target's `superseded_by`. At a link whose target is retired as any other kind, the walk SHALL continue through the target's own `serves`. A terminus SHALL ground the walk only when it is firm and unretired, so a retired terminus grounds nothing, while a superseded terminus grounds through its successor. A walk that reaches an intention it has already visited through `superseded_by` SHALL end there without grounding.
+The walk SHALL pass through retired intentions. At a link whose target is retired as `superseded`, the walk SHALL continue at the target's `superseded_by`; where a terminus's `superseded_by` is a list, the walk SHALL continue at each successor and SHALL ground if any of them grounds. At a link whose target is retired as any other kind, the walk SHALL continue through the target's own `serves`. A terminus SHALL ground the walk only when it is firm and unretired, so a retired terminus grounds nothing, while a superseded terminus grounds through its successor. A walk that reaches an intention it has already visited through `superseded_by` SHALL end there without grounding; on a list, this applies to each branch separately.
 
 An unretired intention with an `in-order-to` or `instance-of` link to an intention retired as `abandoned` SHALL be reported at warning level, naming the intention and the abandoned end. A link to an intention retired as `fulfilled` SHALL raise no finding.
 
@@ -159,6 +159,18 @@ Under `intentions/0.1` validation reports an unserved intention at warning level
 - **WHEN** in a workspace whose `format` is `intentions/0.2` the person sets tentative the only firm terminus that A reaches
 - **THEN** the write is accepted, and validation reports A as unserved at error level
 
+#### Scenario: Split reason
+- **WHEN** A serves terminus T `for-the-sake-of`, and T is retired as `superseded` with `superseded_by: [U, V]`, where U is firm and V is tentative, both termini of A's subject
+- **THEN** A is served through U
+
+#### Scenario: Split into drafts only
+- **WHEN** A serves terminus T `for-the-sake-of`, T is superseded by `[U, V]`, and both U and V are tentative
+- **THEN** A is unserved
+
+#### Scenario: Split then merge
+- **WHEN** T is superseded by `[U, V]`, U and V are both superseded by firm terminus W, and A serves T `for-the-sake-of`
+- **THEN** A is served through W, and the walk grounds without reporting a cycle
+
 ### Requirement: Recurring intentions and generated instances
 
 An INTENTION carrying `cadence` is a recurring intention, and its window SHALL carry a calendar anchor for the cadence to expand within. Instances SHALL be new INTENTION objects, each carrying `serves: [{id: <recurring>, role: instance-of}]`, `occurrence` (the EDTF granule the cadence produced), a `window` whose `calendar` is that occurrence and whose `clock` is the recurring intention's `clock` when it has one, and the recurring intention's `subject`, `duration`, `activity`, `location`, and `parties` unless overridden. Each instance has its own stability, resolution lifecycle, and retirement. Recurrence SHALL NOT be an attribute of WINDOW. A recurring intention is not a terminus and SHALL NOT carry `auto_select` or `auto_firm`.
@@ -185,7 +197,7 @@ An INTENTION carrying `cadence` is a recurring intention, and its window SHALL c
 
 ### Requirement: Retirement kinds
 
-An intention's `retired.kind` SHALL be one of `fulfilled` (discharged, a positive terminal state), `abandoned` (no longer held, no replacement), or `superseded` (replaced by a specific other intention, in which case `superseded_by` SHALL carry that intention's id). A terminus SHALL admit `abandoned` and `superseded` only, since a self-understanding is never discharged, and its `superseded_by` SHALL name a terminus of the same `subject`. Each kind is final; a retired intention SHALL NOT be edited further except to append acknowledgements.
+An intention's `retired.kind` SHALL be one of `fulfilled` (discharged, a positive terminal state), `abandoned` (no longer held, no replacement), or `superseded` (replaced by a specific other intention, in which case `superseded_by` SHALL carry that intention's id). A terminus SHALL admit `abandoned` and `superseded` only, since a self-understanding is never discharged, and its `superseded_by` SHALL name a terminus of the same `subject`, or SHALL be a list of two or more distinct termini of the same `subject`, each firm or tentative, sorted by id, recording that one self-understanding was refined into several. A single successor SHALL be written as an id, never as a one-element list. `superseded_by` on an intention that is not a terminus SHALL be a single id. Each kind is final; a retired intention SHALL NOT be edited further except to append acknowledgements.
 
 #### Scenario: Superseded
 - **WHEN** an intention is retired with `retired: {kind: superseded, superseded_by: int_C, ...}`
@@ -206,6 +218,18 @@ An intention's `retired.kind` SHALL be one of `fulfilled` (discharged, a positiv
 #### Scenario: Terminus superseded by a scheduled intention
 - **WHEN** a terminus is retired as `superseded` with `superseded_by` naming an intention that has a window
 - **THEN** the write is refused and validation reports an error
+
+#### Scenario: Terminus split
+- **WHEN** a terminus is retired with `retired: {kind: superseded, superseded_by: [int_U, int_V], ...}` and int_U and int_V are termini of its subject
+- **THEN** the record is valid, and the terminus's version changes only by `retired.kind`
+
+#### Scenario: List on a plan
+- **WHEN** an intention with a window is retired as `superseded` with `superseded_by` a list
+- **THEN** the write is refused and validation reports an error
+
+#### Scenario: One-element list
+- **WHEN** a terminus carries `superseded_by: [int_U]`
+- **THEN** validation reports an error naming the single id as the form
 
 ### Requirement: Cycle prevention
 
@@ -330,7 +354,7 @@ An instance is *dormant* when it is unplaced and unretired and its `instance-of`
 - **THEN** instances are generated as if `habit` were absent
 
 ### Requirement: Retiring a terminus
-Retiring a terminus SHALL be refused when some unretired intention that reaches a firm terminus before the act would reach none after it, computed by the walk in Every intention reaches a terminus. The refusal SHALL name those intentions and the alternatives: set the terminus tentative to withdraw it, or supersede it with a firm terminus to replace it. An intention with another firm ground, the dependents of a tentative terminus, desires serving the terminus, and intentions carrying `firmed_under` naming it SHALL NOT block the act. This refusal SHALL apply under `intentions/0.1` and `intentions/0.2` alike.
+Retiring a terminus SHALL be refused when some unretired intention that reaches a firm terminus before the act would reach none after it, computed by the walk in Every intention reaches a terminus. The refusal SHALL name those intentions and the alternatives: set the terminus tentative to withdraw it, or supersede it with one or more termini, at least one of them firm, to replace or refine it. An intention with another firm ground, the dependents of a tentative terminus, desires serving the terminus, and intentions carrying `firmed_under` naming it SHALL NOT block the act. This refusal SHALL apply under `intentions/0.1` and `intentions/0.2` alike.
 
 A firm terminus SHALL be retired only by an act whose `source` carries no harness. A tentative terminus MAY be retired by an act whose `source` carries a harness only when the terminus's own `source` carries a harness.
 
@@ -361,6 +385,14 @@ A firm terminus SHALL be retired only by an act whose `source` carries no harnes
 #### Scenario: Harness retires a firm terminus
 - **WHEN** an act whose `source` carries a harness retires a firm terminus
 - **THEN** the act is refused, naming the act as the person's
+
+#### Scenario: Split with a firm successor
+- **WHEN** the person retires the sole ground of A as `superseded` with `superseded_by: [U, V]`, where U is firm and V is tentative
+- **THEN** the act is accepted, A is served through U, and the result reports A at info level as resting on a split terminus
+
+#### Scenario: Split into drafts
+- **WHEN** the person retires the sole ground of A as `superseded` with `superseded_by` naming two tentative termini
+- **THEN** the act is refused, naming A
 
 ### Requirement: Calendar hold
 

@@ -13,6 +13,6 @@
 
 ## 3. Close out
 
-- [ ] 3.1 Commit and push
-- [ ] 3.2 Open an issue on intentions-cli covering list parsing on a terminus's `superseded_by`, the branching walk, the new errors and info finding, a repeatable `--superseded-by` on `intention retire`, and the skill's "A reason changes by supersession" rule gaining the split case and asking the person which successor each dependent is for
-- [ ] 3.3 Archive with sync
+- [x] 3.1 Commit and push
+- [x] 3.2 Open an issue on intentions-cli covering list parsing on a terminus's `superseded_by`, the branching walk, the new errors and info finding, a repeatable `--superseded-by` on `intention retire`, and the skill's "A reason changes by supersession" rule gaining the split case and asking the person which successor each dependent is for
+- [x] 3.3 Archive with sync
