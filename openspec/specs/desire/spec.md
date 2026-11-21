@@ -3,9 +3,7 @@
 ## Purpose
 
 Defines DESIRE, the rung below intention: a want the person has expressed and not yet committed to. A desire is a world-to-mind pro-attitude, not a commissive act, so it is free to conflict with other desires, is never resolved, is checked against nothing, and is not grounded. It is where a passing remark goes until the person adopts it into an intention, which costs a why, or lets it go. Adoption writes the intention and retires the desire with a pointer to it.
-
 ## Requirements
-
 ### Requirement: DESIRE is the rung below intention
 A DESIRE is a want the person has expressed and not yet committed to: a world-to-mind pro-attitude, not a commissive act. A workspace MAY hold desires in `/desires/`, one per file, with ids prefixed `des_`. A DESIRE SHALL carry, in canonical order: `id`; `version`; `subject` (the URI of the particular whose desire this is, applied from `defaults.subject` as for an intention); `title` (prose); `description` (prose, optional); `activity` (optional, a term from the workspace's activity vocabulary); `location` (optional, URIs); `parties` (optional, URIs of other particulars the want involves, kept as a hint); `serves` (possibly empty); `reference` (optional, an informal pointer to a DKF claim); `source`; `timestamp`; and `retired` when retired. A DESIRE SHALL NOT carry `duration`, `window`, `stability`, `cadence`, `auto_select`, `auto_firm`, `firmed_under`, `placement`, or `acknowledgements`, and validation SHALL report an error if it does. A DESIRE SHALL NOT carry a strength, priority, or ranking field.
 
@@ -20,7 +18,7 @@ A DESIRE is a want the person has expressed and not yet committed to: a world-to
 ### Requirement: A desire serves only a terminus, which may be a draft
 `serves` on a DESIRE SHALL admit only entries whose `role` is `for-the-sake-of`, and each target SHALL be a terminus of the same `subject`. The terminus MAY be tentative: a desire is not grounded by it and nothing rests on either. An empty `serves` is valid; the grounding rule for intentions SHALL NOT apply to desires.
 
-#### Scenario: Draft want, draft self
+#### Scenario: Draft want, draft terminus
 - **WHEN** a harness writes a tentative terminus and a DESIRE serving it `for-the-sake-of`
 - **THEN** both writes are accepted, the terminus is reported as a draft, and the desire is not reported as unserved
 
@@ -59,7 +57,7 @@ A DESIRE SHALL be retired by the appended `retired` record with `kind` one of `a
 - **THEN** validation reports an error
 
 ### Requirement: Adoption writes the intention and then retires the desire
-Adopting a DESIRE SHALL create a new INTENTION carrying the desire's `subject`, `title`, `description`, `serves`, `reference`, `activity`, `location` and `parties`, the `duration` and `window` the adopting act supplies, `stability: tentative`, and the act's `source`; and SHALL then append `retired: {kind: adopted, adopted_as: <the new intention's id>}` to the desire. The intention is the record of the adoption; no other record SHALL be written. Adoption of a retired desire SHALL be refused. Adoption SHALL be refused where the intention it would write is a terminus, that is where the desire's `serves` is empty and the act supplies neither `duration` nor `window`; the refusal SHALL name what is missing, a why or a when. An adopted want is a plan; a self is declared, not adopted. This refusal is not subsumed by the rule that every intention reaches a terminus, because a terminus is exempt from that rule, so it SHALL stand in every revision. A harness MAY still draft a terminus through the ordinary intention write, which is a different act with a different meaning. A harness MAY adopt, since adopting is drafting an intention. The new intention is subject to every rule an intention is subject to, including the grounding warning where its terminus is tentative.
+Adopting a DESIRE SHALL create a new INTENTION carrying the desire's `subject`, `title`, `description`, `serves`, `reference`, `activity`, `location` and `parties`, the `duration` and `window` the adopting act supplies, `stability: tentative`, and the act's `source`; and SHALL then append `retired: {kind: adopted, adopted_as: <the new intention's id>}` to the desire. The intention is the record of the adoption; no other record SHALL be written. Adoption of a retired desire SHALL be refused. Adoption SHALL be refused where the intention it would write is a terminus, that is where the desire's `serves` is empty and the act supplies neither `duration` nor `window`; the refusal SHALL name what is missing, a why or a when. An adopted want is a plan; a terminus is declared, not adopted. This refusal is not subsumed by the rule that every intention reaches a terminus, because a terminus is exempt from that rule, so it SHALL stand in every revision. A harness MAY still draft a terminus through the ordinary intention write, which is a different act with a different meaning. A harness MAY adopt, since adopting is drafting an intention. The new intention is subject to every rule an intention is subject to, including the grounding warning where its terminus is tentative.
 
 #### Scenario: Harness adopts
 - **WHEN** a harness adopts a desire supplying `duration: PT30M` and `window: {calendar: this-week}`
@@ -95,3 +93,4 @@ The scheduling projection of a DESIRE SHALL be `subject`, `serves`, and `retired
 #### Scenario: Terminus changed
 - **WHEN** a desire's `serves` gains a `for-the-sake-of` entry
 - **THEN** its version changes
+

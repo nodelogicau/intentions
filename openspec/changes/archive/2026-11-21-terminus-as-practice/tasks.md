@@ -23,9 +23,9 @@
 
 ## 4. Close out
 
-- [ ] 4.1 `openspec validate --all --strict` passes after sync
-- [ ] 4.2 Commit and push; confirm Pages rebuilds and the hero label changed
-- [ ] 4.3 Open an issue on intentions-cli: `init` writes the practice convention into the generated `intentions.md`
-- [ ] 4.4 Update the `intentions` skill's terminus guidance to the practice form and the new test
-- [ ] 4.5 Knowledge workspace: record an antithesis against the 2026-09-19/20 terminus-as-noun conclusion, citing this change
-- [ ] 4.6 Archive with sync so the `intention`, `desire` and `object-model` deltas land
+- [x] 4.1 `openspec validate --all --strict` passes after sync
+- [x] 4.2 Commit and push; confirm Pages rebuilds and the hero label changed
+- [x] 4.3 Open an issue on intentions-cli: `init` writes the practice convention into the generated `intentions.md`
+- [x] 4.4 Update the `intentions` skill's terminus guidance to the practice form and the new test
+- [x] 4.5 Knowledge workspace: record an antithesis against the 2026-09-19/20 terminus-as-noun conclusion, citing this change
+- [x] 4.6 Archive with sync so the `intention`, `desire` and `object-model` deltas land
