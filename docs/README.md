@@ -56,7 +56,7 @@ intentions $W availability add --subject "$ADA" --title "Deep-work mornings" \
 intentions $W availability add --subject "$ADA" --title "Weekday afternoons" \
   --calendar 2026-W39 --clock 13:00/17:00 --cadence "FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR" \
   --capacity PT4H --valid-until 2026-W40 --timestamp $TS
-TERM=$(intentions $W intention add --title "Being someone the board can rely on" \
+TERM=$(intentions $W intention add --title "Keeping my word to the board" \
   --stability firm --timestamp $TS --json | jq -r .id)
 PACK=$(intentions $W intention add --title "Send the board pack" --duration PT30M \
   --calendar 2026-W40 --serves "$TERM:for-the-sake-of" --timestamp $TS --json | jq -r .id)

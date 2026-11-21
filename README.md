@@ -62,7 +62,7 @@ The format replaces the slot with a triad: a **DURATION** (how long), a
 **WINDOW** (within what bounds, expressed as the person expressed it and kept
 that way however early a slot is taken), and an **INTENTION** (what this is
 for, as a graph of in-order-to references that terminates in a standing
-self-understanding about who the person is). Recurrence lives on the
+practice the person chooses to keep up). Recurrence lives on the
 intention, not the window: a weekly one-to-one is a recurring intention that
 generates fresh instances, each its own object with its own life.
 
@@ -213,7 +213,7 @@ Fields, in canonical order:
 | `activity` | no | A term from the workspace's activity vocabulary, kept as a hint and carried onto the intention on adoption. |
 | `location` | no | URIs, kept as a hint and carried onto the intention on adoption. |
 | `parties` | no | URIs of other particulars the want involves, kept as a hint and carried onto the intention on adoption. |
-| `serves` | yes | Outbound references, possibly empty, with role `for-the-sake-of` only, each to a terminus of the same subject. The terminus may be tentative: a draft want may point at a draft self, and nothing rests on either. |
+| `serves` | yes | Outbound references, possibly empty, with role `for-the-sake-of` only, each to a terminus of the same subject. The terminus may be tentative: a draft want may point at a draft terminus, and nothing rests on either. |
 | `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
 | `source` | yes | Who wrote it. |
 | `timestamp` | yes | Assertion time. |
@@ -243,9 +243,9 @@ desire is retired with `adopted_as` naming that intention, required when and
 only when the kind is `adopted`. The intention is the record of the adoption;
 nothing else is written. Adopting a retired desire is refused, and so is
 adopting into a terminus: where the desire serves nothing and the act supplies
-neither duration nor window, the intention it would write is a self titled
+neither duration nor window, the intention it would write is a terminus titled
 as an errand, and the act is refused naming what is missing, a why or a when.
-An adopted want is a plan; a self is declared, not adopted. This refusal is
+An adopted want is a plan; a terminus is declared, not adopted. This refusal is
 not subsumed by the rule that every intention reaches a terminus, because a
 terminus is exempt from that rule, so it stands in every revision. A harness
 may still draft a terminus through the ordinary intention write, which is a
@@ -256,7 +256,7 @@ record a desire on the person's word, as it records a decline, and may adopt
 one, since adopting is drafting an intention; the result is tentative and
 subject to every rule an intention is subject to, including the unserved
 warning where its terminus is still a draft, which is the moment to ask the
-person to firm the self.
+person to firm the terminus.
 
 **Projection.** `subject`, `serves`, `retired.kind`. A desire is mostly prose,
 and its version changes only on adoption, abandonment, or a change of
@@ -343,9 +343,9 @@ on the person's behalf.
 
 **The serves graph.** `in-order-to` links an intention to another it is a means
 to. `for-the-sake-of` links an intention to its terminus: an intention with
-no window, no duration, and no outbound references, such as *being someone
-who follows through*, which may carry an informal `reference` to a DKF claim
-the person holds about themselves. Where this text says *standing intention*
+no window, no duration, and no outbound references, such as *following
+through*, which may carry an informal `reference` to a DKF claim the person
+holds about what they keep doing. Where this text says *standing intention*
 it means a terminus, never a recurring one. `instance-of` links a generated
 instance to the recurring intention that produced it. The graph is directed and
 acyclic but not a tree: an intention may serve several ends and several may
@@ -387,11 +387,11 @@ nothing and authorising nothing, and
 no policy applies to a terminus, so `firm` on one comes only from an act whose
 `source` carries no harness. A harness may draft a terminus, tentative, as it
 drafts anything; validation reports it as a draft, and every intention that
-reaches only drafts is unserved until the person firms one. An invented self
+reaches only drafts is unserved until the person firms one. An invented practice
 at the top of the graph is therefore visible, grounds nothing, and waits.
 
 A terminus is structural more than assertive: it is what the graph hangs
-from, not a claim that lapses. A self-understanding is never discharged, so a
+from, not a claim that lapses. A practice is never finished, so a
 terminus retires only as `abandoned` or `superseded`, and its `superseded_by`
 names a terminus of the same subject, or several. Retiring a terminus is refused when it
 would leave some intention that is served now with no firm terminus, and the
@@ -405,22 +405,22 @@ Supersession is how a reason evolves. What rested on the old terminus rests
 on the new one with no edit, and the change shows in `retired.kind`, where a
 terminus reworded in place would show nothing.
 
-A person's understanding of who they are is refined over time, and one self
-is often found to be two: *being someone who looks after their health* becomes
-*being someone who is strong in old age* and *being someone with a calm mind*.
-A terminus may therefore be superseded by a list of termini, and the record
-says what happened, where `abandoned` would say the self was dropped and a
-single successor would say half of it. What rested on the old terminus stays
-grounded through the split, but nothing yet says which successor each
-dependent is for, so validation reports each one at info level with
-re-pointing as the fix. It is information and not a warning, because a
-dependent may truly serve both, and which self an intention is for is the
-person's to say. Once every dependent is re-pointed the finding goes quiet
-and the list remains as the trail. A self found to serve a deeper self is not
-layered: the deeper one supersedes it, and the earlier wording is kept in the
-retirement `reason` or in a DKF claim, since a terminus stays a sink. An early,
-uncertain self, held to find out whether it is one's own, is an ordinary
-terminus, refined in the same way.
+A person's sense of what they mean to keep doing is refined over time, and one
+practice is often found to be two: *looking after my health* becomes *staying
+strong into old age* and *keeping a calm mind*. A terminus may therefore be
+superseded by a list of termini, and the record says what happened, where
+`abandoned` would say the practice was dropped and a single successor would
+say half of it. What rested on the old terminus stays grounded through the
+split, but nothing yet says which successor each dependent is for, so
+validation reports each one at info level with re-pointing as the fix. It is
+information and not a warning, because a dependent may truly serve both, and
+which practice an intention is for is the person's to say. Once every
+dependent is re-pointed the finding goes quiet and the list remains as the
+trail. A practice found to serve a deeper one is not layered: the deeper one
+supersedes it, and the earlier wording is kept in the retirement `reason` or
+in a DKF claim, since a terminus stays a sink. An early, uncertain practice,
+taken up to find out whether it is one's own, is an ordinary terminus, refined
+in the same way.
 
 **Recurring intentions and instances.** An intention with a `cadence` is a
 recurring intention; its window carries a calendar anchor for the cadence to
@@ -1147,9 +1147,10 @@ records        RESOLUTION      standalone — relates intention, placement, disp
    int: run the finance function well      int: 1:1, occurrence 2026-09-15
          │ for-the-sake-of                          │ instance-of (back to recurring)
          ▼                                          │ for-the-sake-of
-   int: being someone who follows through  ◀────────┘
+   int: following through  ◀────────────────────────┘
          (terminus: no window, no duration, no serves;
-          reference → a DKF claim Ada holds about herself,
+          reference → a DKF claim Ada holds about what
+          she keeps doing,
           held because claims citing episodes of
           what she did support it)
 ```
@@ -1268,12 +1269,12 @@ object here depends on a DKF object or an episode to exist or validate, and
 no file here changes when either is written.
 
 The relationship is a loop. A terminus may reference a claim the person holds
-about themselves; what was actually done is recorded as episodes, which may
-name the intention or commitment they were the occasion of; and DKF claims
-citing those episodes are the evidence that makes the self-claim held rather
-than aspirational. A person infers who they are from what they did, and the
-three formats hold the three parts: what was meant, what happened, and what
-the person takes it to show.
+about what they keep doing; what was actually done is recorded as episodes,
+which may name the intention or commitment they were the occasion of; and DKF
+claims citing those episodes are the evidence that makes the claim held rather
+than aspirational. A person sees what they keep choosing from what they did,
+and the three formats hold the three parts: what was meant, what happened, and
+what the person takes it to show.
 
 Retiring an intention as `fulfilled` is the person's act of letting it go,
 recorded with when they did so, not when the thing was done. It is not the
@@ -1517,8 +1518,10 @@ the nearest ancestor directory containing `intentions.yaml` or a
 An optional prose file for agents and people: the activity terms in use, which
 tags won when two overlapped, what the workspace is for. It has no schema and
 validation does not read it. It is the natural home for the terminus
-convention: a **Termini** heading saying that a terminus is titled as who the
-person is, not what they do, so that a harness reads it before it drafts one.
+convention: a **Termini** heading saying that a terminus is titled as a
+practice the person chooses to keep doing, not as who they are and not as a
+task, and that the test is whether it could ever be done, so that a harness
+reads it before it drafts one.
 The activity vocabulary itself is not fixed by this specification: terms are
 lowercase kebab-case, matched by exact equality, never rejected for being
 unknown, and reported at info level when only one object uses them.
@@ -1607,26 +1610,34 @@ the person's alone. A commitment interlocks with others and hands off to
 iCalendar. The two are different speech acts with different lifecycles, and
 conflating them is how a calendar fills up with other people's time.
 
-**A terminus is a person, not a task.** The chain of in-order-to references
-ends in who the person is, and it is titled that way: *being someone who
-follows through*, never *follow through*. The test is whether the title names
-a person or a task. The wording is not decoration. A goal held as an identity
-is acted on more reliably than the same goal held as a verb, and an intention
-read at the level of what it is for resists reconsideration better than one
-read at the level of how it is done; the chain up to a terminus is the
-instrument of that reading. Validation never rejects a terminus for its
-wording.
+**A terminus is a practice, not a task.** The chain of in-order-to references
+ends in what the person chooses to keep doing for its own sake, and it is
+titled that way: *following through*, never *follow through on the pack* and
+never *being someone who follows through*. The test is whether the title could
+ever be done. A terminus has no window and no duration and is never finished,
+as an activity is never finished while a movement ends when it arrives, so a
+title that could be finished names a task. A title that names who the person
+is names an identity, and holding oneself as a fixed thing is what Sartre
+calls bad faith: a person is what they make of themselves, and can always
+choose again. The format already treats a terminus that way. It is inert until
+the person firms it by their own act, no one else can firm it, and
+supersession and splitting are how it is chosen again; the wording says what
+the machinery does. An intention read at the level of what it is for resists
+reconsideration better than one read at the level of how it is done, and the
+chain up to a terminus is the instrument of that reading. Validation never
+rejects a terminus for its wording.
 
 **The why is the price of entry.** A DKF claim cannot exist without the
 particular it is about, and an intention cannot stand without the terminus it
 is for. A workspace's first act is a terminus, and a harness's first question
-is who the person is trying to be. That is the right first question, and the
-cost of capture is the point: this format does not hold an intention the
-person cannot say the point of. An unserved intention is a warning under
-`intentions/0.1` and a refusal under `intentions/0.2`, and a terminus grounds
-nothing and authorises nothing until the person, by their own act, has made
-it firm. A want that has not earned a why is a desire, not an intention: it
-sits in the inbox with no standing until the person adopts it or lets it go.
+is what the person means to keep doing, for its own sake. That is the right
+first question, and the cost of capture is the point: this format does not
+hold an intention the person cannot say the point of. An unserved intention is
+a warning under `intentions/0.1` and a refusal under `intentions/0.2`, and a
+terminus grounds nothing and authorises nothing until the person, by their own
+act, has made it firm. A want that has not earned a why is a desire, not an
+intention: it sits in the inbox with no standing until the person adopts it or
+lets it go.
 
 **Resolution is a function.** Given the workspace, `intentions.yaml`, and a
 `now`, the candidate set and its order are determined: the range is bounded
@@ -1879,7 +1890,7 @@ implementation that exposes their names SHALL keep them:
   appends the desire's `adopted` retirement naming it, returns both ids, and
   refuses a desire already retired. It also refuses a bare adoption, one
   whose desire serves nothing and which supplies neither duration nor
-  window, naming what is missing: a self is declared, not adopted.
+  window, naming what is missing: a terminus is declared, not adopted.
 - **`commitment_adopt` is the person's selection.** It takes no policy and
   records `selector: person`, with any harness in `source.harness`. It refuses
   a commitment that is retired or not imported, an intention that is retired,
@@ -1938,22 +1949,24 @@ Practical Reason* (1987), on intentions as partial plans, reconsideration,
 and self-governing policies. John Searle, *Speech Acts* (1969) and
 *Expression and Meaning* (1979), on the assertive/commissive distinction and
 felicity conditions that separate availability from intention and forbid
-software from setting a party's status.
+software from setting a party's status. Jean-Paul Sartre, *Being and
+Nothingness* (1943), on bad faith (Part One, ch. 2) and the fundamental
+project (Part Four), and *Existentialism Is a Humanism* (1946), behind titling
+a terminus as a practice rather than an identity. Aristotle, *Metaphysics*
+Θ.6, on activity that is never finished as against movement that ends, behind
+the test of whether a terminus could ever be done.
 
-**Psychological sources.** Christopher Bryan, Gregory Walton, Todd Rogers and
-Carol Dweck, "Motivating voter turnout by invoking the self", *PNAS* (2011),
-on noun self-framing, behind titling a terminus as a person. Daphna Oyserman,
-"Identity-based motivation" (2009), on identity-congruent action reading
-difficulty as importance. Kentaro Fujita, Yaacov Trope, Nira Liberman and Maya
-Levin-Sagi, "Construal levels and self-control", *JPSP* (2006), on why the
-chain up to a terminus matters. E. J. Masicampo and Roy Baumeister, "Consider
-it done! Plan making can eliminate the cognitive effects of unfulfilled
-goals", *JPSP* (2011), on plan-making freeing the mind, behind placing early.
-Peter Gollwitzer, "Implementation intentions: strong effects of simple plans",
-*American Psychologist* (1999), and Gollwitzer and Paschal Sheeran's
-meta-analysis (2006), on decisions closed in advance, behind policies and
-firmness. Daryl Bem, "Self-perception theory" (1972), on inferring who one is
-from what one did, behind the return path through episodes and DKF.
+**Psychological sources.** Kentaro Fujita, Yaacov Trope, Nira Liberman and
+Maya Levin-Sagi, "Construal levels and self-control", *JPSP* (2006), on why
+the chain up to a terminus matters. E. J. Masicampo and Roy Baumeister,
+"Consider it done! Plan making can eliminate the cognitive effects of
+unfulfilled goals", *JPSP* (2011), on plan-making freeing the mind, behind
+placing early. Peter Gollwitzer, "Implementation intentions: strong effects of
+simple plans", *American Psychologist* (1999), and Gollwitzer and Paschal
+Sheeran's meta-analysis (2006), on decisions closed in advance, behind
+policies and firmness. Daryl Bem, "Self-perception theory" (1972), on
+inferring one's own attitudes from what one did, behind the return path
+through episodes and DKF.
 
 ---
 
