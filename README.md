@@ -1369,7 +1369,11 @@ visible and contestable rather than silently absorbed.
 
 Every object has a version: the hash of a canonical serialisation of its
 **scheduling projection**, the fields that bear on consistency, as listed for
-each type above. The version is derived, never declared.
+each type above. The version is derived, never declared. It tells states of
+one object apart, not objects: two objects with equal projections have equal
+versions, as every firm terminus of one subject does, so a version is only
+ever compared together with the id it was read from, as an acknowledgement's
+`counterpart_version` is with its `counterpart`.
 
 The projection is expressed as a JSON object with values normalised first,
 serialised with the JSON Canonicalization Scheme
