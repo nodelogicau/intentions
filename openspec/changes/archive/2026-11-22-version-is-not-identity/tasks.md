@@ -5,4 +5,4 @@
 
 ## 2. Close out
 
-- [ ] 2.1 Commit, push, archive with sync
+- [x] 2.1 Commit, push, archive with sync
