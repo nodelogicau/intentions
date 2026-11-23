@@ -87,11 +87,37 @@ surfaced as a flag. Flags are never decisions.
 Everything is a YAML file in a git repository. Objects are live state edited in
 place; the events that happen to them (resolution, acknowledgement, retirement)
 are append-only records. Every object and record says who wrote it. A
-retrospective account of what actually happened is not this format's job.
-What happened is an episode, in the [episodes](https://github.com/nodelogicau/episodes)
-format, which may name an object here as its occasion; what a person takes it
-to show is a DKF claim, which may cite any object here by id and version. Both
-references point into this format, and that is the whole of the relationship.
+retrospective account of what actually happened is not this format's job,
+and neither is what a person comes to believe about it. Other formats can
+hold those: what happened in [episodes](https://github.com/nodelogicau/episodes),
+and what a person takes it to show in DKF, whose claims may cite any object
+here by id and version. This format cites neither and needs neither.
+
+---
+
+## Conformance
+
+The key words MUST, MUST NOT, SHOULD, SHOULD NOT and MAY are to be interpreted
+as described in [BCP 14](https://www.rfc-editor.org/info/bcp14)
+([RFC 2119](https://www.rfc-editor.org/rfc/rfc2119),
+[RFC 8174](https://www.rfc-editor.org/rfc/rfc8174)) when, and only when, they
+appear in all capitals.
+
+[Core Object Types](#core-object-types), [Object Model](#object-model),
+[Consistency](#consistency), [Versioning](#versioning) and
+[File Layout](#file-layout) are normative, except
+[Composition by reference](#composition-by-reference) and any passage marked
+informative. [Reference Tool Set](#reference-tool-set) is normative for an
+implementation that exposes a tool under a name it lists, and only for that
+implementation. Every other section is informative.
+
+This specification is complete on its own. A writer, reader, resolver or
+validator conforms by implementing the normative sections alone, with no DKF
+or episodes code, data or workspace. No field's value must be another
+format's identifier, and nothing here constrains how another format is
+written or used. Where the normative text names a sibling format, it is
+marked informative or gives an example of a value it has already defined in
+its own terms.
 
 ---
 ## Core Object Types
@@ -102,6 +128,12 @@ RESOLUTION, ACKNOWLEDGEMENT, and RETIREMENT, which are events about objects
 and are append-only; and three embedded values, DURATION, WINDOW, and
 PLACEMENT, which have no identity of their own. Everything else is
 implementation.
+
+A **particular** is anything identified by a URI that an object is about or
+involves: a person, a room, a piece of equipment. A particular need not exist
+in any registry or workspace, and resolving its URI is outside this format.
+(Informative: DKF uses the same word for the things its claims are about, so a
+URI can name the same thing in both; nothing here requires it.)
 
 ### Identifiers
 
@@ -214,7 +246,7 @@ Fields, in canonical order:
 | `location` | no | URIs, kept as a hint and carried onto the intention on adoption. |
 | `parties` | no | URIs of other particulars the want involves, kept as a hint and carried onto the intention on adoption. |
 | `serves` | yes | Outbound references, possibly empty, with role `for-the-sake-of` only, each to a terminus of the same subject. The terminus may be tentative: a draft want may point at a draft terminus, and nothing rests on either. |
-| `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
+| `reference` | no | Informal pointer to any record outside this format, as a URI or other string, such as a DKF claim id; never resolved by validation. |
 | `source` | yes | Who wrote it. |
 | `timestamp` | yes | Assertion time. |
 | `retired` | no | The appended record; see below. |
@@ -320,7 +352,7 @@ Fields, in canonical order:
 | `external` | no | `{system: icalendar or jscalendar, uid}`. On a placed intention with no `parties` only: the link to the busy hold written for its placement (see Calendar hold). |
 | `preference` | no | `earliest`, `latest`, `adjacent`, or `spread`. |
 | `auto_select`, `auto_firm` | no | On termini only: policy conditions. |
-| `reference` | no | Informal pointer to a DKF claim; never resolved by validation. |
+| `reference` | no | Informal pointer to any record outside this format, as a URI or other string, such as a DKF claim id; never resolved by validation. |
 | `source`, `timestamp` | yes | |
 | `acknowledgements` | yes | Append-only list, possibly empty. |
 | `retired` | no | At most one RETIREMENT record. |
@@ -344,8 +376,8 @@ on the person's behalf.
 **The serves graph.** `in-order-to` links an intention to another it is a means
 to. `for-the-sake-of` links an intention to its terminus: an intention with
 no window, no duration, and no outbound references, such as *following
-through*, which may carry an informal `reference` to a DKF claim the person
-holds about what they keep doing. Where this text says *standing intention*
+through*, which may carry an informal `reference` to a record of what the
+person holds about what they keep doing. Where this text says *standing intention*
 it means a terminus, never a recurring one. `instance-of` links a generated
 instance to the recurring intention that produced it. The graph is directed and
 acyclic but not a tree: an intention may serve several ends and several may
@@ -359,15 +391,15 @@ subject through that graph, by any path of the three roles. Reachability is
 the test, not the presence of an entry: a chain that ends on a scheduled
 intention, or on a terminus that is still tentative, is unserved all the way
 down, and an instance reaches its terminus through the recurring intention it
-is an instance of. A terminus grounds an intention the way a particular
-grounds a DKF claim: it is what the intention is ultimately about, and an
-intention with none is a duration floating free. Under `intentions/0.1` an
-unserved intention is a validation warning that names the fix, and a write
-that would leave the intention it writes unserved is accepted and reports it.
-Under `intentions/0.2` both are refused, as DKF refuses a claim with no
-particular. The refusal covers only the intention being written: setting a
-terminus tentative is accepted, and what rested on it becomes unserved until
-it is grounded again.
+is an instance of. A terminus grounds an intention: it is what the intention
+is ultimately about, and an intention with none is a duration floating free.
+Under `intentions/0.1` an unserved intention is a validation warning that
+names the fix, and a write that would leave the intention it writes unserved
+is accepted and reports it. Under `intentions/0.2` both are refused.
+(Informative: this is the role a particular plays for a DKF claim, which DKF
+likewise refuses without one.) The refusal covers only the intention being
+written: setting a terminus tentative is accepted, and what rested on it
+becomes unserved until it is grounded again.
 
 The walk passes through retired intentions. At a link to one retired as
 `superseded`, it continues at `superseded_by`; at a link to one retired any
@@ -418,7 +450,7 @@ which practice an intention is for is the person's to say. Once every
 dependent is re-pointed the finding goes quiet and the list remains as the
 trail. A practice found to serve a deeper one is not layered: the deeper one
 supersedes it, and the earlier wording is kept in the retirement `reason` or
-in a DKF claim, since a terminus stays a sink. An early, uncertain practice,
+in a record outside this format, since a terminus stays a sink. An early, uncertain practice,
 taken up to find out whether it is one's own, is an ordinary terminus, refined
 in the same way.
 
@@ -878,9 +910,9 @@ projection changes the acknowledgement lapses, the flag returns, and the old
 entry stays. The person acknowledged a state of affairs, not any future one.
 Acknowledgements are excluded from the projection.
 
-An acknowledgement carries everything a later DKF claim needs to say what was
+An acknowledgement carries everything a later record needs to say what was
 decided and why, citing the object by id and version. This format does not
-write that claim.
+write that record and does not say what format it takes; a DKF claim is one.
 
 #### `RETIREMENT`
 
@@ -1149,10 +1181,9 @@ records        RESOLUTION      standalone — relates intention, placement, disp
          ▼                                          │ for-the-sake-of
    int: following through  ◀────────────────────────┘
          (terminus: no window, no duration, no serves;
-          reference → a DKF claim Ada holds about what
-          she keeps doing,
-          held because claims citing episodes of
-          what she did support it)
+          reference → a record of what Ada holds
+          about what she keeps doing, such as
+          a DKF claim; never resolved)
 ```
 
 The graph is a DAG reconstructed by walking outbound references; no object
@@ -1247,20 +1278,20 @@ without a plan, and a session that shrinks it has done the format's work.
 
 ### Composition by reference
 
+*This section is informative. It describes how other formats can use objects
+here and places no requirement on an intentions implementation.*
+
 ```
   iCalendar / JSCalendar  ◀── external.uid ──  COMMITMENT
                           ◀── external.uid ──  INTENTION (hold, no parties)
                                                     ▲
   this format owns all prospective state            │ id (+ version)
                                                     │
-  EPISODE  ── occasion ──▶  any object here         │
-  (what happened: episodes)  ───────────────────────┤
-                                                    │
   DKF claim  ── cites ──▶  any object here          │
   (what is believed: contested, evidential)  ───────┘
-       └── cites ──▶ EPISODE
-  INTENTION.reference ── informal ──▶ DKF claim (never validated)
-  DKF claims citing episodes ──▶ are what make that claim held
+       └── cites ──▶ EPISODE (what happened: episodes)
+  INTENTION.reference ── informal ──▶ any record (never validated)
+  An EPISODE names nothing here, and nothing here names an episode.
 ```
 
 Three deliberate reuses cross the iCalendar boundary: ISO 8601 durations,
@@ -1268,11 +1299,12 @@ RRULE cadence, and the RFC 9253 relation vocabulary. Nothing else does. No
 object here depends on a DKF object or an episode to exist or validate, and
 no file here changes when either is written.
 
-The relationship is a loop. A terminus may reference a claim the person holds
-about what they keep doing; what was actually done is recorded as episodes,
-which may name the intention or commitment they were the occasion of; and DKF
-claims citing those episodes are the evidence that makes the claim held rather
-than aspirational. A person sees what they keep choosing from what they did,
+Where a person keeps all three, the relationship is a loop. A terminus may
+reference a claim the person holds about what they keep doing; what was
+actually done is recorded as episodes; and DKF claims citing those episodes,
+and the intentions they bear on, are the evidence that makes the claim held
+rather than aspirational. The link between an episode and an intention is
+that claim, not a field in either. A person sees what they keep choosing from what they did,
 and the three formats hold the three parts: what was meant, what happened, and
 what the person takes it to show.
 
@@ -1631,9 +1663,9 @@ reconsideration better than one read at the level of how it is done, and the
 chain up to a terminus is the instrument of that reading. Validation never
 rejects a terminus for its wording.
 
-**The why is the price of entry.** A DKF claim cannot exist without the
-particular it is about, and an intention cannot stand without the terminus it
-is for. A workspace's first act is a terminus, and a harness's first question
+**The why is the price of entry.** An intention cannot stand without the
+terminus it is for, as a DKF claim cannot exist without the particular it is
+about. A workspace's first act is a terminus, and a harness's first question
 is what the person means to keep doing, for its own sake. That is the right
 first question, and the cost of capture is the point: this format does not
 hold an intention the person cannot say the point of. An unserved intention is
@@ -1667,9 +1699,9 @@ and never rewritten.
 
 **Compose by reference, never by shared schema.** ISO 8601, RRULE, RFC 9253
 and EDTF are borrowed as grammars. iCalendar and JSCalendar are linked by a
-uid. DKF and episodes are linked by an id, each pointing in. No other
-system's object model is embedded here
-and this format's is embedded in none.
+uid. A DKF claim may cite an object here by id; an episode names nothing
+here. No other system's object model is embedded here and this format's is
+embedded in none, so it can be adopted alone.
 
 **Files over databases.** The canonical store is a directory of YAML files in
 a git repository. The index is a cache of the files, never the reverse.
@@ -1719,6 +1751,12 @@ predates a terminus superseded by several expects a single id in
 `superseded_by` and may reject the list or misread it, so every reader of a
 shared workspace must be upgraded before anyone splits a terminus.
 
+The text now says it stands alone (see [Conformance](#conformance)). This
+changes no file and no behaviour: `reference` was never resolved, and every
+value written as a DKF claim id is still a valid `reference`. Earlier text said
+an episode could name an object here as its occasion; episodes has since
+dropped that field, and the text here no longer describes it.
+
 Deferred from this version, deliberately:
 
 - **Federation.** Scope visibility is defined within one workspace. Reading
@@ -1726,13 +1764,11 @@ Deferred from this version, deliberately:
   workspaces (most likely as iCalendar or JSCalendar over iTIP rather than as
   this format at all), are undesigned.
 - **A retrospective record.** What was actually done against an intention is
-  an episode, in the [episodes](https://github.com/nodelogicau/episodes)
-  format, which is an early draft; whether it fulfilled the intention is a DKF
-  claim citing both. This format neither cites episodes nor validates them.
-  Which object and version an episode names as its occasion (an instance or
-  its recurring intention, a commitment or the intention it fulfils, a habit
-  that generates no instances) is for that format to settle. Whether a
-  personal workspace that keeps no episodes needs something minimal of
+  not recorded here. Another format can hold it: the
+  [episodes](https://github.com/nodelogicau/episodes) format, an early draft,
+  records what happened, and whether it fulfilled the intention is a DKF claim
+  citing both. Neither is needed here, and this format cites neither.
+  Whether a workspace that keeps no such record needs something minimal of
   its own is open.
 - **Presence.** Where a subject will be, independent of what they have
   capacity for. Not an availability: capacity unions, whereabouts intersects,
@@ -1911,17 +1947,18 @@ implementation that exposes their names SHALL keep them:
 what is believed, including what a person takes their record to show, and
 whose conventions (file-per-object YAML,
 prefixed UUIDv7 ids, canonical field order, `source`, derived index,
-review through git) this specification adopts. Reading its README first will
-make this one's shape familiar.
+review through git) were copied by agreement and are restated here in full,
+so that nothing here requires reading it. Copies can drift apart, and a
+difference between the two is a finding to check, not a rule inherited.
 [Specification](https://github.com/nodelogicau/particulars) ·
 [particulars.fyi](https://particulars.fyi), a visual introduction ·
 [particulars-cli](https://github.com/nodelogicau/particulars-cli), the
 reference implementation.
 
-**Episodes.** The format this one composes with for what happened: episodic
-memory that keeps its standpoint, whose episodes may name an object here as
-their occasion and are what DKF claims about what was done cite. An early
-draft. [Specification](https://github.com/nodelogicau/episodes).
+**Episodes.** A format for what happened: episodic memory that keeps its
+standpoint. An episode names nothing here and this format cites no episode;
+a DKF claim about what was done may cite both. An early draft.
+[Specification](https://github.com/nodelogicau/episodes).
 
 **Standards borrowed as grammars.**
 [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562) UUID version 7 ·
