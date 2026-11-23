@@ -94,10 +94,10 @@ A consistency check SHALL NOT retire any object, nor change any object's stabili
 
 ### Requirement: Acknowledgement as retrospective seed
 
-An acknowledgement's `reason` and identifiers SHALL be sufficient for a DKF claim to be written about the decision later, citing the acknowledging object by id and version. This specification SHALL NOT write that claim.
+An acknowledgement's `reason` and identifiers SHALL be sufficient for a later record of the decision, in any format (a DKF claim, for example), to cite the acknowledging object by id and version and say what was decided and why. This specification SHALL NOT write that record and SHALL NOT require any format for it.
 
 #### Scenario: Citable acknowledgement
-- **WHEN** a DKF user recalls why a clash was accepted
+- **WHEN** someone later asks why a clash was accepted
 - **THEN** the acknowledgement entry identifies the objects, their versions at the time, and the stated reason
 
 ### Requirement: Transparent commitments occupy no time and rest on no supply
