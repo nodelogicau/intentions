@@ -17,4 +17,4 @@
 ## 3. Verify and follow up
 
 - [x] 3.1 Run `openspec validate standalone-spec --strict` and fix any findings
-- [ ] 3.2 Check intentions-cli help text for `reference` described as a DKF claim pointer, and open an issue there if it is
+- [x] 3.2 Check intentions-cli help text for `reference` described as a DKF claim pointer, and fix it (nodelogicau/intentions-cli#22)
